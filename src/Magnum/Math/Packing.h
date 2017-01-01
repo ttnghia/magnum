@@ -187,6 +187,58 @@ template<class Integral, class FloatingPoint> CORRADE_DEPRECATED("use pack() ins
 }
 #endif
 
+/**
+@brief Pack 32-bit float value into 16-bit half-float representation
+
+See [Wikipedia](https://en.wikipedia.org/wiki/Half-precision_floating-point_format)
+for more information about half floats. This function is a straightforward
+memory-efficient implementation at the expense of being slightly slower. See
+@ref packHalves() for implementation more suitable for batch conversions.
+
+Implementation based on public domain algorithm by *Phernost* at
+http://stackoverflow.com/a/3542975/6108877 .
+*/
+MAGNUM_EXPORT UnsignedShort packHalf(Float value);
+
+/**
+@brief Unpack 16-bit half float value into 32-bit float representation
+
+See [Wikipedia](https://en.wikipedia.org/wiki/Half-precision_floating-point_format)
+for more information about half floats. This function is a straightforward
+memory-efficient implementation at the expense of being slightly slower. See
+@ref unpackHalves() for implementation more suitable for batch conversions.
+
+Implementation based on public domain algorithm by *Phernost* at
+http://stackoverflow.com/a/3542975/6108877 .
+*/
+MAGNUM_EXPORT Float unpackHalf(UnsignedShort value);
+
+/**
+@brief Pack a range of 32-bit float values into 16-bit half-float representation
+
+Unlike @ref packHalf() this function is a faster table-based implementation at
+the expense of using more memory, thus more suitable for batch conversions of
+large data amounts. Expects that both @p input and @p output have the same
+size.
+
+Algorithm used: *Jeroen van der Zijp -- Fast Half Float Conversions, 2008,
+ftp://ftp.fox-toolkit.org/pub/fasthalffloatconversion.pdf*
+*/
+MAGNUM_EXPORT void packHalves(Corrade::Containers::ArrayView<const Float> input, Corrade::Containers::ArrayView<UnsignedShort> output);
+
+/**
+@brief Unpack a range of 16-bit half-float values into 32-bit float representation
+
+Unlike @ref unpackHalf() this function is a faster table-based implementation
+at the expense of using more memory, thus more suitable for batch conversions
+of large data amounts. Expects that both @p input and @p output have the same
+size.
+
+Algorithm used: *Jeroen van der Zijp -- Fast Half Float Conversions, 2008,
+ftp://ftp.fox-toolkit.org/pub/fasthalffloatconversion.pdf*
+*/
+MAGNUM_EXPORT void unpackHalves(Corrade::Containers::ArrayView<const UnsignedShort> input, Corrade::Containers::ArrayView<Float> output);
+
 }}
 
 #endif

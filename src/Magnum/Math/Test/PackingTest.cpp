@@ -23,7 +23,10 @@
     DEALINGS IN THE SOFTWARE.
 */
 
+#include <numeric>
+#include <Corrade/Containers/Array.h>
 #include <Corrade/TestSuite/Tester.h>
+#include <Corrade/TestSuite/Compare/Container.h>
 
 #include "Magnum/Math/Packing.h"
 #include "Magnum/Math/Vector3.h"
@@ -42,6 +45,17 @@ struct PackingTest: Corrade::TestSuite::Tester {
     void reunpackUnsinged();
     void reunpackSinged();
     void unpackTypeDeduction();
+
+    void unpackHalf();
+    void packHalf();
+    void repackHalf();
+
+    void unpack1kHalves();
+    void unpack1kHalvesTableOneByOne();
+    void unpack1kHalvesTable();
+    void pack1kHalves();
+    void pack1kHalvesTableOneByOne();
+    void pack1kHalvesTable();
 };
 
 typedef Math::Vector3<Float> Vector3;
@@ -57,7 +71,20 @@ PackingTest::PackingTest() {
               &PackingTest::packSigned,
               &PackingTest::reunpackUnsinged,
               &PackingTest::reunpackSinged,
-              &PackingTest::unpackTypeDeduction});
+              &PackingTest::unpackTypeDeduction,
+
+              &PackingTest::unpackHalf,
+              &PackingTest::packHalf});
+
+    addRepeatedTests({&PackingTest::repackHalf}, 65535);
+
+    addBenchmarks({
+        &PackingTest::unpack1kHalves,
+        &PackingTest::unpack1kHalvesTableOneByOne,
+        &PackingTest::unpack1kHalvesTable,
+        &PackingTest::pack1kHalves,
+        &PackingTest::pack1kHalvesTableOneByOne,
+        &PackingTest::pack1kHalvesTable}, 10);
 }
 
 void PackingTest::bitMax() {
@@ -273,6 +300,111 @@ void PackingTest::unpackTypeDeduction() {
         CORRADE_COMPARE(Math::unpack<Float>('\x7F'), 0.498039f);
     }
     CORRADE_COMPARE((Math::unpack<Float, Byte>('\x7F')), 1.0f);
+}
+
+void PackingTest::unpackHalf() {
+    CORRADE_COMPARE(Math::unpackHalf(0x0000), 0.0f);
+
+    /* 0b0011110000000000 */
+    CORRADE_COMPARE(Math::unpackHalf(0x3c00), 1.0f);
+
+    /* 0b0100000000000000 */
+    CORRADE_COMPARE(Math::unpackHalf(0x4000), 2.0f);
+
+    /* 0b0100001000000000 */
+    CORRADE_COMPARE(Math::unpackHalf(0x4200), 3.0f);
+
+    constexpr const UnsignedShort input[] = { 0x0000, 0x3c00, 0x4000, 0x4200 };
+    constexpr const Float expectedOutput[] = { 0.0f, 1.0f, 2.0f, 3.0f };
+    Float output[4];
+    Math::unpackHalves(input, output);
+    CORRADE_COMPARE_AS(
+        Corrade::Containers::ArrayView<const Float>{output},
+        Corrade::Containers::ArrayView<const Float>{expectedOutput},
+        Corrade::TestSuite::Compare::Container);
+}
+
+void PackingTest::packHalf() {
+    CORRADE_COMPARE(Math::packHalf(0.0f), 0x0000);
+    CORRADE_COMPARE(Math::packHalf(1.0f), 0x3c00);
+    CORRADE_COMPARE(Math::packHalf(2.0f), 0x4000);
+    CORRADE_COMPARE(Math::packHalf(3.0f), 0x4200);
+
+    constexpr const Float input[] = { 0.0f, 1.0f, 2.0f, 3.0f };
+    constexpr const UnsignedShort expectedOutput[] = { 0x0000, 0x3c00, 0x4000, 0x4200 };
+    UnsignedShort output[4];
+    Math::packHalves(input, output);
+    CORRADE_COMPARE_AS(
+        Corrade::Containers::ArrayView<const UnsignedShort>{output},
+        Corrade::Containers::ArrayView<const UnsignedShort>{expectedOutput},
+        Corrade::TestSuite::Compare::Container);
+}
+
+void PackingTest::repackHalf() {
+    /* Basically verifies that the ALU-intensive and the memory-intensive
+       implementations give equivalent results and that the values round-trip */
+
+    const UnsignedShort in = testCaseRepeatId();
+    Float out;
+    UnsignedShort outHalf;
+
+    Math::unpackHalves({&in, 1}, {&out, 1});
+    CORRADE_COMPARE(Math::unpackHalf(in), out);
+
+    Math::packHalves({&out, 1}, {&outHalf, 1});
+    CORRADE_COMPARE(Math::packHalf(out), outHalf);
+
+    CORRADE_COMPARE(outHalf, in);
+}
+
+void PackingTest::pack1kHalves() {
+    CORRADE_BENCHMARK(100)
+        for(std::uint_fast16_t i = 0; i != 1000; ++i)
+            Math::packHalf(Float(i));
+}
+
+void PackingTest::pack1kHalvesTableOneByOne() {
+    CORRADE_BENCHMARK(100)
+        for(std::uint_fast16_t i = 0; i != 1000; ++i) {
+            Float in = i;
+            UnsignedShort out;
+            Math::packHalves({&in, 1}, {&out, 1});
+        }
+}
+
+void PackingTest::pack1kHalvesTable() {
+    Corrade::Containers::Array<Float> input{NoInit, 1000};
+    Corrade::Containers::Array<UnsignedShort> output{NoInit, 1000};
+    std::iota(input.begin(), input.end(), 1);
+
+    CORRADE_BENCHMARK(100)
+        Math::packHalves(input, output);
+}
+
+void PackingTest::unpack1kHalves() {
+    setBenchmarkName("umm");
+
+    CORRADE_BENCHMARK(100)
+        for(std::uint_fast16_t i = 0; i != 1000; ++i)
+            Math::unpackHalf(i + 1);
+}
+
+void PackingTest::unpack1kHalvesTableOneByOne() {
+    CORRADE_BENCHMARK(100)
+        for(std::uint_fast16_t i = 0; i != 1000; ++i) {
+            UnsignedShort in = i;
+            Float out;
+            Math::unpackHalves({&in, 1}, {&out, 1});
+        }
+}
+
+void PackingTest::unpack1kHalvesTable() {
+    Corrade::Containers::Array<UnsignedShort> input{NoInit, 1000};
+    Corrade::Containers::Array<Float> output{NoInit, 1000};
+    std::iota(input.begin(), input.end(), 1);
+
+    CORRADE_BENCHMARK(100)
+        Math::unpackHalves(input, output);
 }
 
 }}}
