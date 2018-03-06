@@ -24,22 +24,20 @@
 */
 
 namespace Magnum {
-/** @page features Feature guide
-@brief Fundamental principles and design goals.
+/** @page vulkan-wrapping Vulkan wrapping layer
+@brief Overview of the base Vulkan wrapper API
 
-Overview and tutorials of high-level feature groups in Magnum. It's not
-necessary to read through everything, pick only what you need.
+@tableofcontents
+@m_footernavigation
 
--   @subpage platform --- @copybrief platform
--   @subpage types --- @copybrief types
--   @subpage matrix-vector --- @copybrief matrix-vector
--   @subpage transformations --- @copybrief transformations
--   @subpage plugins --- @copybrief plugins
--   @subpage opengl-wrapping --- @copybrief opengl-wrapping
--   @subpage vulkan-wrapping --- @copybrief vulkan-wrapping
--   @subpage shaders --- @copybrief shaders
--   @subpage scenegraph --- @copybrief scenegraph
--   @subpage shapes --- @copybrief shapes
--   @subpage debug-tools --- @copybrief debug-tools
+The @ref Magnum::Vk library is a thin but high-level abstraction of the
+[Vulkan](https://www.khronos.org/vulkan/) GPU API, providing sane defaults with
+ability to opt-in for greater control and performance.
+
+@section vulkan-wrapping-instance Vulkan instance
+
+The @fn_vk{Instance}
+
+@section vulkan-wrapping-interop Interoperability with 3rd party code
 */
 }
