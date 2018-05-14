@@ -1,3 +1,5 @@
+#ifndef Magnum_Vk_Version_h
+#define Magnum_Vk_Version_h
 /*
     This file is part of Magnum.
 
@@ -23,28 +25,23 @@
     DEALINGS IN THE SOFTWARE.
 */
 
-#include <Corrade/Containers/ArrayView.h>
+/** @file
+ * @brief Enum @ref Magnum::Vk::Version
+ */
 
-#include "Magnum/Magnum.h"
-#include "MagnumExternal/Vulkan/flextVk.h"
+#include "Magnum/Types.h"
+#include "Magnum/Vk/visibility.h"
 
-VkInstance instance;
+namespace Magnum {
 
-using namespace Magnum;
+/**
+@brief Vulkan version
+*/
+enum class Version: Int {
+    None = 0xFFFF,                  /**< Unspecified */
+    VK100 = 100,                    /**< Vulkan 1.0 */
+};
 
-/* [global-instance-function-pointers] */
-#include <MagnumExternal/Vulkan/flextVkGlobal.h>
-
-int main() {
-    Vk::Instance instance;
-    instance.populateGlobalFunctionPointers();
-
-    // ...
-
-    VkPhysicalDevice devices[10];
-    UnsignedInt count = Containers::arraySize(devices);
-    vkEnumeratePhysicalDevices(instance, &count, devices);
-
-    // ...
 }
-/* [global-instance-function-pointers] */
+
+#endif

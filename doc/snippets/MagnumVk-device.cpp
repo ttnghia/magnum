@@ -28,23 +28,21 @@
 #include "Magnum/Magnum.h"
 #include "MagnumExternal/Vulkan/flextVk.h"
 
-VkInstance instance;
+VkDevice device;
+VkCommandPoolCreateInfo info;
 
-using namespace Magnum;
-
-/* [global-instance-function-pointers] */
+/* [global-device-function-pointers] */
 #include <MagnumExternal/Vulkan/flextVkGlobal.h>
 
 int main() {
-    Vk::Instance instance;
-    instance.populateGlobalFunctionPointers();
+    Vk::Device device;
+    device.populateGlobalFunctionPointers();
 
     // ...
 
-    VkPhysicalDevice devices[10];
-    UnsignedInt count = Containers::arraySize(devices);
-    vkEnumeratePhysicalDevices(instance, &count, devices);
+    VkCommandPool commandPool;
+    vkCreateCommandPool(device, &info, nullptr, &commandPool);
 
     // ...
 }
-/* [global-instance-function-pointers] */
+/* [global-device-function-pointers] */

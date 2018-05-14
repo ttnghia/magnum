@@ -23,28 +23,51 @@
     DEALINGS IN THE SOFTWARE.
 */
 
-#include <Corrade/Containers/ArrayView.h>
+#include "Device.h"
 
-#include "Magnum/Magnum.h"
-#include "MagnumExternal/Vulkan/flextVk.h"
+namespace Magnum { namespace Vk {
 
-VkInstance instance;
-
-using namespace Magnum;
-
-/* [global-instance-function-pointers] */
-#include <MagnumExternal/Vulkan/flextVkGlobal.h>
-
-int main() {
-    Vk::Instance instance;
-    instance.populateGlobalFunctionPointers();
-
-    // ...
-
-    VkPhysicalDevice devices[10];
-    UnsignedInt count = Containers::arraySize(devices);
-    vkEnumeratePhysicalDevices(instance, &count, devices);
-
-    // ...
+DeviceCreateInfo::DeviceCreateInfo(): _info{} {
+    _info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 }
-/* [global-instance-function-pointers] */
+
+DeviceCreateInfo::DeviceCreateInfo(NoInitT) {}
+
+DeviceCreateInfo::~DeviceCreateInfo() {}
+
+Device Device::wrap(PhysicalDevice physicalDevice, VkDevice handle, ObjectFlags flags) {
+    Device out{NoCreate};
+    out._handle = handle;
+    out._flags = flags;
+
+    /* Init the function pointers */
+    flextVkInitDevice(_handle, &out._functionPointers, sdnhhkdshgfjhsdgfj);
+
+    return out;
+}
+
+Device::Device(const DeviceCreateInfo& info): _flags{ObjectFlag::DeleteOnDestruction} {
+    MAGNUM_VK_ASSERT_OUTPUT( CreateDevice(&info.info(), nullptr, &_handle));
+
+    /* Init the functions */
+    flextVkInitDevice(_handle, &_functionPointers);
+}
+
+Device::Device(NoCreateT): _handle{}, _functionPointers{} {}
+
+Device::~Device() {
+    if(_handle && !(_flags & ObjectFlag::DeleteOnDestruction))
+        vkDestroyDevice(_handle, nullptr);
+}
+
+VkDevice Device::release() {
+    const VkDevice handle = _handle;
+    _handle = nullptr;
+    return handle;
+}
+
+void Device::populateGlobalFunctionPointers() {
+    flextVkDevice = _functionPointers;
+}
+
+}}
