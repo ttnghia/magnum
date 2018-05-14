@@ -36,8 +36,8 @@ using namespace Magnum;
 #include <MagnumExternal/Vulkan/flextVkGlobal.h>
 
 int main() {
-    Vk::Instance instance;
-    instance.populateGlobalFunctionPointers();
+//     Vk::Instance instance;
+//     instance.populateGlobalFunctionPointers();
 
     // ...
 
