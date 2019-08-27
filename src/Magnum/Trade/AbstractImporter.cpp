@@ -52,7 +52,7 @@
 namespace Magnum { namespace Trade {
 
 std::string AbstractImporter::pluginInterface() {
-    return "cz.mosra.magnum.Trade.AbstractImporter/0.3";
+    return "cz.mosra.magnum.Trade.AbstractImporter/0.3.1";
 }
 
 #ifndef CORRADE_PLUGINMANAGER_NO_DYNAMIC_PLUGIN_SUPPORT
@@ -535,6 +535,14 @@ UnsignedInt AbstractImporter::image1DCount() const {
 
 UnsignedInt AbstractImporter::doImage1DCount() const { return 0; }
 
+UnsignedInt AbstractImporter::image1DLevelCount(const UnsignedInt id) {
+    CORRADE_ASSERT(isOpened(), "Trade::AbstractImporter::image1DLevelCount(): no file opened", {});
+    CORRADE_ASSERT(id < doImage1DCount(), "Trade::AbstractImporter::image1DLevelCount(): index out of range", {});
+    return doImage1DLevelCount(id);
+}
+
+UnsignedInt AbstractImporter::doImage1DLevelCount(UnsignedInt) { return 1; }
+
 Int AbstractImporter::image1DForName(const std::string& name) {
     CORRADE_ASSERT(isOpened(), "Trade::AbstractImporter::image1DForName(): no file opened", {});
     return doImage1DForName(name);
@@ -550,13 +558,28 @@ std::string AbstractImporter::image1DName(const UnsignedInt id) {
 
 std::string AbstractImporter::doImage1DName(UnsignedInt) { return {}; }
 
-Containers::Optional<ImageData1D> AbstractImporter::image1D(const UnsignedInt id) {
+Containers::Optional<ImageData1D> AbstractImporter::image1D(const UnsignedInt id, const UnsignedInt level) {
     CORRADE_ASSERT(isOpened(), "Trade::AbstractImporter::image1D(): no file opened", {});
     CORRADE_ASSERT(id < doImage1DCount(), "Trade::AbstractImporter::image1D(): index out of range", {});
-    return doImage1D(id);
+    #ifndef CORRADE_NO_ASSERT
+    /* Check that non-trivial level is in bounds, failing the import instead of
+       asserting if the reported level count is zero (indicating an error).
+       Doing this only if assertions are enabled -- with assertions disabled
+       (and sane importer implementation), the importer failure happens inside
+       doImage1D() instead, giving consistent result in both cases. */
+    if(level) {
+        const UnsignedInt levelCount = doImage1DLevelCount(id);
+        if(!levelCount) {
+            Error{} << "Trade::AbstractImporter::image1D(): image reported zero levels";
+            return {};
+        }
+        CORRADE_ASSERT(level < levelCount, "Trade::AbstractImporter::image1D(): level out of range", {});
+    }
+    #endif
+    return doImage1D(id, level);
 }
 
-Containers::Optional<ImageData1D> AbstractImporter::doImage1D(UnsignedInt) {
+Containers::Optional<ImageData1D> AbstractImporter::doImage1D(UnsignedInt, UnsignedInt) {
     CORRADE_ASSERT(false, "Trade::AbstractImporter::image1D(): not implemented", {});
 }
 
@@ -566,6 +589,14 @@ UnsignedInt AbstractImporter::image2DCount() const {
 }
 
 UnsignedInt AbstractImporter::doImage2DCount() const { return 0; }
+
+UnsignedInt AbstractImporter::image2DLevelCount(const UnsignedInt id) {
+    CORRADE_ASSERT(isOpened(), "Trade::AbstractImporter::image2DLevelCount(): no file opened", {});
+    CORRADE_ASSERT(id < doImage2DCount(), "Trade::AbstractImporter::image2DLevelCount(): index out of range", {});
+    return doImage2DLevelCount(id);
+}
+
+UnsignedInt AbstractImporter::doImage2DLevelCount(UnsignedInt) { return 1; }
 
 Int AbstractImporter::image2DForName(const std::string& name) {
     CORRADE_ASSERT(isOpened(), "Trade::AbstractImporter::image2DForName(): no file opened", {});
@@ -582,13 +613,28 @@ std::string AbstractImporter::image2DName(const UnsignedInt id) {
 
 std::string AbstractImporter::doImage2DName(UnsignedInt) { return {}; }
 
-Containers::Optional<ImageData2D> AbstractImporter::image2D(const UnsignedInt id) {
+Containers::Optional<ImageData2D> AbstractImporter::image2D(const UnsignedInt id, const UnsignedInt level) {
     CORRADE_ASSERT(isOpened(), "Trade::AbstractImporter::image2D(): no file opened", {});
     CORRADE_ASSERT(id < doImage2DCount(), "Trade::AbstractImporter::image2D(): index out of range", {});
-    return doImage2D(id);
+    #ifndef CORRADE_NO_ASSERT
+    /* Check that non-trivial level is in bounds, failing the import instead of
+       asserting if the reported level count is zero (indicating an error).
+       Doing this only if assertions are enabled -- with assertions disabled
+       (and sane importer implementation), the importer failure happens inside
+       doImage1D() instead, giving consistent result in both cases. */
+    if(level) {
+        const UnsignedInt levelCount = doImage2DLevelCount(id);
+        if(!levelCount) {
+            Error{} << "Trade::AbstractImporter::image2D(): image reported zero levels";
+            return {};
+        }
+        CORRADE_ASSERT(level < levelCount, "Trade::AbstractImporter::image2D(): level out of range", {});
+    }
+    #endif
+    return doImage2D(id, level);
 }
 
-Containers::Optional<ImageData2D> AbstractImporter::doImage2D(UnsignedInt) {
+Containers::Optional<ImageData2D> AbstractImporter::doImage2D(UnsignedInt, UnsignedInt) {
     CORRADE_ASSERT(false, "Trade::AbstractImporter::image2D(): not implemented", {});
 }
 
@@ -598,6 +644,14 @@ UnsignedInt AbstractImporter::image3DCount() const {
 }
 
 UnsignedInt AbstractImporter::doImage3DCount() const { return 0; }
+
+UnsignedInt AbstractImporter::image3DLevelCount(const UnsignedInt id) {
+    CORRADE_ASSERT(isOpened(), "Trade::AbstractImporter::image3DLevelCount(): no file opened", {});
+    CORRADE_ASSERT(id < doImage3DCount(), "Trade::AbstractImporter::image3DLevelCount(): index out of range", {});
+    return doImage3DLevelCount(id);
+}
+
+UnsignedInt AbstractImporter::doImage3DLevelCount(UnsignedInt) { return 1; }
 
 Int AbstractImporter::image3DForName(const std::string& name) {
     CORRADE_ASSERT(isOpened(), "Trade::AbstractImporter::image3DForName(): no file opened", {});
@@ -614,13 +668,28 @@ std::string AbstractImporter::image3DName(const UnsignedInt id) {
 
 std::string AbstractImporter::doImage3DName(UnsignedInt) { return {}; }
 
-Containers::Optional<ImageData3D> AbstractImporter::image3D(const UnsignedInt id) {
+Containers::Optional<ImageData3D> AbstractImporter::image3D(const UnsignedInt id, const UnsignedInt level) {
     CORRADE_ASSERT(isOpened(), "Trade::AbstractImporter::image3D(): no file opened", {});
     CORRADE_ASSERT(id < doImage3DCount(), "Trade::AbstractImporter::image3D(): index out of range", {});
-    return doImage3D(id);
+    #ifndef CORRADE_NO_ASSERT
+    /* Check that non-trivial level is in bounds, failing the import instead of
+       asserting if the reported level count is zero (indicating an error).
+       Doing this only if assertions are enabled -- with assertions disabled
+       (and sane importer implementation), the importer failure happens inside
+       doImage3D() instead, giving consistent result in both cases. */
+    if(level) {
+        const UnsignedInt levelCount = doImage3DLevelCount(id);
+        if(!levelCount) {
+            Error{} << "Trade::AbstractImporter::image3D(): image reported zero levels";
+            return {};
+        }
+        CORRADE_ASSERT(level < levelCount, "Trade::AbstractImporter::image3D(): level out of range", {});
+    }
+    #endif
+    return doImage3D(id, level);
 }
 
-Containers::Optional<ImageData3D> AbstractImporter::doImage3D(UnsignedInt) {
+Containers::Optional<ImageData3D> AbstractImporter::doImage3D(UnsignedInt, UnsignedInt) {
     CORRADE_ASSERT(false, "Trade::AbstractImporter::image3D(): not implemented", {});
 }
 

@@ -181,7 +181,7 @@ checked by the implementation:
 -   All `do*()` implementations working on an opened file are called only if
     there is any file opened.
 -   All `do*()` implementations taking data ID as parameter are called only if
-    the ID is from valid range.
+    the IDs are from valid range.
 
 @attention
     @ref Corrade::Containers::Array instances returned from the plugin
@@ -234,7 +234,7 @@ class MAGNUM_TRADE_EXPORT AbstractImporter: public PluginManager::AbstractManagi
          * @brief Plugin interface
          *
          * @code{.cpp}
-         * "cz.mosra.magnum.Trade.AbstractImporter/0.3"
+         * "cz.mosra.magnum.Trade.AbstractImporter/0.3.1"
          * @endcode
          */
         static std::string pluginInterface();
@@ -762,8 +762,18 @@ class MAGNUM_TRADE_EXPORT AbstractImporter: public PluginManager::AbstractManagi
          * @brief One-dimensional image count
          *
          * Expects that a file is opened.
+         * @see @ref image1DLevelCount()
          */
         UnsignedInt image1DCount() const;
+
+        /**
+         * @brief One-dimensional image mip level count
+         * @param id        Image ID, from range [0, @ref image1DCount())
+         *
+         * Returns at least one level in successful cases, zero on failure.
+         * Expects that a file is opened.
+         */
+        UnsignedInt image1DLevelCount(UnsignedInt id);
 
         /**
          * @brief One-dimensional image ID for given name
@@ -786,18 +796,33 @@ class MAGNUM_TRADE_EXPORT AbstractImporter: public PluginManager::AbstractManagi
         /**
          * @brief One-dimensional image
          * @param id        Image ID, from range [0, @ref image1DCount()).
+         * @param level     Mip level, from range [0, @ref image1DLevelCount())
          *
          * Returns given image or @ref Containers::NullOpt if importing failed.
-         * Expects that a file is opened.
+         * Expects that a file is opened. Non-zero @p level values are checked
+         * against @ref image1DLevelCount() unless Magnum is built with
+         * @ref CORRADE_NO_ASSERT. If reported level count is zero, this
+         * function returns @ref Containers::NullOpt as well, indicating
+         * an import error.
          */
-        Containers::Optional<ImageData1D> image1D(UnsignedInt id);
+        Containers::Optional<ImageData1D> image1D(UnsignedInt id, UnsignedInt level = 0);
 
         /**
          * @brief Two-dimensional image count
          *
          * Expects that a file is opened.
+         * @see @ref image2DLevelCount()
          */
         UnsignedInt image2DCount() const;
+
+        /**
+         * @brief Two-dimensional image mip level count
+         * @param id        Image ID, from range [0, @ref image2DCount()).
+         *
+         * Returns at least one level in successful cases, zero on failure.
+         * Expects that a file is opened.
+         */
+        UnsignedInt image2DLevelCount(UnsignedInt id);
 
         /**
          * @brief Two-dimensional image ID for given name
@@ -820,18 +845,33 @@ class MAGNUM_TRADE_EXPORT AbstractImporter: public PluginManager::AbstractManagi
         /**
          * @brief Two-dimensional image
          * @param id        Image ID, from range [0, @ref image2DCount()).
+         * @param level     Mip level, from range [0, @ref image2DLevelCount())
          *
          * Returns given image or @ref Containers::NullOpt if importing failed.
-         * Expects that a file is opened.
+         * Expects that a file is opened. Non-zero @p level values are checked
+         * against @ref image2DLevelCount() unless Magnum is built with
+         * @ref CORRADE_NO_ASSERT. If reported level count is zero, this
+         * function returns @ref Containers::NullOpt as well, indicating
+         * an import error.
          */
-        Containers::Optional<ImageData2D> image2D(UnsignedInt id);
+        Containers::Optional<ImageData2D> image2D(UnsignedInt id, UnsignedInt level = 0);
 
         /**
          * @brief Three-dimensional image count
          *
          * Expects that a file is opened.
+         * @see @ref image3DLevelCount()
          */
         UnsignedInt image3DCount() const;
+
+        /**
+         * @brief Three-dimensional image mip level count
+         * @param id        Image ID, from range [0, @ref image3DCount())
+         *
+         * Returns at least one level in successful cases, zero on failure.
+         * Expects that a file is opened.
+         */
+        UnsignedInt image3DLevelCount(UnsignedInt id);
 
         /**
          * @brief Three-dimensional image ID for given name
@@ -854,11 +894,16 @@ class MAGNUM_TRADE_EXPORT AbstractImporter: public PluginManager::AbstractManagi
         /**
          * @brief Three-dimensional image
          * @param id        Image ID, from range [0, @ref image3DCount()).
+         * @param level     Mip level, from range [0, @ref image3DLevelCount())
          *
          * Returns given image or @ref Containers::NullOpt if importing failed.
-         * Expects that a file is opened.
+         * Expects that a file is opened. Non-zero @p level values are checked
+         * against @ref image3DLevelCount() unless Magnum is built with
+         * @ref CORRADE_NO_ASSERT. If reported level count is zero, this
+         * function returns @ref Containers::NullOpt as well, indicating
+         * an import error.
          */
-        Containers::Optional<ImageData3D> image3D(UnsignedInt id);
+        Containers::Optional<ImageData3D> image3D(UnsignedInt id, UnsignedInt level = 0);
 
         /*@}*/
 
@@ -1177,6 +1222,13 @@ class MAGNUM_TRADE_EXPORT AbstractImporter: public PluginManager::AbstractManagi
         virtual UnsignedInt doImage1DCount() const;
 
         /**
+         * @brief Implementation for @ref image1DLevelCount()
+         *
+         * Default implementation returns @cpp 1 @ce.
+         */
+        virtual UnsignedInt doImage1DLevelCount(UnsignedInt id);
+
+        /**
          * @brief Implementation for @ref image1DForName()
          *
          * Default implementation returns @cpp -1 @ce.
@@ -1191,7 +1243,7 @@ class MAGNUM_TRADE_EXPORT AbstractImporter: public PluginManager::AbstractManagi
         virtual std::string doImage1DName(UnsignedInt id);
 
         /** @brief Implementation for @ref image1D() */
-        virtual Containers::Optional<ImageData1D> doImage1D(UnsignedInt id);
+        virtual Containers::Optional<ImageData1D> doImage1D(UnsignedInt id, UnsignedInt level);
 
         /**
          * @brief Implementation for @ref image2DCount()
@@ -1199,6 +1251,13 @@ class MAGNUM_TRADE_EXPORT AbstractImporter: public PluginManager::AbstractManagi
          * Default implementation returns @cpp 0 @ce.
          */
         virtual UnsignedInt doImage2DCount() const;
+
+        /**
+         * @brief Implementation for @ref image2DLevelCount()
+         *
+         * Default implementation returns @cpp 1 @ce.
+         */
+        virtual UnsignedInt doImage2DLevelCount(UnsignedInt id);
 
         /**
          * @brief Implementation for @ref image2DForName()
@@ -1215,7 +1274,7 @@ class MAGNUM_TRADE_EXPORT AbstractImporter: public PluginManager::AbstractManagi
         virtual std::string doImage2DName(UnsignedInt id);
 
         /** @brief Implementation for @ref image2D() */
-        virtual Containers::Optional<ImageData2D> doImage2D(UnsignedInt id);
+        virtual Containers::Optional<ImageData2D> doImage2D(UnsignedInt id, UnsignedInt level);
 
         /**
          * @brief Implementation for @ref image3DCount()
@@ -1223,6 +1282,13 @@ class MAGNUM_TRADE_EXPORT AbstractImporter: public PluginManager::AbstractManagi
          * Default implementation returns @cpp 0 @ce.
          */
         virtual UnsignedInt doImage3DCount() const;
+
+        /**
+         * @brief Implementation for @ref image3DLevelCount()
+         *
+         * Default implementation returns @cpp 1 @ce.
+         */
+        virtual UnsignedInt doImage3DLevelCount(UnsignedInt id);
 
         /**
          * @brief Implementation for @ref image3DForName()
@@ -1239,7 +1305,7 @@ class MAGNUM_TRADE_EXPORT AbstractImporter: public PluginManager::AbstractManagi
         virtual std::string doImage3DName(UnsignedInt id);
 
         /** @brief Implementation for @ref image3D() */
-        virtual Containers::Optional<ImageData3D> doImage3D(UnsignedInt id);
+        virtual Containers::Optional<ImageData3D> doImage3D(UnsignedInt id, UnsignedInt level);
 
         /** @brief Implementation for @ref importerState() */
         virtual const void* doImporterState() const;

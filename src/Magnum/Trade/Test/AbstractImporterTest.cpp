@@ -204,6 +204,9 @@ struct AbstractImporterTest: TestSuite::Tester {
     void image1D();
     void image1DCountNotImplemented();
     void image1DCountNoFile();
+    void image1DLevelCountNotImplemented();
+    void image1DLevelCountNoFile();
+    void image1DLevelCountZero();
     void image1DForNameNotImplemented();
     void image1DForNameNoFile();
     void image1DNameNotImplemented();
@@ -212,10 +215,15 @@ struct AbstractImporterTest: TestSuite::Tester {
     void image1DNotImplemented();
     void image1DNoFile();
     void image1DOutOfRange();
+    void image1DZeroLevelsReported();
+    void image1DLevelOutOfRange();
 
     void image2D();
     void image2DCountNotImplemented();
     void image2DCountNoFile();
+    void image2DLevelCountNotImplemented();
+    void image2DLevelCountNoFile();
+    void image2DLevelCountZero();
     void image2DForNameNotImplemented();
     void image2DForNameNoFile();
     void image2DNameNotImplemented();
@@ -224,10 +232,15 @@ struct AbstractImporterTest: TestSuite::Tester {
     void image2DNotImplemented();
     void image2DNoFile();
     void image2DOutOfRange();
+    void image2DZeroLevelsReported();
+    void image2DLevelOutOfRange();
 
     void image3D();
     void image3DCountNotImplemented();
     void image3DCountNoFile();
+    void image3DLevelCountNotImplemented();
+    void image3DLevelCountNoFile();
+    void image3DLevelCountZero();
     void image3DForNameNotImplemented();
     void image3DForNameNoFile();
     void image3DNameNotImplemented();
@@ -236,6 +249,8 @@ struct AbstractImporterTest: TestSuite::Tester {
     void image3DNotImplemented();
     void image3DNoFile();
     void image3DOutOfRange();
+    void image3DZeroLevelsReported();
+    void image3DLevelOutOfRange();
 
     void importerState();
     void importerStateNotImplemented();
@@ -399,6 +414,9 @@ AbstractImporterTest::AbstractImporterTest() {
               &AbstractImporterTest::image1D,
               &AbstractImporterTest::image1DCountNotImplemented,
               &AbstractImporterTest::image1DCountNoFile,
+              &AbstractImporterTest::image1DLevelCountNotImplemented,
+              &AbstractImporterTest::image1DLevelCountNoFile,
+              &AbstractImporterTest::image1DLevelCountZero,
               &AbstractImporterTest::image1DForNameNotImplemented,
               &AbstractImporterTest::image1DForNameNoFile,
               &AbstractImporterTest::image1DNameNotImplemented,
@@ -407,10 +425,15 @@ AbstractImporterTest::AbstractImporterTest() {
               &AbstractImporterTest::image1DNotImplemented,
               &AbstractImporterTest::image1DNoFile,
               &AbstractImporterTest::image1DOutOfRange,
+              &AbstractImporterTest::image1DZeroLevelsReported,
+              &AbstractImporterTest::image1DLevelOutOfRange,
 
               &AbstractImporterTest::image2D,
               &AbstractImporterTest::image2DCountNotImplemented,
               &AbstractImporterTest::image2DCountNoFile,
+              &AbstractImporterTest::image2DLevelCountNotImplemented,
+              &AbstractImporterTest::image2DLevelCountNoFile,
+              &AbstractImporterTest::image2DLevelCountZero,
               &AbstractImporterTest::image2DForNameNotImplemented,
               &AbstractImporterTest::image2DForNameNoFile,
               &AbstractImporterTest::image2DNameNotImplemented,
@@ -419,10 +442,15 @@ AbstractImporterTest::AbstractImporterTest() {
               &AbstractImporterTest::image2DNotImplemented,
               &AbstractImporterTest::image2DNoFile,
               &AbstractImporterTest::image2DOutOfRange,
+              &AbstractImporterTest::image2DZeroLevelsReported,
+              &AbstractImporterTest::image2DLevelOutOfRange,
 
               &AbstractImporterTest::image3D,
               &AbstractImporterTest::image3DCountNotImplemented,
               &AbstractImporterTest::image3DCountNoFile,
+              &AbstractImporterTest::image3DLevelCountNotImplemented,
+              &AbstractImporterTest::image3DLevelCountNoFile,
+              &AbstractImporterTest::image3DLevelCountZero,
               &AbstractImporterTest::image3DForNameNotImplemented,
               &AbstractImporterTest::image3DForNameNoFile,
               &AbstractImporterTest::image3DNameNotImplemented,
@@ -431,6 +459,8 @@ AbstractImporterTest::AbstractImporterTest() {
               &AbstractImporterTest::image3DNotImplemented,
               &AbstractImporterTest::image3DNoFile,
               &AbstractImporterTest::image3DOutOfRange,
+              &AbstractImporterTest::image3DZeroLevelsReported,
+              &AbstractImporterTest::image3DLevelOutOfRange,
 
               &AbstractImporterTest::importerState,
               &AbstractImporterTest::importerStateNotImplemented,
@@ -2613,6 +2643,10 @@ void AbstractImporterTest::image1D() {
         void doClose() override {}
 
         UnsignedInt doImage1DCount() const override { return 8; }
+        UnsignedInt doImage1DLevelCount(UnsignedInt id) override {
+            if(id == 7) return 3;
+            else return {};
+        }
         Int doImage1DForName(const std::string& name) override {
             if(name == "eighth") return 7;
             else return -1;
@@ -2621,20 +2655,18 @@ void AbstractImporterTest::image1D() {
             if(id == 7) return "eighth";
             else return {};
         }
-        Containers::Optional<ImageData1D> doImage1D(UnsignedInt id) override {
-            if(id == 7) return ImageData1D{PixelStorage{}, {}, {}, {}, &state};
+        Containers::Optional<ImageData1D> doImage1D(UnsignedInt id, UnsignedInt level) override {
+            if(id == 7 && level == 2) return ImageData1D{PixelStorage{}, {}, {}, {}, &state};
             else return {};
         }
     } importer;
 
-    std::ostringstream out;
-    Error redirectError{&out};
-
     CORRADE_COMPARE(importer.image1DCount(), 8);
+    CORRADE_COMPARE(importer.image1DLevelCount(7), 3);
     CORRADE_COMPARE(importer.image1DForName("eighth"), 7);
     CORRADE_COMPARE(importer.image1DName(7), "eighth");
 
-    auto data = importer.image1D(7);
+    auto data = importer.image1D(7, 2);
     CORRADE_VERIFY(data);
     CORRADE_COMPARE(data->importerState(), &state);
 }
@@ -2661,6 +2693,46 @@ void AbstractImporterTest::image1DCountNoFile() {
 
     importer.image1DCount();
     CORRADE_COMPARE(out.str(), "Trade::AbstractImporter::image1DCount(): no file opened\n");
+}
+
+void AbstractImporterTest::image1DLevelCountNotImplemented() {
+    struct: AbstractImporter {
+        Features doFeatures() const override { return {}; }
+        bool doIsOpened() const override { return true; }
+        void doClose() override {}
+
+        UnsignedInt doImage1DCount() const override { return 8; }
+    } importer;
+
+    CORRADE_COMPARE(importer.image1DLevelCount(7), 1);
+}
+
+void AbstractImporterTest::image1DLevelCountNoFile() {
+    struct: AbstractImporter {
+        Features doFeatures() const override { return {}; }
+        bool doIsOpened() const override { return false; }
+        void doClose() override {}
+    } importer;
+
+    std::ostringstream out;
+    Error redirectError{&out};
+
+    importer.image1DLevelCount(7);
+    CORRADE_COMPARE(out.str(), "Trade::AbstractImporter::image1DLevelCount(): no file opened\n");
+}
+
+void AbstractImporterTest::image1DLevelCountZero() {
+    struct: AbstractImporter {
+        Features doFeatures() const override { return {}; }
+        bool doIsOpened() const override { return true; }
+        void doClose() override {}
+
+        UnsignedInt doImage1DCount() const override { return 8; }
+        UnsignedInt doImage1DLevelCount(UnsignedInt) override { return 0; }
+    } importer;
+
+    /* This indicates an import error, no assertions should be fired */
+    CORRADE_COMPARE(importer.image1DLevelCount(7), 0);
 }
 
 void AbstractImporterTest::image1DForNameNotImplemented() {
@@ -2771,6 +2843,42 @@ void AbstractImporterTest::image1DOutOfRange() {
     CORRADE_COMPARE(out.str(), "Trade::AbstractImporter::image1D(): index out of range\n");
 }
 
+void AbstractImporterTest::image1DZeroLevelsReported() {
+    struct: AbstractImporter {
+        Features doFeatures() const override { return {}; }
+        bool doIsOpened() const override { return true; }
+        void doClose() override {}
+
+        UnsignedInt doImage1DCount() const override { return 8; }
+        UnsignedInt doImage1DLevelCount(UnsignedInt) override { return 0; }
+    } importer;
+
+    std::ostringstream out;
+    Error redirectError{&out};
+
+    importer.image1D(7); /* this calls doImage() as level == 0, then asserts */
+    CORRADE_VERIFY(!importer.image1D(7, 1)); /* this returns NullOpt */
+    CORRADE_COMPARE(out.str(),
+        "Trade::AbstractImporter::image1D(): not implemented\n"
+        "Trade::AbstractImporter::image1D(): image reported zero levels\n");
+}
+
+void AbstractImporterTest::image1DLevelOutOfRange() {
+    struct: AbstractImporter {
+        Features doFeatures() const override { return {}; }
+        bool doIsOpened() const override { return true; }
+        void doClose() override {}
+
+        UnsignedInt doImage1DCount() const override { return 8; }
+    } importer;
+
+    std::ostringstream out;
+    Error redirectError{&out};
+
+    importer.image1D(7, 1);
+    CORRADE_COMPARE(out.str(), "Trade::AbstractImporter::image1D(): level out of range\n");
+}
+
 void AbstractImporterTest::image2D() {
     struct: AbstractImporter {
         Features doFeatures() const override { return {}; }
@@ -2778,6 +2886,10 @@ void AbstractImporterTest::image2D() {
         void doClose() override {}
 
         UnsignedInt doImage2DCount() const override { return 8; }
+        UnsignedInt doImage2DLevelCount(UnsignedInt id) override {
+            if(id == 7) return 3;
+            else return {};
+        }
         Int doImage2DForName(const std::string& name) override {
             if(name == "eighth") return 7;
             else return -1;
@@ -2786,20 +2898,18 @@ void AbstractImporterTest::image2D() {
             if(id == 7) return "eighth";
             else return {};
         }
-        Containers::Optional<ImageData2D> doImage2D(UnsignedInt id) override {
-            if(id == 7) return ImageData2D{PixelStorage{}, {}, {}, {}, &state};
+        Containers::Optional<ImageData2D> doImage2D(UnsignedInt id, UnsignedInt level) override {
+            if(id == 7 && level == 2) return ImageData2D{PixelStorage{}, {}, {}, {}, &state};
             else return {};
         }
     } importer;
 
-    std::ostringstream out;
-    Error redirectError{&out};
-
     CORRADE_COMPARE(importer.image2DCount(), 8);
+    CORRADE_COMPARE(importer.image2DLevelCount(7), 3);
     CORRADE_COMPARE(importer.image2DForName("eighth"), 7);
     CORRADE_COMPARE(importer.image2DName(7), "eighth");
 
-    auto data = importer.image2D(7);
+    auto data = importer.image2D(7, 2);
     CORRADE_VERIFY(data);
     CORRADE_COMPARE(data->importerState(), &state);
 }
@@ -2826,6 +2936,46 @@ void AbstractImporterTest::image2DCountNoFile() {
 
     importer.image2DCount();
     CORRADE_COMPARE(out.str(), "Trade::AbstractImporter::image2DCount(): no file opened\n");
+}
+
+void AbstractImporterTest::image2DLevelCountNotImplemented() {
+    struct: AbstractImporter {
+        Features doFeatures() const override { return {}; }
+        bool doIsOpened() const override { return true; }
+        void doClose() override {}
+
+        UnsignedInt doImage2DCount() const override { return 8; }
+    } importer;
+
+    CORRADE_COMPARE(importer.image2DLevelCount(7), 1);
+}
+
+void AbstractImporterTest::image2DLevelCountNoFile() {
+    struct: AbstractImporter {
+        Features doFeatures() const override { return {}; }
+        bool doIsOpened() const override { return false; }
+        void doClose() override {}
+    } importer;
+
+    std::ostringstream out;
+    Error redirectError{&out};
+
+    importer.image2DLevelCount(7);
+    CORRADE_COMPARE(out.str(), "Trade::AbstractImporter::image2DLevelCount(): no file opened\n");
+}
+
+void AbstractImporterTest::image2DLevelCountZero() {
+    struct: AbstractImporter {
+        Features doFeatures() const override { return {}; }
+        bool doIsOpened() const override { return true; }
+        void doClose() override {}
+
+        UnsignedInt doImage2DCount() const override { return 8; }
+        UnsignedInt doImage2DLevelCount(UnsignedInt) override { return 0; }
+    } importer;
+
+    /* This indicates an import error, no assertions should be fired */
+    CORRADE_COMPARE(importer.image2DLevelCount(7), 0);
 }
 
 void AbstractImporterTest::image2DForNameNotImplemented() {
@@ -2936,6 +3086,42 @@ void AbstractImporterTest::image2DOutOfRange() {
     CORRADE_COMPARE(out.str(), "Trade::AbstractImporter::image2D(): index out of range\n");
 }
 
+void AbstractImporterTest::image2DZeroLevelsReported() {
+    struct: AbstractImporter {
+        Features doFeatures() const override { return {}; }
+        bool doIsOpened() const override { return true; }
+        void doClose() override {}
+
+        UnsignedInt doImage2DCount() const override { return 8; }
+        UnsignedInt doImage2DLevelCount(UnsignedInt) override { return 0; }
+    } importer;
+
+    std::ostringstream out;
+    Error redirectError{&out};
+
+    importer.image2D(7); /* this calls doImage() as level == 0, then asserts */
+    CORRADE_VERIFY(!importer.image2D(7, 1)); /* this returns NullOpt */
+    CORRADE_COMPARE(out.str(),
+        "Trade::AbstractImporter::image2D(): not implemented\n"
+        "Trade::AbstractImporter::image2D(): image reported zero levels\n");
+}
+
+void AbstractImporterTest::image2DLevelOutOfRange() {
+    struct: AbstractImporter {
+        Features doFeatures() const override { return {}; }
+        bool doIsOpened() const override { return true; }
+        void doClose() override {}
+
+        UnsignedInt doImage2DCount() const override { return 8; }
+    } importer;
+
+    std::ostringstream out;
+    Error redirectError{&out};
+
+    importer.image2D(7, 1);
+    CORRADE_COMPARE(out.str(), "Trade::AbstractImporter::image2D(): level out of range\n");
+}
+
 void AbstractImporterTest::image3D() {
     struct: AbstractImporter {
         Features doFeatures() const override { return {}; }
@@ -2943,6 +3129,10 @@ void AbstractImporterTest::image3D() {
         void doClose() override {}
 
         UnsignedInt doImage3DCount() const override { return 8; }
+        UnsignedInt doImage3DLevelCount(UnsignedInt id) override {
+            if(id == 7) return 3;
+            else return {};
+        }
         Int doImage3DForName(const std::string& name) override {
             if(name == "eighth") return 7;
             else return -1;
@@ -2951,20 +3141,18 @@ void AbstractImporterTest::image3D() {
             if(id == 7) return "eighth";
             else return {};
         }
-        Containers::Optional<ImageData3D> doImage3D(UnsignedInt id) override {
-            if(id == 7) return ImageData3D{PixelStorage{}, {}, {}, {}, &state};
+        Containers::Optional<ImageData3D> doImage3D(UnsignedInt id, UnsignedInt level) override {
+            if(id == 7 && level == 2) return ImageData3D{PixelStorage{}, {}, {}, {}, &state};
             else return {};
         }
     } importer;
 
-    std::ostringstream out;
-    Error redirectError{&out};
-
     CORRADE_COMPARE(importer.image3DCount(), 8);
+    CORRADE_COMPARE(importer.image3DLevelCount(7), 3);
     CORRADE_COMPARE(importer.image3DForName("eighth"), 7);
     CORRADE_COMPARE(importer.image3DName(7), "eighth");
 
-    auto data = importer.image3D(7);
+    auto data = importer.image3D(7, 2);
     CORRADE_VERIFY(data);
     CORRADE_COMPARE(data->importerState(), &state);
 }
@@ -2991,6 +3179,46 @@ void AbstractImporterTest::image3DCountNoFile() {
 
     importer.image3DCount();
     CORRADE_COMPARE(out.str(), "Trade::AbstractImporter::image3DCount(): no file opened\n");
+}
+
+void AbstractImporterTest::image3DLevelCountNotImplemented() {
+    struct: AbstractImporter {
+        Features doFeatures() const override { return {}; }
+        bool doIsOpened() const override { return true; }
+        void doClose() override {}
+
+        UnsignedInt doImage3DCount() const override { return 8; }
+    } importer;
+
+    CORRADE_COMPARE(importer.image3DLevelCount(7), 1);
+}
+
+void AbstractImporterTest::image3DLevelCountNoFile() {
+    struct: AbstractImporter {
+        Features doFeatures() const override { return {}; }
+        bool doIsOpened() const override { return false; }
+        void doClose() override {}
+    } importer;
+
+    std::ostringstream out;
+    Error redirectError{&out};
+
+    importer.image3DLevelCount(7);
+    CORRADE_COMPARE(out.str(), "Trade::AbstractImporter::image3DLevelCount(): no file opened\n");
+}
+
+void AbstractImporterTest::image3DLevelCountZero() {
+    struct: AbstractImporter {
+        Features doFeatures() const override { return {}; }
+        bool doIsOpened() const override { return true; }
+        void doClose() override {}
+
+        UnsignedInt doImage3DCount() const override { return 8; }
+        UnsignedInt doImage3DLevelCount(UnsignedInt) override { return 0; }
+    } importer;
+
+    /* This indicates an import error, no assertions should be fired */
+    CORRADE_COMPARE(importer.image3DLevelCount(7), 0);
 }
 
 void AbstractImporterTest::image3DForNameNotImplemented() {
@@ -3099,6 +3327,42 @@ void AbstractImporterTest::image3DOutOfRange() {
 
     importer.image3D(0);
     CORRADE_COMPARE(out.str(), "Trade::AbstractImporter::image3D(): index out of range\n");
+}
+
+void AbstractImporterTest::image3DZeroLevelsReported() {
+    struct: AbstractImporter {
+        Features doFeatures() const override { return {}; }
+        bool doIsOpened() const override { return true; }
+        void doClose() override {}
+
+        UnsignedInt doImage3DCount() const override { return 8; }
+        UnsignedInt doImage3DLevelCount(UnsignedInt) override { return 0; }
+    } importer;
+
+    std::ostringstream out;
+    Error redirectError{&out};
+
+    importer.image3D(7); /* this calls doImage() as level == 0, then asserts */
+    CORRADE_VERIFY(!importer.image3D(7, 1)); /* this returns NullOpt */
+    CORRADE_COMPARE(out.str(),
+        "Trade::AbstractImporter::image3D(): not implemented\n"
+        "Trade::AbstractImporter::image3D(): image reported zero levels\n");
+}
+
+void AbstractImporterTest::image3DLevelOutOfRange() {
+    struct: AbstractImporter {
+        Features doFeatures() const override { return {}; }
+        bool doIsOpened() const override { return true; }
+        void doClose() override {}
+
+        UnsignedInt doImage3DCount() const override { return 8; }
+    } importer;
+
+    std::ostringstream out;
+    Error redirectError{&out};
+
+    importer.image3D(7, 1);
+    CORRADE_COMPARE(out.str(), "Trade::AbstractImporter::image3D(): level out of range\n");
 }
 
 void AbstractImporterTest::importerState() {
