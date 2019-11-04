@@ -110,6 +110,12 @@ See also:
     @ref Platform::GlfwApplication::KeyEvent::Key::World2
 -   Added @ref Platform::EmscriptenApplication::KeyEvent::Key::Semicolon
 
+@subsubsection changelog-latest-new-trade Trade library
+
+-   A new, redesigned @ref Trade::MeshData class that allows much more flexible
+    access to vertex/index data without unnecessary allocations and data
+    conversions or copies
+
 @subsubsection changelog-latest-new-vk Vk library
 
 -   Updated Vulkan headers for version 1.2
