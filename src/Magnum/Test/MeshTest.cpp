@@ -29,6 +29,7 @@
 #include <Corrade/Utility/DebugStl.h>
 
 #include "Magnum/Mesh.h"
+#include "Magnum/Math/Vector4.h"
 
 namespace Magnum { namespace Test { namespace {
 
@@ -36,27 +37,39 @@ struct MeshTest: TestSuite::Tester {
     explicit MeshTest();
 
     void primitiveMapping();
+    void attributeTypeMapping();
     void indexTypeMapping();
 
+    void attributeTypeSize();
+    void attributeTypeSizeInvalid();
     void indexTypeSize();
     void indexTypeSizeInvalid();
 
     void debugPrimitive();
+    void debugAttributeType();
     void debugIndexType();
+
     void configurationPrimitive();
+    void configurationAttributeType();
     void configurationIndexType();
 };
 
 MeshTest::MeshTest() {
     addTests({&MeshTest::primitiveMapping,
+              &MeshTest::attributeTypeMapping,
               &MeshTest::indexTypeMapping,
 
+              &MeshTest::attributeTypeSize,
+              &MeshTest::attributeTypeSizeInvalid,
               &MeshTest::indexTypeSize,
               &MeshTest::indexTypeSizeInvalid,
 
               &MeshTest::debugPrimitive,
+              &MeshTest::debugAttributeType,
               &MeshTest::debugIndexType,
+
               &MeshTest::configurationPrimitive,
+              &MeshTest::configurationAttributeType,
               &MeshTest::configurationIndexType});
 }
 
@@ -98,6 +111,45 @@ void MeshTest::primitiveMapping() {
     CORRADE_COMPARE(firstUnhandled, 0xff);
 }
 
+void MeshTest::attributeTypeMapping() {
+    /* This goes through the first 16 bits, which should be enough. Going
+       through 32 bits takes 8 seconds, too much. */
+    UnsignedInt firstUnhandled = 0xffff;
+    UnsignedInt nextHandled = 1; /* 0 is an invalid type */
+    for(UnsignedInt i = 1; i <= 0xffff; ++i) {
+        const auto type = MeshAttributeType(i);
+        /* Each case verifies:
+           - that the entries are ordered by number by comparing a function to
+             expected result (so insertion here is done in proper place)
+           - that there was no gap (unhandled value inside the range) */
+        #ifdef __GNUC__
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic error "-Wswitch"
+        #endif
+        switch(type) {
+            #define _c(type) \
+                case MeshAttributeType::type: \
+                    CORRADE_COMPARE(Utility::ConfigurationValue<MeshAttributeType>::toString(MeshAttributeType::type, {}), #type); \
+                    CORRADE_COMPARE(nextHandled, i); \
+                    CORRADE_COMPARE(firstUnhandled, 0xffff); \
+                    ++nextHandled; \
+                    continue;
+            #include "Magnum/Implementation/meshAttributeTypeMapping.hpp"
+            #undef _c
+        }
+        #ifdef __GNUC__
+        #pragma GCC diagnostic pop
+        #endif
+
+        /* Not handled by any value, remember -- we might either be at the end
+           of the enum range (which is okay) or some value might be unhandled
+           here */
+        firstUnhandled = i;
+    }
+
+    CORRADE_COMPARE(firstUnhandled, 0xffff);
+}
+
 void MeshTest::indexTypeMapping() {
     /* This goes through the first 8 bits, which should be enough. */
     UnsignedInt firstUnhandled = 0xff;
@@ -136,6 +188,24 @@ void MeshTest::indexTypeMapping() {
     CORRADE_COMPARE(firstUnhandled, 0xff);
 }
 
+void MeshTest::attributeTypeSize() {
+    CORRADE_COMPARE(meshAttributeTypeSize(MeshAttributeType::Vector2), sizeof(Vector2));
+    CORRADE_COMPARE(meshAttributeTypeSize(MeshAttributeType::Vector3), sizeof(Vector3));
+    CORRADE_COMPARE(meshAttributeTypeSize(MeshAttributeType::Vector4), sizeof(Vector4));
+}
+
+void MeshTest::attributeTypeSizeInvalid() {
+    std::ostringstream out;
+    Error redirectError{&out};
+
+    meshAttributeTypeSize(MeshAttributeType{});
+    meshAttributeTypeSize(MeshAttributeType(0xdead));
+
+    CORRADE_COMPARE(out.str(),
+        "meshAttributeTypeSize(): invalid type MeshAttributeType(0x0)\n"
+        "meshAttributeTypeSize(): invalid type MeshAttributeType(0xdead)\n");
+}
+
 void MeshTest::indexTypeSize() {
     CORRADE_COMPARE(meshIndexTypeSize(MeshIndexType::UnsignedByte), 1);
     CORRADE_COMPARE(meshIndexTypeSize(MeshIndexType::UnsignedShort), 2);
@@ -160,6 +230,12 @@ void MeshTest::debugPrimitive() {
     CORRADE_COMPARE(o.str(), "MeshPrimitive::TriangleFan MeshPrimitive(0xdead)\n");
 }
 
+void MeshTest::debugAttributeType() {
+    std::ostringstream o;
+    Debug(&o) << MeshAttributeType::Vector4 << MeshAttributeType(0xdead);
+    CORRADE_COMPARE(o.str(), "MeshAttributeType::Vector4 MeshAttributeType(0xdead)\n");
+}
+
 void MeshTest::debugIndexType() {
     std::ostringstream o;
     Debug(&o) << MeshIndexType::UnsignedShort << MeshIndexType(0xdead);
@@ -180,6 +256,22 @@ void MeshTest::configurationPrimitive() {
     c.setValue("invalid", MeshPrimitive(0xdead));
     CORRADE_COMPARE(c.value("invalid"), "");
     CORRADE_COMPARE(c.value<MeshPrimitive>("invalid"), MeshPrimitive{});
+}
+
+void MeshTest::configurationAttributeType() {
+    Utility::Configuration c;
+
+    c.setValue("type", MeshAttributeType::Vector3);
+    CORRADE_COMPARE(c.value("type"), "Vector3");
+    CORRADE_COMPARE(c.value<MeshAttributeType>("type"), MeshAttributeType::Vector3);
+
+    c.setValue("zero", MeshAttributeType{});
+    CORRADE_COMPARE(c.value("zero"), "");
+    CORRADE_COMPARE(c.value<MeshAttributeType>("zero"), MeshAttributeType{});
+
+    c.setValue("invalid", MeshAttributeType(0xdead));
+    CORRADE_COMPARE(c.value("invalid"), "");
+    CORRADE_COMPARE(c.value<MeshAttributeType>("invalid"), MeshAttributeType{});
 }
 
 void MeshTest::configurationIndexType() {

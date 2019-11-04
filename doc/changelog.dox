@@ -43,6 +43,8 @@ See also:
 
 @subsection changelog-latest-new New features
 
+-   New @ref MeshAttributeType enum for mesh attribute types
+
 @subsubsection changelog-latest-new-gl GL library
 
 -   Exposed new entry points. Note that no wrapper API in the @ref GL namespace

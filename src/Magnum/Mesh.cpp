@@ -32,6 +32,26 @@
 
 namespace Magnum {
 
+UnsignedInt meshAttributeTypeSize(MeshAttributeType type) {
+    switch(type) {
+        case MeshAttributeType::UnsignedByte:
+        case MeshAttributeType::Byte:
+            return 1;
+        case MeshAttributeType::UnsignedShort:
+        case MeshAttributeType::Short:
+            return 2;
+        case MeshAttributeType::UnsignedInt:
+        case MeshAttributeType::Int:
+        case MeshAttributeType::Float:
+            return 4;
+        case MeshAttributeType::Vector2: return 8;
+        case MeshAttributeType::Vector3: return 12;
+        case MeshAttributeType::Vector4: return 16;
+    }
+
+    CORRADE_ASSERT(false, "meshAttributeTypeSize(): invalid type" << type, {});
+}
+
 UnsignedInt meshIndexTypeSize(MeshIndexType type) {
     switch(type) {
         case MeshIndexType::UnsignedByte: return 1;
@@ -58,6 +78,26 @@ Debug& operator<<(Debug& debug, const MeshPrimitive value) {
 
     if(UnsignedInt(value) - 1 < Containers::arraySize(MeshPrimitiveNames)) {
         return debug << "::" << Debug::nospace << MeshPrimitiveNames[UnsignedInt(value) - 1];
+    }
+
+    return debug << "(" << Debug::nospace << reinterpret_cast<void*>(UnsignedInt(value)) << Debug::nospace << ")";
+}
+
+namespace {
+
+constexpr const char* MeshAttributeTypeNames[] {
+    #define _c(type) #type,
+    #include "Magnum/Implementation/meshAttributeTypeMapping.hpp"
+    #undef _c
+};
+
+}
+
+Debug& operator<<(Debug& debug, const MeshAttributeType value) {
+    debug << "MeshAttributeType" << Debug::nospace;
+
+    if(UnsignedInt(value) - 1 < Containers::arraySize(MeshAttributeTypeNames)) {
+        return debug << "::" << Debug::nospace << MeshAttributeTypeNames[UnsignedInt(value) - 1];
     }
 
     return debug << "(" << Debug::nospace << reinterpret_cast<void*>(UnsignedInt(value)) << Debug::nospace << ")";
@@ -98,6 +138,20 @@ std::string ConfigurationValue<Magnum::MeshPrimitive>::toString(Magnum::MeshPrim
 Magnum::MeshPrimitive ConfigurationValue<Magnum::MeshPrimitive>::fromString(const std::string& stringValue, ConfigurationValueFlags) {
     for(std::size_t i = 0; i != Containers::arraySize(Magnum::MeshPrimitiveNames); ++i)
         if(stringValue == Magnum::MeshPrimitiveNames[i]) return Magnum::MeshPrimitive(i + 1);
+
+    return {};
+}
+
+std::string ConfigurationValue<Magnum::MeshAttributeType>::toString(Magnum::MeshAttributeType value, ConfigurationValueFlags) {
+    if(Magnum::UnsignedInt(value) - 1 < Containers::arraySize(Magnum::MeshAttributeTypeNames))
+        return Magnum::MeshAttributeTypeNames[Magnum::UnsignedInt(value) - 1];
+
+    return {};
+}
+
+Magnum::MeshAttributeType ConfigurationValue<Magnum::MeshAttributeType>::fromString(const std::string& stringValue, ConfigurationValueFlags) {
+    for(std::size_t i = 0; i != Containers::arraySize(Magnum::MeshAttributeTypeNames); ++i)
+        if(stringValue == Magnum::MeshAttributeTypeNames[i]) return Magnum::MeshAttributeType(i + 1);
 
     return {};
 }

@@ -116,6 +116,55 @@ enum class MeshPrimitive: UnsignedInt {
 MAGNUM_EXPORT Debug& operator<<(Debug& debug, MeshPrimitive value);
 
 /**
+@brief Mesh attribute type
+@m_since_latest
+
+Like @ref PixelFormat, but for mesh attributes --- including double-precision
+types and matrices.
+@see @ref Trade::MeshData, @ref Trade::MeshAttributeData,
+    @ref Trade::MeshAttributeName
+*/
+enum class MeshAttributeType: UnsignedInt {
+    /* Zero reserved for an invalid type (but not being a named value) */
+
+    UnsignedByte = 1,   /**< @ref UnsignedByte */
+    Byte,               /**< @ref Byte */
+    UnsignedShort,      /**< @ref UnsignedShort */
+    Short,              /**< @ref Short */
+    UnsignedInt,        /**< @ref UnsignedInt */
+    Int,                /**< @ref Int */
+    Float,              /**< @ref Float */
+
+    /**
+     * @ref Vector2. Usually used for 2D positions and 2D texture coordinates.
+     */
+    Vector2,
+
+    /**
+     * @ref Vector3 or @ref Color3. Usually used for 3D positions, normals and
+     * three-component colors.
+     */
+    Vector3,
+
+    /**
+     * @ref Vector4 or @ref Color4. Usually used for four-component colors.
+     */
+    Vector4
+};
+
+/**
+@brief Size of given mesh attribute type
+@m_since_latest
+*/
+MAGNUM_EXPORT UnsignedInt meshAttributeTypeSize(MeshAttributeType type);
+
+/**
+@debugoperatorenum{MeshAttributeType}
+@m_since_latest
+*/
+MAGNUM_EXPORT Debug& operator<<(Debug& debug, MeshAttributeType value);
+
+/**
 @brief Mesh index type
 
 In case of OpenGL, corresponds to @ref GL::MeshIndexType and is convertible to
@@ -185,6 +234,28 @@ template<> struct MAGNUM_EXPORT ConfigurationValue<Magnum::MeshPrimitive> {
      * If the value is invalid, returns a zero (invalid) primitive.
      */
     static Magnum::MeshPrimitive fromString(const std::string& stringValue, ConfigurationValueFlags);
+};
+
+/**
+@configurationvalue{Magnum::MeshAttributeType}
+@m_since_latest
+*/
+template<> struct MAGNUM_EXPORT ConfigurationValue<Magnum::MeshAttributeType> {
+    ConfigurationValue() = delete;
+
+    /**
+     * @brief Write enum value as string
+     *
+     * If the value is invalid, returns empty string.
+     */
+    static std::string toString(Magnum::MeshAttributeType value, ConfigurationValueFlags);
+
+    /**
+     * @brief Read enum value as string
+     *
+     * If the value is invalid, returns a zero (invalid) type.
+     */
+    static Magnum::MeshAttributeType fromString(const std::string& stringValue, ConfigurationValueFlags);
 };
 
 /** @configurationvalue{Magnum::MeshIndexType} */
