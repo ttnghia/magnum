@@ -159,8 +159,10 @@ void MeshTest::mapPrimitiveInvalid() {
     std::ostringstream out;
     Error redirectError{&out};
 
+    meshPrimitive(Magnum::MeshPrimitive{});
     meshPrimitive(Magnum::MeshPrimitive(0x123));
     CORRADE_COMPARE(out.str(),
+        "GL::meshPrimitive(): invalid primitive MeshPrimitive(0x0)\n"
         "GL::meshPrimitive(): invalid primitive MeshPrimitive(0x123)\n");
 }
 
@@ -174,8 +176,10 @@ void MeshTest::mapIndexTypeInvalid() {
     std::ostringstream out;
     Error redirectError{&out};
 
+    meshIndexType(Magnum::MeshIndexType(0x0));
     meshIndexType(Magnum::MeshIndexType(0x123));
     CORRADE_COMPARE(out.str(),
+        "GL::meshIndexType(): invalid type MeshIndexType(0x0)\n"
         "GL::meshIndexType(): invalid type MeshIndexType(0x123)\n");
 }
 
