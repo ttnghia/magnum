@@ -43,9 +43,14 @@ namespace Magnum { namespace Trade {
 @brief Mesh attribute name
 @m_since_latest
 
-@see @ref MeshData, @ref MeshAttributeData, @ref MeshAttributeType
+@see @ref MeshData, @ref MeshAttributeData, @ref MeshAttributeType,
+    @ref AbstractImporter::meshAttributeForName(),
+    @ref AbstractImporter::meshAttributeName()
 */
 enum class MeshAttributeName: UnsignedByte {
+    /* 0 reserved for an invalid value (returned from
+       AbstractImporter::meshAttributeForName()) */
+
     /**
      * Position. Type is usually @ref Magnum::Vector2 "Vector2" for 2D and
      * @ref Magnum::Vector3 "Vector3" for 3D. Corresponds to
@@ -53,7 +58,7 @@ enum class MeshAttributeName: UnsignedByte {
      * @see @ref MeshAttributeType::Vector2, @ref MeshAttributeType::Vector3,
      *      @ref MeshData::positions2D(), @ref MeshData::positions3D()
      */
-    Position,
+    Position = 1,
 
     /**
      * Normal. Type is usually @ref Magnum::Vector3 "Vector3". Corresponds to
@@ -440,7 +445,9 @@ class MAGNUM_TRADE_EXPORT MeshData {
          * @brief Attribute name
          *
          * The @p id is expected to be smaller than @ref attributeCount() const.
-         * @see @ref attributeType(), @ref isMeshAttributeNameCustom()
+         * @see @ref attributeType(), @ref isMeshAttributeNameCustom(),
+         *      @ref AbstractImporter::meshAttributeForName(),
+         *      @ref AbstractImporter::meshAttributeName()
          */
         MeshAttributeName attributeName(UnsignedInt id) const;
 
@@ -643,6 +650,11 @@ class MAGNUM_TRADE_EXPORT MeshData {
         const void* importerState() const { return _importerState; }
 
     private:
+        /* For custom deleter checks. Not done in the constructors here because
+           the restriction is pointless when used outside of plugin
+           implementations. */
+        friend AbstractImporter;
+
         UnsignedInt attributeFor(MeshAttributeName name, UnsignedInt id) const;
 
         UnsignedInt _vertexCount;

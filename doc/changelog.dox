@@ -114,7 +114,8 @@ See also:
 
 -   A new, redesigned @ref Trade::MeshData class that allows much more flexible
     access to vertex/index data without unnecessary allocations and data
-    conversions or copies
+    conversions or copies. Importers expose it through the new
+    @ref Trade::AbstractImporter::mesh() family of APIs.
 
 @subsubsection changelog-latest-new-vk Vk library
 
