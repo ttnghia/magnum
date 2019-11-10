@@ -48,7 +48,7 @@ convertible to it using @ref Vk::vkPrimitiveTopology(). See documentation of
 each value for more information about the mapping. Note that not every mode is available there, use @ref Vk::hasVkPrimitiveTopology() to check for its
 presence.
 */
-enum class MeshPrimitive: UnsignedInt {
+enum class MeshPrimitive: UnsignedByte {
     /* Zero reserved for an invalid type (but not being a named value) */
 
     /**
@@ -177,7 +177,7 @@ for more information about the mapping. Note that not every type is available
 there, use @ref Vk::hasVkIndexType() to check for its presence.
 @see @ref meshIndexTypeSize()
 */
-enum class MeshIndexType: UnsignedInt {
+enum class MeshIndexType: UnsignedByte {
     /* Zero reserved for an invalid type (but not being a named value) */
 
     /**
