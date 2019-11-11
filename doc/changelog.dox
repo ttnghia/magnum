@@ -116,6 +116,11 @@ See also:
     access to vertex/index data without unnecessary allocations and data
     conversions or copies. Importers expose it through the new
     @ref Trade::AbstractImporter::mesh() family of APIs.
+-   The @ref Trade::AnimationData class received support for mutable data
+    access with new constructors and the
+    @ref Trade::AnimationData::mutableData() "mutableData()" and
+    @ref Trade::AnimationData::mutableTrack() "mutableTrack()" accessors. See
+    @ref Trade-AnimationData-usage-mutable for more information.
 
 @subsubsection changelog-latest-new-vk Vk library
 
@@ -277,7 +282,9 @@ See also:
     values it references. Existing code needs to be changed to say
     @cpp TrackView<const K, const V> @ce instead of @cpp TrackView<K, V> @ce.
     Following this change, @ref Trade::AnimationData now also return instances
-    with @cpp const @ce types.
+    with @cpp const @ce types and the non-const
+    @ref Trade::AnimationData::data() was renamed to
+    @ref Trade::AnimationData::mutableData() "mutableData()".
 -   @ref Math::Matrix3::scaling() const and @ref Math::Matrix4::scaling() const
     now return a signed scaling vector instead of unsigned in order to prevent
     information loss. To restore the old behavior, apply @ref Math::abs() on
