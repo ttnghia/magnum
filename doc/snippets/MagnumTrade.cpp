@@ -266,6 +266,21 @@ if(data.isIndexed()) {
 #endif
 
 {
+Trade::MeshData data{MeshPrimitive::Points, 0};
+/* [MeshData-usage-mutable] */
+/* Check prerequisites */
+if(!(data.vertexDataFlags() & Trade::DataFlag::Mutable) ||
+   !data.hasAttribute(Trade::MeshAttributeName::Position) ||
+   data.attributeType(Trade::MeshAttributeName::Position) != MeshAttributeType::Vector3)
+    Fatal{} << "Oh well";
+
+/* Scale the mesh two times */
+MeshTools::transformPointsInPlace(Matrix4::scaling(Vector3{2.0f}),
+    data.mutableAttribute<Vector3>(Trade::MeshAttributeName::Position));
+/* [MeshData-usage-mutable] */
+}
+
+{
 Trade::MeshData2D& foo();
 Trade::MeshData2D& data = foo();
 /* [MeshData2D-transform] */
