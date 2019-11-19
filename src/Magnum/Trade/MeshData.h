@@ -174,19 +174,27 @@ class MAGNUM_TRADE_EXPORT MeshIndexData {
         explicit MeshIndexData(MeshIndexType type, Containers::ArrayView<const void> data) noexcept;
 
         /** @brief Construct with unsigned byte indices */
-        explicit MeshIndexData(Containers::ArrayView<const UnsignedByte> data) noexcept: MeshIndexData{MeshIndexType::UnsignedByte, data} {}
+        constexpr explicit MeshIndexData(Containers::ArrayView<const UnsignedByte> data) noexcept: MeshIndexData{MeshIndexType::UnsignedByte, data, nullptr} {}
 
         /** @brief Construct with unsigned short indices */
-        explicit MeshIndexData(Containers::ArrayView<const UnsignedShort> data) noexcept: MeshIndexData{MeshIndexType::UnsignedShort, data} {}
+        constexpr explicit MeshIndexData(Containers::ArrayView<const UnsignedShort> data) noexcept: MeshIndexData{MeshIndexType::UnsignedShort, data, nullptr} {}
 
         /** @brief Construct with unsigned int indices */
-        explicit MeshIndexData(Containers::ArrayView<const UnsignedInt> data) noexcept: MeshIndexData{MeshIndexType::UnsignedInt, data} {}
+        constexpr explicit MeshIndexData(Containers::ArrayView<const UnsignedInt> data) noexcept: MeshIndexData{MeshIndexType::UnsignedInt, data, nullptr} {}
 
     private:
+        /* Contains an assert common for all constexpr constructor, nullptr_t
+           to disambiguate from the public constructor of the same signature --
+           can't delegate into that one, because it checks against
+           meshIndexTypeSize() that's not constexpr, and since we come from a
+           template, we don't need that check anyway */
+        constexpr explicit MeshIndexData(MeshIndexType type, Containers::ArrayView<const void> data, std::nullptr_t);
+
         /* Not prefixed with _ because we use them like public in MeshData */
         friend MeshData;
         MeshIndexType type;
-        Containers::ArrayView<const char> data;
+        /* Void so the constructors can be constexpr */
+        Containers::ArrayView<const void> data;
 };
 
 /**
@@ -994,6 +1002,10 @@ namespace Implementation {
     /* LCOV_EXCL_STOP */
 }
 #endif
+
+constexpr MeshIndexData::MeshIndexData(MeshIndexType type, Containers::ArrayView<const void> data, void*):
+    type{type},
+    data{(CORRADE_CONSTEXPR_ASSERT(!data.empty(), "Trade::MeshIndexData: index array can't be empty, create a non-indexed mesh instead"), data)} {}
 
 template<class T> MeshAttributeData::MeshAttributeData(MeshAttributeName name, const Containers::StridedArrayView1D<T>& data) noexcept: MeshAttributeData{name, Implementation::meshAttributeTypeFor<typename std::remove_const<T>::type>(), Containers::arrayCast<const char>(data)} {}
 
