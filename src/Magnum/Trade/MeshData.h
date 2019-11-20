@@ -213,7 +213,7 @@ class MAGNUM_TRADE_EXPORT MeshAttributeData {
          * initialization of the attribute array for @ref MeshData, expected to
          * be replaced with concrete values later.
          */
-        explicit MeshAttributeData() noexcept: name{}, type{}, data{} {}
+        constexpr explicit MeshAttributeData() noexcept: name{}, type{}, data{} {}
 
         /**
          * @brief Type-erased constructor
@@ -224,7 +224,7 @@ class MAGNUM_TRADE_EXPORT MeshAttributeData {
          * Expects that @p data stride is large enough to fit @p type and that
          * @p type corresponds to @p name.
          */
-        explicit MeshAttributeData(MeshAttributeName name, MeshAttributeType type, const Containers::StridedArrayView1D<const char>& data) noexcept;
+        explicit MeshAttributeData(MeshAttributeName name, MeshAttributeType type, const Containers::StridedArrayView1D<const void>& data) noexcept;
 
         /**
          * @brief Constructor
@@ -232,20 +232,22 @@ class MAGNUM_TRADE_EXPORT MeshAttributeData {
          * @param data      Attribute data
          *
          * Detectes @ref MeshAttributeType based on @p T and calls
-         * @ref MeshAttributeData(MeshAttributeName, MeshAttributeType, const Containers::StridedArrayView1D<const char>&).
+         * @ref MeshAttributeData(MeshAttributeName, MeshAttributeType, const Containers::StridedArrayView1D<const void>&).
          */
-        template<class T> explicit MeshAttributeData(MeshAttributeName name, const Containers::StridedArrayView1D<T>& data) noexcept;
+        template<class T> constexpr explicit MeshAttributeData(MeshAttributeName name, const Containers::StridedArrayView1D<T>& data) noexcept;
 
         /** @overload */
-        template<class T> explicit MeshAttributeData(MeshAttributeName name, const Containers::ArrayView<T>& data) noexcept: MeshAttributeData{name, Containers::stridedArrayView(data)} {}
+        template<class T> constexpr explicit MeshAttributeData(MeshAttributeName name, const Containers::ArrayView<T>& data) noexcept: MeshAttributeData{name, Containers::stridedArrayView(data)} {}
 
     private:
+        constexpr explicit MeshAttributeData(MeshAttributeName name, MeshAttributeType type, const Containers::StridedArrayView1D<const void>& data, std::nullptr_t) noexcept;
+
         /* Not prefixed with _ because we use them like public in MeshData */
         friend MeshData;
         MeshAttributeName name;
         /* Here's some room for flags */
         MeshAttributeType type;
-        Containers::StridedArrayView1D<const char> data;
+        Containers::StridedArrayView1D<const void> data;
 };
 
 /** @relatesalso MeshAttributeData
@@ -1003,11 +1005,26 @@ namespace Implementation {
 }
 #endif
 
-constexpr MeshIndexData::MeshIndexData(MeshIndexType type, Containers::ArrayView<const void> data, void*):
-    type{type},
-    data{(CORRADE_CONSTEXPR_ASSERT(!data.empty(), "Trade::MeshIndexData: index array can't be empty, create a non-indexed mesh instead"), data)} {}
+constexpr MeshIndexData::MeshIndexData(const MeshIndexType type, const Containers::ArrayView<const void> data, std::nullptr_t):
+    type{type}, data{(CORRADE_CONSTEXPR_ASSERT(!data.empty(), "Trade::MeshIndexData: index array can't be empty, create a non-indexed mesh instead"), data)} {}
 
-template<class T> MeshAttributeData::MeshAttributeData(MeshAttributeName name, const Containers::StridedArrayView1D<T>& data) noexcept: MeshAttributeData{name, Implementation::meshAttributeTypeFor<typename std::remove_const<T>::type>(), Containers::arrayCast<const char>(data)} {}
+constexpr MeshAttributeData::MeshAttributeData(const MeshAttributeName name, const MeshAttributeType type, const Containers::StridedArrayView1D<const void>& data, std::nullptr_t) noexcept:
+    name{name},  type{type}, data{(CORRADE_CONSTEXPR_ASSERT(
+        (name == MeshAttributeName::Position &&
+            (type == MeshAttributeType::Vector2 ||
+             type == MeshAttributeType::Vector3)) ||
+        (name == MeshAttributeName::Normal &&
+            (type == MeshAttributeType::Vector3)) ||
+        (name == MeshAttributeName::Color &&
+            (type == MeshAttributeType::Vector3 ||
+             type == MeshAttributeType::Vector4)) ||
+        (name == MeshAttributeName::TextureCoordinates &&
+            (type == MeshAttributeType::Vector2)) ||
+        isMeshAttributeNameCustom(name) /* can be any type */,
+        "Trade::MeshAttributeData:" << type << "is not a valid type for" << name), data)}
+    {}
+
+template<class T> constexpr MeshAttributeData::MeshAttributeData(MeshAttributeName name, const Containers::StridedArrayView1D<T>& data) noexcept: MeshAttributeData{name, Implementation::meshAttributeTypeFor<typename std::remove_const<T>::type>(), data, nullptr} {}
 
 template<class T> Containers::ArrayView<const T> MeshData::indices() const {
     CORRADE_ASSERT(isIndexed(),
