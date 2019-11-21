@@ -25,8 +25,9 @@
 
 #include "Compile.h"
 
+#include <Corrade/Containers/Optional.h>
 #include <Corrade/Containers/StridedArrayView.h>
-#include <Corrade/Containers/ArrayViewStl.h> /** @todo remove once MeshData is sane */
+#include <Corrade/Containers/ArrayViewStl.h> /** @todo remove once MeshDataXD is gone */
 
 #include "Magnum/GL/Buffer.h"
 #include "Magnum/GL/Mesh.h"
@@ -36,6 +37,7 @@
 #include "Magnum/MeshTools/GenerateNormals.h"
 #include "Magnum/MeshTools/Duplicate.h"
 #include "Magnum/MeshTools/Interleave.h"
+#include "Magnum/Trade/MeshData.h"
 #include "Magnum/Trade/MeshData2D.h"
 #include "Magnum/Trade/MeshData3D.h"
 
@@ -44,6 +46,153 @@
 #include "Magnum/Shaders/Generic.h"
 
 namespace Magnum { namespace MeshTools {
+
+GL::Mesh compile(const Trade::MeshData& meshData, CompileFlags flags) {
+    /* If we want to generate normals, prepare a new mesh data and recurse,
+       with the flags unset */
+    if(meshData.primitive() == MeshPrimitive::Triangles && (flags & (CompileFlag::GenerateFlatNormals|CompileFlag::GenerateSmoothNormals))) {
+        CORRADE_ASSERT(meshData.attributeCount(Trade::MeshAttributeName::Position),
+            "MeshTools::compile(): the mesh has no positions, can't generate normals", GL::Mesh{});
+        /* Right now this could fire only if we have 2D positions, which is
+           unlikely; in the future it might fire once packed types are added */
+        CORRADE_ASSERT(meshData.attributeType(Trade::MeshAttributeName::Position) == MeshAttributeType::Vector3,
+            "MeshTools::compile(): can't generate normals for positions of type" << meshData.attributeType(Trade::MeshAttributeName::Position), GL::Mesh{});
+
+        /* If the data already have a normal array, reuse its location,
+           otherwise mix in an extra one */
+        Trade::MeshAttributeData normalAttribute;
+        Containers::ArrayView<const Trade::MeshAttributeData> extra;
+        if(!meshData.hasAttribute(Trade::MeshAttributeName::Normal)) {
+            normalAttribute = Trade::MeshAttributeData{
+                Trade::MeshAttributeName::Normal, MeshAttributeType::Vector3,
+                nullptr};
+            extra = {&normalAttribute, 1};
+        /* If we reuse a normal location, expect correct type. Again this won't
+           fire now, but might in the future once packed types are added */
+        } else CORRADE_ASSERT(meshData.attributeType(Trade::MeshAttributeName::Normal) == MeshAttributeType::Vector3,
+            "MeshTools::compile(): can't generate normals into type", GL::Mesh{});
+
+        /* If we want flat normals, we need to first duplicate everything using
+           the index buffer. Otherwise just interleave the potential extra
+           normal attribute in. */
+        Trade::MeshData generated{MeshPrimitive::Points, 0};
+        if(flags & CompileFlag::GenerateFlatNormals && meshData.isIndexed())
+            generated = duplicate(meshData, extra);
+        else
+            generated = interleave(meshData, extra);
+
+        /* Generate the normals. If we don't have the index buffer, we can only
+           generate flat ones. */
+        if(flags & CompileFlag::GenerateFlatNormals || !meshData.isIndexed())
+            generateFlatNormalsInto(
+                generated.attribute<Vector3>(Trade::MeshAttributeName::Position),
+                generated.mutableAttribute<Vector3>(Trade::MeshAttributeName::Normal));
+        else
+            generateSmoothNormalsInto(generated.indices(),
+                generated.attribute<Vector3>(Trade::MeshAttributeName::Position),
+                generated.mutableAttribute<Vector3>(Trade::MeshAttributeName::Normal));
+
+        return compile(generated, flags & ~(CompileFlag::GenerateFlatNormals|CompileFlag::GenerateSmoothNormals));
+    }
+
+    flags &= ~(CompileFlag::GenerateFlatNormals|CompileFlag::GenerateSmoothNormals);
+    CORRADE_INTERNAL_ASSERT(!flags);
+    return compile(meshData);
+}
+
+GL::Mesh compile(const Trade::MeshData& meshData) {
+    GL::Buffer indices{NoCreate};
+    if(meshData.isIndexed()) {
+        indices = GL::Buffer{GL::Buffer::TargetHint::ElementArray};
+        indices.setData(meshData.indexData());
+    }
+
+    GL::Buffer vertices{GL::Buffer::TargetHint::Array};
+    vertices.setData(meshData.vertexData());
+
+    return compile(meshData, std::move(indices), std::move(vertices));
+}
+
+GL::Mesh compile(const Trade::MeshData& meshData, GL::Buffer& indices, GL::Buffer& vertices) {
+    return compile(meshData, GL::Buffer::wrap(indices.id(), GL::Buffer::TargetHint::ElementArray), GL::Buffer::wrap(vertices.id(), GL::Buffer::TargetHint::Array));
+}
+
+GL::Mesh compile(const Trade::MeshData& meshData, GL::Buffer& indices, GL::Buffer&& vertices) {
+    return compile(meshData, GL::Buffer::wrap(indices.id(), GL::Buffer::TargetHint::ElementArray), std::move(vertices));
+}
+
+GL::Mesh compile(const Trade::MeshData& meshData, GL::Buffer&& indices, GL::Buffer& vertices) {
+    return compile(meshData, std::move(indices), GL::Buffer::wrap(vertices.id(), GL::Buffer::TargetHint::Array));
+}
+
+GL::Mesh compile(const Trade::MeshData& meshData, GL::Buffer&& indices, GL::Buffer&& vertices) {
+    CORRADE_ASSERT((!meshData.isIndexed() || indices.id()) && vertices.id(),
+        "MeshTools::compile(): invalid external buffer(s)", GL::Mesh{});
+
+    /* Basics */
+    GL::Mesh mesh;
+    mesh.setPrimitive(meshData.primitive());
+
+    /* Vertex data */
+    GL::Buffer verticesRef = GL::Buffer::wrap(vertices.id(), GL::Buffer::TargetHint::Array);
+    for(UnsignedInt i = 0; i != meshData.attributeCount(); ++i) {
+        Containers::Optional<GL::DynamicAttribute> attribute;
+        switch(meshData.attributeName(i)) {
+            case Trade::MeshAttributeName::Position:
+                if(meshData.attributeType(i) == MeshAttributeType::Vector2)
+                    attribute.emplace(Shaders::Generic2D::Position{});
+                else if(meshData.attributeType(i) == MeshAttributeType::Vector3)
+                    attribute.emplace(Shaders::Generic3D::Position{});
+                else CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
+                break;
+            case Trade::MeshAttributeName::Normal:
+                CORRADE_INTERNAL_ASSERT(meshData.attributeType(i) == MeshAttributeType::Vector3);
+                attribute.emplace(Shaders::Generic3D::Normal{});
+                break;
+            case Trade::MeshAttributeName::TextureCoordinates:
+                CORRADE_INTERNAL_ASSERT(meshData.attributeType(i) == MeshAttributeType::Vector2);
+                /** @todo have Generic2D derived from Generic that has all
+                    attribute definitions common for 2D and 3D */
+                attribute.emplace(Shaders::Generic2D::TextureCoordinates{});
+                break;
+            case Trade::MeshAttributeName::Color:
+                /** @todo have Generic2D derived from Generic that has all
+                    attribute definitions common for 2D and 3D */
+                if(meshData.attributeType(i) == MeshAttributeType::Vector3)
+                    attribute.emplace(Shaders::Generic2D::Color3{});
+                else if(meshData.attributeType(i) == MeshAttributeType::Vector4)
+                    attribute.emplace(Shaders::Generic2D::Color4{});
+                else CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
+                break;
+
+            /* So it doesn't yell that we didn't handle a known attribute */
+            case Trade::MeshAttributeName::Custom: break; /* LCOV_EXCL_LINE */
+        }
+
+        if(!attribute) {
+            Warning{} << "MeshTools::compile(): ignoring unknown attribute" << meshData.attributeName(i);
+            continue;
+        }
+
+        /* For the first attribute move the buffer in, for all others use the
+           reference */
+        /** @todo FFS! the dynamic variant needs an enable_if, i don't want to
+            cast like this */
+        if(vertices.id()) mesh.addVertexBuffer(std::move(vertices),
+            GLintptr(meshData.attributeOffset(i)),
+            GLsizei(meshData.attributeStride(i)), *attribute);
+        else mesh.addVertexBuffer(verticesRef,
+            GLintptr(meshData.attributeOffset(i)),
+            GLsizei(meshData.attributeStride(i)), *attribute);
+    }
+
+    if(meshData.isIndexed()) {
+        mesh.setIndexBuffer(std::move(indices), 0, meshData.indexType())
+            .setCount(meshData.indexCount());
+    } else mesh.setCount(meshData.vertexCount());
+
+    return mesh;
+}
 
 GL::Mesh compile(const Trade::MeshData2D& meshData) {
     GL::Mesh mesh;
