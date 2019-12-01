@@ -798,8 +798,19 @@ class MAGNUM_TRADE_EXPORT MeshData {
          * Convenience alternative to the templated @ref indices(). Converts
          * the index array from an arbitrary underlying type and returns it in
          * a newly-allocated array.
+         * @see @ref indicesInto()
          */
         Containers::Array<UnsignedInt> indices() const;
+
+        /**
+         * @brief Positions as 32-bit integers into a pre-allocated view
+         *
+         * Like @ref indices(), but puts the result into @p destination instead
+         * of allocating a new array. Expects that @p destination is sized to
+         * contain exactly all data.
+         * @see @ref indexCount()
+         */
+        void indicesInto(Containers::ArrayView<UnsignedInt> destination) const;
 
         /**
          * @brief Positions as 2D float vectors
@@ -809,8 +820,19 @@ class MAGNUM_TRADE_EXPORT MeshData {
          * Converts the position array from an arbitrary underlying type and
          * returns it in a newly-allocated array. If the underlying type is
          * three-component, the last component is dropped.
+         * @see @ref positions2DInto()
          */
         Containers::Array<Vector2> positions2D(UnsignedInt id = 0) const;
+
+        /**
+         * @brief Positions as 2D float vectors into a pre-allocated view
+         *
+         * Like @ref positions2D(), but puts the result into @p destination
+         * instead of allocating a new array. Expects that @p destination is
+         * sized to contain exactly all data.
+         * @see @ref vertexCount()
+         */
+        void positions2DInto(Containers::StridedArrayView1D<Vector2> destination, UnsignedInt id = 0) const;
 
         /**
          * @brief Positions as 3D float vectors
@@ -820,8 +842,19 @@ class MAGNUM_TRADE_EXPORT MeshData {
          * Converts the position array from an arbitrary underlying type and
          * returns it in a newly-allocated array. If the underlying type is
          * two-component, the Z component is set to @cpp 0.0f @ce.
+         * @see @ref positions3DInto()
          */
         Containers::Array<Vector3> positions3D(UnsignedInt id = 0) const;
+
+        /**
+         * @brief Positions as 3D float vectors into a pre-allocated view
+         *
+         * Like @ref positions3D(), but puts the result into @p destination
+         * instead of allocating a new array. Expects that @p destination is
+         * sized to contain exactly all data.
+         * @see @ref vertexCount()
+         */
+        void positions3DInto(Containers::StridedArrayView1D<Vector3> destination, UnsignedInt id = 0) const;
 
         /**
          * @brief Normals as 3D float vectors
@@ -830,8 +863,19 @@ class MAGNUM_TRADE_EXPORT MeshData {
          * with @ref MeshAttributeName::Normal as the first argument. Converts
          * the position array from an arbitrary underlying type and returns it
          * in a newly-allocated array.
+         * @see @ref normalsInto()
          */
         Containers::Array<Vector3> normals(UnsignedInt id = 0) const;
+
+        /**
+         * @brief Normals as 3D float vectors into a pre-allocated view
+         *
+         * Like @ref normals(), but puts the result into @p destination instead
+         * of allocating a new array. Expects that @p destination is sized to
+         * contain exactly all data.
+         * @see @ref vertexCount()
+         */
+        void normalsInto(Containers::StridedArrayView1D<Vector3> destination, UnsignedInt id = 0) const;
 
         /**
          * @brief Texture coordinates as 2D float vectors
@@ -840,8 +884,19 @@ class MAGNUM_TRADE_EXPORT MeshData {
          * with @ref MeshAttributeName::TextureCoordinates as the first
          * argument. Converts the position array from an arbitrary underlying
          * type and returns it in a newly-allocated array.
+         * @see @ref textureCoordinates2DInto()
          */
         Containers::Array<Vector2> textureCoordinates2D(UnsignedInt id = 0) const;
+
+        /**
+         * @brief Texture coordinates as 2D float vectors into a pre-allocated view
+         *
+         * Like @ref textureCoordinates2D(), but puts the result into
+         * @p destination instead of allocating a new array. Expects that
+         * @p destination is sized to contain exactly all data.
+         * @see @ref vertexCount()
+         */
+        void textureCoordinates2DInto(Containers::StridedArrayView1D<Vector2> destination, UnsignedInt id = 0) const;
 
         /**
          * @brief Colors as RGBA floats
@@ -851,8 +906,19 @@ class MAGNUM_TRADE_EXPORT MeshData {
          * the position array from an arbitrary underlying type and returns it
          * in a newly-allocated array. If the underlying type is
          * three-component, the alpha component is set to @cpp 1.0f @ce.
+         * @see @ref colorsInto()
          */
         Containers::Array<Color4> colors(UnsignedInt id = 0) const;
+
+        /**
+         * @brief Colors as RGBA floats into a pre-allocated view
+         *
+         * Like @ref colors(), but puts the result into @p destination instead
+         * of allocating a new array. Expects that @p destination is sized to
+         * contain exactly all data.
+         * @see @ref vertexCount()
+         */
+        void colorsInto(Containers::StridedArrayView1D<Color4> destination, UnsignedInt id = 0) const;
 
         /**
          * @brief Release index data storage

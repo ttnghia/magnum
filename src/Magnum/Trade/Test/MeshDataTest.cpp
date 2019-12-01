@@ -84,11 +84,17 @@ struct MeshDataTest: TestSuite::Tester {
     void constructMove();
 
     template<class T> void indicesAsArray();
+    void indicesIntoArrayInvalidSize();
     template<class T> void positions2DAsArray();
+    void positions2DIntoArrayInvalidSize();
     template<class T> void positions3DAsArray();
+    void positions3DIntoArrayInvalidSize();
     template<class T> void normalsAsArray();
+    void normalsIntoArrayInvalidSize();
     template<class T> void textureCoordinates2DAsArray();
+    void textureCoordinates2DIntoArrayInvalidSize();
     template<class T> void colorsAsArray();
+    void colorsIntoArrayInvalidSize();
 
     void mutableAccessNotAllowed();
 
@@ -173,14 +179,20 @@ MeshDataTest::MeshDataTest() {
               &MeshDataTest::indicesAsArray<UnsignedByte>,
               &MeshDataTest::indicesAsArray<UnsignedShort>,
               &MeshDataTest::indicesAsArray<UnsignedInt>,
+              &MeshDataTest::indicesIntoArrayInvalidSize,
               &MeshDataTest::positions2DAsArray<Vector2>,
               &MeshDataTest::positions2DAsArray<Vector3>,
+              &MeshDataTest::positions2DIntoArrayInvalidSize,
               &MeshDataTest::positions3DAsArray<Vector2>,
               &MeshDataTest::positions3DAsArray<Vector3>,
+              &MeshDataTest::positions3DIntoArrayInvalidSize,
               &MeshDataTest::normalsAsArray<Vector3>,
+              &MeshDataTest::normalsIntoArrayInvalidSize,
               &MeshDataTest::textureCoordinates2DAsArray<Vector2>,
+              &MeshDataTest::textureCoordinates2DIntoArrayInvalidSize,
               &MeshDataTest::colorsAsArray<Color3>,
               &MeshDataTest::colorsAsArray<Color4>,
+              &MeshDataTest::colorsIntoArrayInvalidSize,
 
               &MeshDataTest::mutableAccessNotAllowed,
 
@@ -1064,6 +1076,18 @@ template<class T> void MeshDataTest::indicesAsArray() {
         TestSuite::Compare::Container);
 }
 
+void MeshDataTest::indicesIntoArrayInvalidSize() {
+    Containers::Array<char> indexData{3*sizeof(UnsignedInt)};
+    MeshData data{MeshPrimitive::Points, std::move(indexData), MeshIndexData{Containers::arrayCast<UnsignedInt>(indexData)}};
+
+    std::ostringstream out;
+    Error redirectError{&out};
+    UnsignedInt destination[2];
+    data.indicesInto(destination);
+    CORRADE_COMPARE(out.str(),
+        "Trade::MeshData::indicesInto(): expected a view with 3 elements but got 2\n");
+}
+
 template<class T> void MeshDataTest::positions2DAsArray() {
     setTestCaseTemplateName(NameTraits<T>::name());
 
@@ -1077,6 +1101,18 @@ template<class T> void MeshDataTest::positions2DAsArray() {
     CORRADE_COMPARE_AS(data.positions2D(), (Containers::Array<Vector2>{
         Containers::InPlaceInit, {{2.0f, 1.0f}, {0.0f, -1.0f}, {-2.0f, 3.0f}}}),
         TestSuite::Compare::Container);
+}
+
+void MeshDataTest::positions2DIntoArrayInvalidSize() {
+    Containers::Array<char> vertexData{3*sizeof(Vector2)};
+    MeshData data{MeshPrimitive::Points, std::move(vertexData), {MeshAttributeData{MeshAttributeName::Position, Containers::arrayCast<Vector2>(vertexData)}}};
+
+    std::ostringstream out;
+    Error redirectError{&out};
+    Vector2 destination[2];
+    data.positions2DInto(destination);
+    CORRADE_COMPARE(out.str(),
+        "Trade::MeshData::positions2DInto(): expected a view with 3 elements but got 2\n");
 }
 
 template<class T> void MeshDataTest::positions3DAsArray() {
@@ -1097,6 +1133,18 @@ template<class T> void MeshDataTest::positions3DAsArray() {
         TestSuite::Compare::Container);
 }
 
+void MeshDataTest::positions3DIntoArrayInvalidSize() {
+    Containers::Array<char> vertexData{3*sizeof(Vector3)};
+    MeshData data{MeshPrimitive::Points, std::move(vertexData), {MeshAttributeData{MeshAttributeName::Position, Containers::arrayCast<Vector3>(vertexData)}}};
+
+    std::ostringstream out;
+    Error redirectError{&out};
+    Vector3 destination[2];
+    data.positions3DInto(destination);
+    CORRADE_COMPARE(out.str(),
+        "Trade::MeshData::positions3DInto(): expected a view with 3 elements but got 2\n");
+}
+
 template<class T> void MeshDataTest::normalsAsArray() {
     setTestCaseTemplateName(NameTraits<T>::name());
 
@@ -1110,6 +1158,18 @@ template<class T> void MeshDataTest::normalsAsArray() {
     CORRADE_COMPARE_AS(data.normals(), (Containers::Array<Vector3>{
         Containers::InPlaceInit, {{2.0f, 1.0f, 0.3f}, {0.0f, -1.0f, 1.1f}, {-2.0f, 3.0f, 2.2f}}}),
         TestSuite::Compare::Container);
+}
+
+void MeshDataTest::normalsIntoArrayInvalidSize() {
+    Containers::Array<char> vertexData{3*sizeof(Vector3)};
+    MeshData data{MeshPrimitive::Points, std::move(vertexData), {MeshAttributeData{MeshAttributeName::Normal, Containers::arrayCast<Vector3>(vertexData)}}};
+
+    std::ostringstream out;
+    Error redirectError{&out};
+    Vector3 destination[2];
+    data.normalsInto(destination);
+    CORRADE_COMPARE(out.str(),
+        "Trade::MeshData::normalsInto(): expected a view with 3 elements but got 2\n");
 }
 
 template<class T> void MeshDataTest::textureCoordinates2DAsArray() {
@@ -1127,6 +1187,18 @@ template<class T> void MeshDataTest::textureCoordinates2DAsArray() {
         TestSuite::Compare::Container);
 }
 
+void MeshDataTest::textureCoordinates2DIntoArrayInvalidSize() {
+    Containers::Array<char> vertexData{3*sizeof(Vector2)};
+    MeshData data{MeshPrimitive::Points, std::move(vertexData), {MeshAttributeData{MeshAttributeName::TextureCoordinates, Containers::arrayCast<Vector2>(vertexData)}}};
+
+    std::ostringstream out;
+    Error redirectError{&out};
+    Vector2 destination[2];
+    data.textureCoordinates2DInto(destination);
+    CORRADE_COMPARE(out.str(),
+        "Trade::MeshData::textureCoordinates2DInto(): expected a view with 3 elements but got 2\n");
+}
+
 template<class T> void MeshDataTest::colorsAsArray() {
     setTestCaseTemplateName(NameTraits<T>::name());
 
@@ -1140,6 +1212,18 @@ template<class T> void MeshDataTest::colorsAsArray() {
     CORRADE_COMPARE_AS(data.colors(), (Containers::Array<Color4>{
         Containers::InPlaceInit, {0xff3366_rgbf, 0x99aacc_rgbf, 0x3377ff_rgbf}}),
         TestSuite::Compare::Container);
+}
+
+void MeshDataTest::colorsIntoArrayInvalidSize() {
+    Containers::Array<char> vertexData{3*sizeof(Color4)};
+    MeshData data{MeshPrimitive::Points, std::move(vertexData), {MeshAttributeData{MeshAttributeName::Color, Containers::arrayCast<Color4>(vertexData)}}};
+
+    std::ostringstream out;
+    Error redirectError{&out};
+    Color4 destination[2];
+    data.colorsInto(destination);
+    CORRADE_COMPARE(out.str(),
+        "Trade::MeshData::colorsInto(): expected a view with 3 elements but got 2\n");
 }
 
 void MeshDataTest::mutableAccessNotAllowed() {
@@ -1176,11 +1260,14 @@ void MeshDataTest::indicesNotIndexed() {
     data.indexType();
     data.indices<UnsignedInt>();
     data.indices();
+    UnsignedInt a[1];
+    data.indicesInto(a);
     CORRADE_COMPARE(out.str(),
         "Trade::MeshData::indexCount(): the mesh is not indexed\n"
         "Trade::MeshData::indexType(): the mesh is not indexed\n"
         "Trade::MeshData::indices(): the mesh is not indexed\n"
-        "Trade::MeshData::indices(): the mesh is not indexed\n");
+        "Trade::MeshData::indices(): the mesh is not indexed\n"
+        "Trade::MeshData::indicesInto(): the mesh is not indexed\n");
 }
 
 void MeshDataTest::indicesWrongType() {
@@ -1234,11 +1321,11 @@ void MeshDataTest::attributeNotFound() {
         "Trade::MeshData::attributeStride(): index 2 out of range for 2 Trade::MeshAttributeName::Color attributes\n"
         "Trade::MeshData::attribute(): index 0 out of range for 0 Trade::MeshAttributeName::Position attributes\n"
         "Trade::MeshData::attribute(): index 2 out of range for 2 Trade::MeshAttributeName::Color attributes\n"
-        "Trade::MeshData::positions2D(): index 0 out of range for 0 position attributes\n"
-        "Trade::MeshData::positions3D(): index 0 out of range for 0 position attributes\n"
-        "Trade::MeshData::normals(): index 0 out of range for 0 normal attributes\n"
-        "Trade::MeshData::textureCoordinates2D(): index 0 out of range for 0 texture coordinate attributes\n"
-        "Trade::MeshData::colors(): index 2 out of range for 2 color attributes\n");
+        "Trade::MeshData::positions2DInto(): index 0 out of range for 0 position attributes\n"
+        "Trade::MeshData::positions3DInto(): index 0 out of range for 0 position attributes\n"
+        "Trade::MeshData::normalsInto(): index 0 out of range for 0 normal attributes\n"
+        "Trade::MeshData::textureCoordinates2DInto(): index 0 out of range for 0 texture coordinate attributes\n"
+        "Trade::MeshData::colorsInto(): index 2 out of range for 2 color attributes\n");
 }
 
 void MeshDataTest::attributeWrongType() {

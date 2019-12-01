@@ -237,96 +237,137 @@ UnsignedInt MeshData::attributeStride(MeshAttributeName name, UnsignedInt id) co
 }
 
 namespace {
-    template<class T> Containers::Array<UnsignedInt> convertIndices(const Containers::ArrayView<const char> data) {
-        const auto input = Containers::arrayCast<const T>(data);
-        Containers::Array<UnsignedInt> output{input.size()};
-        for(std::size_t i = 0; i != input.size(); ++i) output[i] = input[i];
-        return output;
-    }
+
+template<class T> void convertIndices(const Containers::ArrayView<const char> data, const Containers::ArrayView<UnsignedInt> destination) {
+    const auto input = Containers::arrayCast<const T>(data);
+    for(std::size_t i = 0; i != input.size(); ++i) destination[i] = input[i];
 }
 
-Containers::Array<UnsignedInt> MeshData::indices() const {
+}
+
+void MeshData::indicesInto(const Containers::ArrayView<UnsignedInt> destination) const {
     CORRADE_ASSERT(isIndexed(),
-        "Trade::MeshData::indices(): the mesh is not indexed", {});
+        "Trade::MeshData::indicesInto(): the mesh is not indexed", );
+    CORRADE_ASSERT(destination.size() == indexCount(), "Trade::MeshData::indicesInto(): expected a view with" << indexCount() << "elements but got" << destination.size(), );
 
     switch(_indexType) {
-        case MeshIndexType::UnsignedByte: return convertIndices<UnsignedByte>(_indices);
-        case MeshIndexType::UnsignedShort: return convertIndices<UnsignedShort>(_indices);
-        case MeshIndexType::UnsignedInt: return convertIndices<UnsignedInt>(_indices);
+        case MeshIndexType::UnsignedByte: return convertIndices<UnsignedByte>(_indices, destination);
+        case MeshIndexType::UnsignedShort: return convertIndices<UnsignedShort>(_indices, destination);
+        case MeshIndexType::UnsignedInt: return convertIndices<UnsignedInt>(_indices, destination);
     }
 
     CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 
-namespace {
-
-template<class Output, class Input = Output> Containers::Array<Output> copyAsArray(MeshAttributeType type, const Containers::StridedArrayView1D<const char>& data) {
-    CORRADE_INTERNAL_ASSERT(type == Implementation::meshAttributeTypeFor<Input>());
-    const auto input = Containers::arrayCast<const Input>(data);
-    Containers::Array<Output> output{input.size()};
-    for(std::size_t i = 0, max = input.size(); i != max; ++i)
-        output[i] = input[i];
+Containers::Array<UnsignedInt> MeshData::indices() const {
+    /* Repeating the assert here because otherwise it would fire in
+       indexCount() which may be confusing */
+    CORRADE_ASSERT(isIndexed(), "Trade::MeshData::indices(): the mesh is not indexed", {});
+    Containers::Array<UnsignedInt> output{indexCount()};
+    indicesInto(output);
     return output;
 }
 
+namespace {
+
+template<class Output, class Input = Output> void copyAsArray(MeshAttributeType type, const Containers::StridedArrayView1D<Output> destination, const Containers::StridedArrayView1D<const char>& data) {
+    CORRADE_INTERNAL_ASSERT(type == Implementation::meshAttributeTypeFor<Input>());
+    const auto input = Containers::arrayCast<const Input>(data);
+    for(std::size_t i = 0, max = input.size(); i != max; ++i)
+        destination[i] = input[i];
 }
 
-Containers::Array<Vector2> MeshData::positions2D(const UnsignedInt id) const {
+}
+
+void MeshData::positions2DInto(const Containers::StridedArrayView1D<Vector2> destination, const UnsignedInt id) const {
     const UnsignedInt attributeId = attributeFor(MeshAttributeName::Position, id);
-    CORRADE_ASSERT(attributeId != ~UnsignedInt{}, "Trade::MeshData::positions2D(): index" << id << "out of range for" << attributeCount(MeshAttributeName::Position) << "position attributes", {});
+    CORRADE_ASSERT(attributeId != ~UnsignedInt{}, "Trade::MeshData::positions2DInto(): index" << id << "out of range for" << attributeCount(MeshAttributeName::Position) << "position attributes", );
+    CORRADE_ASSERT(destination.size() == _vertexCount, "Trade::MeshData::positions2DInto(): expected a view with" << _vertexCount << "elements but got" << destination.size(), );
     const MeshAttributeData& attribute = _attributes[attributeId];
 
     /* Copy 2D positions as-is, for 3D positions ignore Z */
     if(attribute.type == MeshAttributeType::Vector2)
-        return copyAsArray<Vector2>(attribute.type, attribute.data);
+        copyAsArray(attribute.type, destination, attribute.data);
     else if(attribute.type == MeshAttributeType::Vector3)
-        return copyAsArray<Vector2>(MeshAttributeType::Vector2, attribute.data);
+        copyAsArray(MeshAttributeType::Vector2, destination, attribute.data);
     else CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 
-Containers::Array<Vector3> MeshData::positions3D(const UnsignedInt id) const {
+Containers::Array<Vector2> MeshData::positions2D(const UnsignedInt id) const {
+    Containers::Array<Vector2> out{_vertexCount};
+    positions2DInto(out, id);
+    return out;
+}
+
+void MeshData::positions3DInto(const Containers::StridedArrayView1D<Vector3> destination, const UnsignedInt id) const {
     const UnsignedInt attributeId = attributeFor(MeshAttributeName::Position, id);
-    CORRADE_ASSERT(attributeId != ~UnsignedInt{}, "Trade::MeshData::positions3D(): index" << id << "out of range for" << attributeCount(MeshAttributeName::Position) << "position attributes", {});
+    CORRADE_ASSERT(attributeId != ~UnsignedInt{}, "Trade::MeshData::positions3DInto(): index" << id << "out of range for" << attributeCount(MeshAttributeName::Position) << "position attributes", );
+    CORRADE_ASSERT(destination.size() == _vertexCount, "Trade::MeshData::positions3DInto(): expected a view with" << _vertexCount << "elements but got" << destination.size(), );
     const MeshAttributeData& attribute = _attributes[attributeId];
 
     /* For 2D positions set Z to zero, copy 3D positions as-is */
     if(attribute.type == MeshAttributeType::Vector2) {
-        Containers::Array<Vector3> output{attribute.data.size()};
         const auto input = Containers::arrayCast<const Vector2>(attribute.data);
         for(std::size_t i = 0, max = input.size(); i != max; ++i)
-            output[i] = Vector3{input[i], 0.0f};
-        return output;
+            destination[i] = Vector3{input[i], 0.0f};
     } else if(attribute.type == MeshAttributeType::Vector3) {
-        return copyAsArray<Vector3>(attribute.type, attribute.data);
+        copyAsArray(attribute.type, destination, attribute.data);
     } else CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 
-Containers::Array<Vector3> MeshData::normals(const UnsignedInt id) const {
+Containers::Array<Vector3> MeshData::positions3D(const UnsignedInt id) const {
+    Containers::Array<Vector3> out{_vertexCount};
+    positions3DInto(out, id);
+    return out;
+}
+
+void MeshData::normalsInto(const Containers::StridedArrayView1D<Vector3> destination, const UnsignedInt id) const {
     const UnsignedInt attributeId = attributeFor(MeshAttributeName::Normal, id);
-    CORRADE_ASSERT(attributeId != ~UnsignedInt{}, "Trade::MeshData::normals(): index" << id << "out of range for" << attributeCount(MeshAttributeName::Normal) << "normal attributes", {});
+    CORRADE_ASSERT(attributeId != ~UnsignedInt{}, "Trade::MeshData::normalsInto(): index" << id << "out of range for" << attributeCount(MeshAttributeName::Normal) << "normal attributes", );
+    CORRADE_ASSERT(destination.size() == _vertexCount, "Trade::MeshData::normalsInto(): expected a view with" << _vertexCount << "elements but got" << destination.size(), );
     const MeshAttributeData& attribute = _attributes[attributeId];
 
-    return copyAsArray<Vector3>(attribute.type, attribute.data);
+    copyAsArray(attribute.type, destination, attribute.data);
+}
+
+Containers::Array<Vector3> MeshData::normals(const UnsignedInt id) const {
+    Containers::Array<Vector3> out{_vertexCount};
+    normalsInto(out, id);
+    return out;
+}
+
+void MeshData::textureCoordinates2DInto(const Containers::StridedArrayView1D<Vector2> destination, const UnsignedInt id) const {
+    const UnsignedInt attributeId = attributeFor(MeshAttributeName::TextureCoordinates, id);
+    CORRADE_ASSERT(attributeId != ~UnsignedInt{}, "Trade::MeshData::textureCoordinates2DInto(): index" << id << "out of range for" << attributeCount(MeshAttributeName::TextureCoordinates) << "texture coordinate attributes", );
+    CORRADE_ASSERT(destination.size() == _vertexCount, "Trade::MeshData::textureCoordinates2DInto(): expected a view with" << _vertexCount << "elements but got" << destination.size(), );
+    const MeshAttributeData& attribute = _attributes[attributeId];
+
+    copyAsArray(attribute.type, destination, attribute.data);
 }
 
 Containers::Array<Vector2> MeshData::textureCoordinates2D(const UnsignedInt id) const {
-    const UnsignedInt attributeId = attributeFor(MeshAttributeName::TextureCoordinates, id);
-    CORRADE_ASSERT(attributeId != ~UnsignedInt{}, "Trade::MeshData::textureCoordinates2D(): index" << id << "out of range for" << attributeCount(MeshAttributeName::TextureCoordinates) << "texture coordinate attributes", {});
-    const MeshAttributeData& attribute = _attributes[attributeId];
-
-    return copyAsArray<Vector2>(attribute.type, attribute.data);
+    Containers::Array<Vector2> out{_vertexCount};
+    textureCoordinates2DInto(out, id);
+    return out;
 }
 
-Containers::Array<Color4> MeshData::colors(const UnsignedInt id) const {
+void MeshData::colorsInto(const Containers::StridedArrayView1D<Color4> destination, const UnsignedInt id) const {
     const UnsignedInt attributeId = attributeFor(MeshAttributeName::Color, id);
-    CORRADE_ASSERT(attributeId != ~UnsignedInt{}, "Trade::MeshData::colors(): index" << id << "out of range for" << attributeCount(MeshAttributeName::Color) << "color attributes", {});
+    CORRADE_ASSERT(attributeId != ~UnsignedInt{}, "Trade::MeshData::colorsInto(): index" << id << "out of range for" << attributeCount(MeshAttributeName::Color) << "color attributes", );
+    CORRADE_ASSERT(destination.size() == _vertexCount, "Trade::MeshData::colorsInto(): expected a view with" << _vertexCount << "elements but got" << destination.size(), );
     const MeshAttributeData& attribute = _attributes[attributeId];
 
     if(_attributes[attributeId].type == MeshAttributeType::Vector3)
-        return copyAsArray<Color4, Color3>(attribute.type, attribute.data);
+        copyAsArray<Color4, Color3>(attribute.type, destination, attribute.data);
     else if(_attributes[attributeId].type == MeshAttributeType::Vector4)
-        return copyAsArray<Color4, Color4>(attribute.type, attribute.data);
+        copyAsArray<Color4, Color4>(attribute.type, destination, attribute.data);
     else CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
+}
+
+Containers::Array<Color4> MeshData::colors(const UnsignedInt id) const {
+    Containers::Array<Color4> out{_vertexCount};
+    colorsInto(out, id);
+    return out;
 }
 
 Containers::Array<char> MeshData::releaseIndexData() {
