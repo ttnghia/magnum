@@ -27,6 +27,7 @@ find_package(Corrade REQUIRED PluginManager)
 
 set(MagnumTrade_SRCS
     AbstractMaterialData.cpp
+    ArrayAllocator.cpp
     Data.cpp
     LightData.cpp
     MeshData2D.cpp

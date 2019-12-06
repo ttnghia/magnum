@@ -34,6 +34,7 @@
 #include "Magnum/FileCallback.h"
 #include "Magnum/Trade/AbstractImporter.h"
 #include "Magnum/Trade/AnimationData.h"
+#include "Magnum/Trade/ArrayAllocator.h"
 #include "Magnum/Trade/CameraData.h"
 #include "Magnum/Trade/ImageData.h"
 #include "Magnum/Trade/LightData.h"
@@ -107,6 +108,7 @@ struct AbstractImporterTest: TestSuite::Tester {
     void animationNoFile();
     void animationOutOfRange();
     void animationNonOwningDeleters();
+    void animationGrowableDeleters();
     void animationCustomDataDeleter();
     void animationCustomTrackDeleter();
 
@@ -170,6 +172,7 @@ struct AbstractImporterTest: TestSuite::Tester {
     void meshNoFile();
     void meshOutOfRange();
     void meshNonOwningDeleters();
+    void meshGrowableDeleters();
     void meshCustomIndexDataDeleter();
     void meshCustomVertexDataDeleter();
     void meshCustomAttributesDeleter();
@@ -238,6 +241,7 @@ struct AbstractImporterTest: TestSuite::Tester {
     void image1DNoFile();
     void image1DOutOfRange();
     void image1DNonOwningDeleter();
+    void image1DGrowableDeleter();
     void image1DCustomDeleter();
 
     void image2D();
@@ -252,6 +256,7 @@ struct AbstractImporterTest: TestSuite::Tester {
     void image2DNoFile();
     void image2DOutOfRange();
     void image2DNonOwningDeleter();
+    void image2DGrowableDeleter();
     void image2DCustomDeleter();
 
     void image3D();
@@ -266,6 +271,7 @@ struct AbstractImporterTest: TestSuite::Tester {
     void image3DNoFile();
     void image3DOutOfRange();
     void image3DNonOwningDeleter();
+    void image3DGrowableDeleter();
     void image3DCustomDeleter();
 
     void importerState();
@@ -331,6 +337,7 @@ AbstractImporterTest::AbstractImporterTest() {
               &AbstractImporterTest::animationNoFile,
               &AbstractImporterTest::animationOutOfRange,
               &AbstractImporterTest::animationNonOwningDeleters,
+              &AbstractImporterTest::animationGrowableDeleters,
               &AbstractImporterTest::animationCustomDataDeleter,
               &AbstractImporterTest::animationCustomTrackDeleter,
 
@@ -394,6 +401,7 @@ AbstractImporterTest::AbstractImporterTest() {
               &AbstractImporterTest::meshNoFile,
               &AbstractImporterTest::meshOutOfRange,
               &AbstractImporterTest::meshNonOwningDeleters,
+              &AbstractImporterTest::meshGrowableDeleters,
               &AbstractImporterTest::meshCustomIndexDataDeleter,
               &AbstractImporterTest::meshCustomVertexDataDeleter,
               &AbstractImporterTest::meshCustomAttributesDeleter,
@@ -462,6 +470,7 @@ AbstractImporterTest::AbstractImporterTest() {
               &AbstractImporterTest::image1DNoFile,
               &AbstractImporterTest::image1DOutOfRange,
               &AbstractImporterTest::image1DNonOwningDeleter,
+              &AbstractImporterTest::image1DGrowableDeleter,
               &AbstractImporterTest::image1DCustomDeleter,
 
               &AbstractImporterTest::image2D,
@@ -476,6 +485,7 @@ AbstractImporterTest::AbstractImporterTest() {
               &AbstractImporterTest::image2DNoFile,
               &AbstractImporterTest::image2DOutOfRange,
               &AbstractImporterTest::image2DNonOwningDeleter,
+              &AbstractImporterTest::image2DGrowableDeleter,
               &AbstractImporterTest::image2DCustomDeleter,
 
               &AbstractImporterTest::image3D,
@@ -490,6 +500,7 @@ AbstractImporterTest::AbstractImporterTest() {
               &AbstractImporterTest::image3DNoFile,
               &AbstractImporterTest::image3DOutOfRange,
               &AbstractImporterTest::image3DNonOwningDeleter,
+              &AbstractImporterTest::image3DGrowableDeleter,
               &AbstractImporterTest::image3DCustomDeleter,
 
               &AbstractImporterTest::importerState,
@@ -1373,6 +1384,25 @@ void AbstractImporterTest::animationNonOwningDeleters() {
     auto data = importer.animation(0);
     CORRADE_VERIFY(data);
     CORRADE_COMPARE(static_cast<const void*>(data->data()), importer.data);
+}
+
+void AbstractImporterTest::animationGrowableDeleters() {
+    struct: AbstractImporter {
+        Features doFeatures() const override { return {}; }
+        bool doIsOpened() const override { return true; }
+        void doClose() override {}
+
+        UnsignedInt doAnimationCount() const override { return 1; }
+        Containers::Optional<AnimationData> doAnimation(UnsignedInt) override {
+            Containers::Array<char> data;
+            Containers::arrayAppend<ArrayAllocator>(data, '\x37');
+            return AnimationData{std::move(data), {AnimationTrackData{}}};
+        }
+    } importer;
+
+    auto data = importer.animation(0);
+    CORRADE_VERIFY(data);
+    CORRADE_COMPARE(data->data()[0], '\x37');
 }
 
 void AbstractImporterTest::animationCustomDataDeleter() {
@@ -2268,6 +2298,33 @@ void AbstractImporterTest::meshNonOwningDeleters() {
     auto data = importer.mesh(0);
     CORRADE_VERIFY(data);
     CORRADE_COMPARE(static_cast<const void*>(data->indexData()), importer.indexData);
+}
+
+void AbstractImporterTest::meshGrowableDeleters() {
+    struct: AbstractImporter {
+        Features doFeatures() const override { return {}; }
+        bool doIsOpened() const override { return true; }
+        void doClose() override {}
+
+        UnsignedInt doMeshCount() const override { return 1; }
+        Containers::Optional<MeshData> doMesh(UnsignedInt) override {
+            Containers::Array<char> indexData;
+            Containers::arrayAppend<ArrayAllocator>(indexData, '\xab');
+            Containers::Array<Vector3> vertexData;
+            Containers::arrayAppend<ArrayAllocator>(vertexData, Vector3{});
+            MeshIndexData indices{MeshIndexType::UnsignedByte, indexData};
+            MeshAttributeData positions{MeshAttributeName::Position, Containers::arrayView(vertexData)};
+
+            return MeshData{MeshPrimitive::Triangles,
+                std::move(indexData), indices,
+                Containers::arrayAllocatorCast<char, ArrayAllocator>(std::move(vertexData)), {positions}};
+        }
+    } importer;
+
+    auto data = importer.mesh(0);
+    CORRADE_VERIFY(data);
+    CORRADE_COMPARE(data->indexData()[0], '\xab');
+    CORRADE_COMPARE(data->vertexData().size(), 12);
 }
 
 void AbstractImporterTest::meshCustomIndexDataDeleter() {
@@ -3232,6 +3289,25 @@ void AbstractImporterTest::image1DNonOwningDeleter() {
     CORRADE_COMPARE(static_cast<const void*>(data->data()), importer.data);
 }
 
+void AbstractImporterTest::image1DGrowableDeleter() {
+    struct: AbstractImporter {
+        Features doFeatures() const override { return {}; }
+        bool doIsOpened() const override { return true; }
+        void doClose() override {}
+
+        UnsignedInt doImage1DCount() const override { return 1; }
+        Containers::Optional<ImageData1D> doImage1D(UnsignedInt) override {
+            Containers::Array<char> data;
+            Containers::arrayAppend<ArrayAllocator>(data, '\xff');
+            return ImageData1D{PixelFormat::RGBA8Unorm, {}, std::move(data)};
+        }
+    } importer;
+
+    auto data = importer.image1D(0);
+    CORRADE_VERIFY(data);
+    CORRADE_COMPARE(data->data()[0], '\xff');
+}
+
 void AbstractImporterTest::image1DCustomDeleter() {
     struct: AbstractImporter {
         Features doFeatures() const override { return {}; }
@@ -3436,6 +3512,25 @@ void AbstractImporterTest::image2DNonOwningDeleter() {
     CORRADE_COMPARE(static_cast<const void*>(data->data()), importer.data);
 }
 
+void AbstractImporterTest::image2DGrowableDeleter() {
+    struct: AbstractImporter {
+        Features doFeatures() const override { return {}; }
+        bool doIsOpened() const override { return true; }
+        void doClose() override {}
+
+        UnsignedInt doImage2DCount() const override { return 1; }
+        Containers::Optional<ImageData2D> doImage2D(UnsignedInt) override {
+            Containers::Array<char> data;
+            Containers::arrayAppend<ArrayAllocator>(data, '\xff');
+            return ImageData2D{PixelFormat::RGBA8Unorm, {}, std::move(data)};
+        }
+    } importer;
+
+    auto data = importer.image2D(0);
+    CORRADE_VERIFY(data);
+    CORRADE_COMPARE(data->data()[0], '\xff');
+}
+
 void AbstractImporterTest::image2DCustomDeleter() {
     struct: AbstractImporter {
         Features doFeatures() const override { return {}; }
@@ -3638,6 +3733,25 @@ void AbstractImporterTest::image3DNonOwningDeleter() {
     auto data = importer.image3D(0);
     CORRADE_VERIFY(data);
     CORRADE_COMPARE(static_cast<const void*>(data->data()), importer.data);
+}
+
+void AbstractImporterTest::image3DGrowableDeleter() {
+    struct: AbstractImporter {
+        Features doFeatures() const override { return {}; }
+        bool doIsOpened() const override { return true; }
+        void doClose() override {}
+
+        UnsignedInt doImage3DCount() const override { return 1; }
+        Containers::Optional<ImageData3D> doImage3D(UnsignedInt) override {
+            Containers::Array<char> data;
+            Containers::arrayAppend<ArrayAllocator>(data, '\xff');
+            return ImageData3D{PixelFormat::RGBA8Unorm, {}, std::move(data)};
+        }
+    } importer;
+
+    auto data = importer.image3D(0);
+    CORRADE_VERIFY(data);
+    CORRADE_COMPARE(data->data()[0], '\xff');
 }
 
 void AbstractImporterTest::image3DCustomDeleter() {
