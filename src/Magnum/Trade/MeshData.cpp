@@ -65,7 +65,7 @@ MeshData::MeshData(const MeshPrimitive primitive, Containers::Array<char>&& inde
     CORRADE_ASSERT(!_indices.empty() || !_indexData,
         "Trade::MeshData: indexData passed for a non-indexed mesh", );
     CORRADE_ASSERT(_indices.empty() || (_indices.begin() >= _indexData.begin() && _indices.end() <= _indexData.end()),
-        "Trade::MeshData: indices are not contained in passed indexData array", );
+        "Trade::MeshData: indices [" << Debug::nospace << static_cast<const void*>(_indices.begin()) << Debug::nospace << ":" << Debug::nospace << static_cast<const void*>(_indices.end()) << Debug::nospace << "] are not contained in passed indexData array [" << Debug::nospace << static_cast<const void*>(_indexData.begin()) << Debug::nospace << ":" << Debug::nospace << static_cast<const void*>(_indexData.end()) << Debug::nospace << "]", );
     CORRADE_ASSERT(!_attributes.empty() || !_vertexData,
         "Trade::MeshData: vertexData passed for an attribute-less mesh", );
     CORRADE_ASSERT(_vertexCount || !_vertexData,
@@ -80,7 +80,7 @@ MeshData::MeshData(const MeshPrimitive primitive, Containers::Array<char>&& inde
         CORRADE_ASSERT(data.size() == _vertexCount,
             "Trade::MeshData: attribute" << i << "has" << data.size() << "vertices but" << _vertexCount << "expected", );
         CORRADE_ASSERT(data.empty() || (&data.front() >= _vertexData.begin() && &data.back() + meshAttributeTypeSize(attribute.type) <= _vertexData.end()),
-            "Trade::MeshData: attribute" << i << "is not contained in passed vertexData array", );
+            "Trade::MeshData: attribute" << i << "[" << Debug::nospace << static_cast<const void*>(&data.front()) << Debug::nospace << ":" << Debug::nospace << static_cast<const void*>(&data.back() + meshAttributeTypeSize(attribute.type)) << Debug::nospace << "] is not contained in passed vertexData array [" << Debug::nospace << static_cast<const void*>(_vertexData.begin()) << Debug::nospace << ":" << Debug::nospace << static_cast<const void*>(_vertexData.end()) << Debug::nospace << "]", );
     }
     #endif
 }

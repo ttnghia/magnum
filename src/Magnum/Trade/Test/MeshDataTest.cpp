@@ -886,8 +886,8 @@ void MeshDataTest::constructAttributelessInvalidIndices() {
 }
 
 void MeshDataTest::constructIndicesNotContained() {
-    Containers::Array<char> indexData{6};
-    UnsignedShort indexData2[3];
+    Containers::Array<char> indexData{reinterpret_cast<char*>(0xbadda9), 6, [](char*, std::size_t){}};
+    Containers::ArrayView<UnsignedShort> indexData2{reinterpret_cast<UnsignedShort*>(0xdead), 3};
     MeshIndexData indices{indexData2};
 
     std::ostringstream out;
@@ -895,13 +895,13 @@ void MeshDataTest::constructIndicesNotContained() {
     MeshData{MeshPrimitive::Triangles, std::move(indexData), indices};
     MeshData{MeshPrimitive::Triangles, nullptr, indices};
     CORRADE_COMPARE(out.str(),
-        "Trade::MeshData: indices are not contained in passed indexData array\n"
-        "Trade::MeshData: indices are not contained in passed indexData array\n");
+        "Trade::MeshData: indices [0xdead:0xdeb3] are not contained in passed indexData array [0xbadda9:0xbaddaf]\n"
+        "Trade::MeshData: indices [0xdead:0xdeb3] are not contained in passed indexData array [0x0:0x0]\n");
 }
 
 void MeshDataTest::constructAttributeNotContained() {
-    Containers::Array<char> vertexData{24};
-    Vector2 vertexData2[3];
+    Containers::Array<char> vertexData{reinterpret_cast<char*>(0xbadda9), 24, [](char*, std::size_t){}};
+    Containers::ArrayView<Vector2> vertexData2{reinterpret_cast<Vector2*>(0xdead), 3};
     MeshAttributeData positions{MeshAttributeName::Position, Containers::arrayCast<Vector2>(vertexData)};
     MeshAttributeData positions2{MeshAttributeName::Position, Containers::arrayView(vertexData2)};
 
@@ -910,8 +910,8 @@ void MeshDataTest::constructAttributeNotContained() {
     MeshData{MeshPrimitive::Triangles, std::move(vertexData), {positions, positions2}};
     MeshData{MeshPrimitive::Triangles, nullptr, {positions}};
     CORRADE_COMPARE(out.str(),
-        "Trade::MeshData: attribute 1 is not contained in passed vertexData array\n"
-        "Trade::MeshData: attribute 0 is not contained in passed vertexData array\n");
+        "Trade::MeshData: attribute 1 [0xdead:0xdec5] is not contained in passed vertexData array [0xbadda9:0xbaddc1]\n"
+        "Trade::MeshData: attribute 0 [0xbadda9:0xbaddc1] is not contained in passed vertexData array [0x0:0x0]\n");
 }
 
 void MeshDataTest::constructInconsitentVertexCount() {
