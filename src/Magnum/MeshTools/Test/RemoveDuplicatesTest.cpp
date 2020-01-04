@@ -23,7 +23,10 @@
     DEALINGS IN THE SOFTWARE.
 */
 
+#include <sstream>
 #include <Corrade/TestSuite/Tester.h>
+#include <Corrade/TestSuite/Compare/Container.h>
+#include <Corrade/Utility/DebugStl.h>
 
 #include "Magnum/Math/Vector2.h"
 #include "Magnum/MeshTools/RemoveDuplicates.h"
@@ -34,16 +37,46 @@ struct RemoveDuplicatesTest: TestSuite::Tester {
     explicit RemoveDuplicatesTest();
 
     void removeDuplicates();
+    void removeDuplicatesStl();
+    template<class T> void removeDuplicatesIndexed();
+    void removeDuplicatesIndexedSmallType();
+    void removeDuplicatesIndexedEmptyIndices();
+    void removeDuplicatesIndexedEmptyIndicesVertices();
 };
 
 RemoveDuplicatesTest::RemoveDuplicatesTest() {
-    addTests({&RemoveDuplicatesTest::removeDuplicates});
+    addTests({&RemoveDuplicatesTest::removeDuplicates,
+              &RemoveDuplicatesTest::removeDuplicatesStl,
+              &RemoveDuplicatesTest::removeDuplicatesIndexed<UnsignedByte>,
+              &RemoveDuplicatesTest::removeDuplicatesIndexed<UnsignedShort>,
+              &RemoveDuplicatesTest::removeDuplicatesIndexed<UnsignedInt>,
+              &RemoveDuplicatesTest::removeDuplicatesIndexedSmallType,
+              &RemoveDuplicatesTest::removeDuplicatesIndexedEmptyIndices,
+              &RemoveDuplicatesTest::removeDuplicatesIndexedEmptyIndicesVertices});
 }
 
 void RemoveDuplicatesTest::removeDuplicates() {
     /* Numbers with distance 1 should be merged, numbers with distance 2 should
        be kept. Testing both even-odd and odd-even sequence to verify that
        half-epsilon translations are applied properly. */
+    Vector2i data[]{
+        {1, 0},
+        {2, 1},
+        {0, 4},
+        {1, 5}
+    };
+
+    std::pair<Containers::Array<UnsignedInt>, std::size_t> result = MeshTools::removeDuplicates(Containers::stridedArrayView(data), 2);
+    CORRADE_COMPARE_AS(Containers::arrayView(result.first),
+        Containers::arrayView<UnsignedInt>({0, 0, 1, 1}),
+        TestSuite::Compare::Container);
+    CORRADE_COMPARE_AS(Containers::arrayView(data).prefix(result.second),
+        Containers::arrayView<Vector2i>({{1, 0}, {0, 4}}),
+        TestSuite::Compare::Container);
+}
+
+void RemoveDuplicatesTest::removeDuplicatesStl() {
+    /* Same but with implicit bloat. HEH HEH */
     std::vector<Vector2i> data{
         {1, 0},
         {2, 1},
@@ -52,11 +85,67 @@ void RemoveDuplicatesTest::removeDuplicates() {
     };
 
     const std::vector<UnsignedInt> indices = MeshTools::removeDuplicates(data, 2);
-    CORRADE_COMPARE(indices, (std::vector<UnsignedInt>{0, 0, 1, 1}));
-    CORRADE_COMPARE(data, (std::vector<Vector2i>{
+    CORRADE_COMPARE_AS(indices,
+        (std::vector<UnsignedInt>{0, 0, 1, 1}),
+        TestSuite::Compare::Container);
+    CORRADE_COMPARE_AS(data,
+        (std::vector<Vector2i>{{1, 0}, {0, 4}}),
+        TestSuite::Compare::Container);
+}
+
+template<class T> void RemoveDuplicatesTest::removeDuplicatesIndexed() {
+    setTestCaseTemplateName(Math::TypeTraits<T>::name());
+
+    /* Same as above, but with an explicit index buffer */
+    T indices[]{3, 2, 0, 1, 2, 3};
+    Vector2i data[]{
         {1, 0},
-        {0, 4}
-    }));
+        {2, 1},
+        {0, 4},
+        {1, 5}
+    };
+
+    std::size_t count = MeshTools::removeDuplicatesIndexed(
+        Containers::stridedArrayView(indices),
+        Containers::stridedArrayView(data), 2);
+    CORRADE_COMPARE_AS(Containers::arrayView(indices),
+        Containers::arrayView<T>({1, 1, 0, 0, 1, 1}),
+        TestSuite::Compare::Container);
+    CORRADE_COMPARE_AS(Containers::arrayView(data).prefix(count),
+        Containers::arrayView<Vector2i>({{1, 0}, {0, 4}}),
+        TestSuite::Compare::Container);
+}
+
+void RemoveDuplicatesTest::removeDuplicatesIndexedSmallType() {
+    std::stringstream out;
+    Error redirectError{&out};
+
+    UnsignedByte indices[1];
+    Vector2i data[256]{};
+    MeshTools::removeDuplicatesIndexed(
+        Containers::stridedArrayView(indices),
+        Containers::stridedArrayView(data), 2);
+    CORRADE_COMPARE(out.str(), "MeshTools::removeDuplicatesIndexed(): a 1-byte index type is too small for 256 vertices\n");
+}
+
+void RemoveDuplicatesTest::removeDuplicatesIndexedEmptyIndices() {
+    Vector2i data[]{
+        {1, 0},
+        {2, 1},
+        {0, 4},
+        {1, 5}
+    };
+
+    std::size_t count = MeshTools::removeDuplicatesIndexed(
+        Containers::StridedArrayView1D<UnsignedInt>{},
+        Containers::stridedArrayView(data), 2);
+    CORRADE_COMPARE_AS(Containers::arrayView(data).prefix(count),
+        Containers::arrayView<Vector2i>({{1, 0}, {0, 4}}),
+        TestSuite::Compare::Container);
+}
+
+void RemoveDuplicatesTest::removeDuplicatesIndexedEmptyIndicesVertices() {
+    CORRADE_COMPARE((MeshTools::removeDuplicatesIndexed<UnsignedInt, Vector2i>({}, {}, 2)), 0);
 }
 
 }}}}
