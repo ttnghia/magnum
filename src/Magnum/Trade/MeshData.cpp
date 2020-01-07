@@ -47,6 +47,17 @@ MeshAttributeData::MeshAttributeData(const MeshAttributeName name, const MeshAtt
         "Trade::MeshAttributeData: view stride" << data.stride() << "is not large enough to contain" << type, );
 }
 
+MeshAttributeData::MeshAttributeData(const MeshAttributeName name, const MeshAttributeType type, const Containers::StridedArrayView2D<const char>& data) noexcept: MeshAttributeData{name, type, Containers::StridedArrayView1D<const void>{{data.data(), ~std::size_t{}}, data.size()[0], data.stride()[0]}, nullptr} {
+    /* Yes, this calls into a constexpr function defined in the header --
+       because I feel that makes more sense than duplicating the full assert
+       logic */
+    /** @todo support zero / negative stride? would be hard to transfer to GL */
+    CORRADE_ASSERT(data.empty()[0] || meshAttributeTypeSize(type) == data.size()[1],
+        "Trade::MeshAttributeData: second view dimension size" << data.size()[1] << "doesn't match" << type, );
+    CORRADE_ASSERT(data.isContiguous<1>(),
+        "Trade::MeshAttributeData: second view dimension is not contiguous", );
+}
+
 Containers::Array<MeshAttributeData> meshAttributeDataNonOwningArray(const Containers::ArrayView<const MeshAttributeData> view) {
     /* Ugly, eh? */
     return Containers::Array<Trade::MeshAttributeData>{const_cast<Trade::MeshAttributeData*>(view.data()), view.size(), reinterpret_cast<void(*)(Trade::MeshAttributeData*, std::size_t)>(Trade::Implementation::nonOwnedArrayDeleter)};
@@ -226,6 +237,48 @@ UnsignedInt MeshData::attributeStride(MeshAttributeName name, UnsignedInt id) co
     const UnsignedInt attributeId = attributeFor(name, id);
     CORRADE_ASSERT(attributeId != ~UnsignedInt{}, "Trade::MeshData::attributeStride(): index" << id << "out of range for" << attributeCount(name) << name << "attributes", {});
     return attributeStride(attributeId);
+}
+
+Containers::StridedArrayView2D<const char> MeshData::attribute(UnsignedInt id) const {
+    CORRADE_ASSERT(id < _attributes.size(),
+        "Trade::MeshData::attribute(): index" << id << "out of range for" << _attributes.size() << "attributes", nullptr);
+    /* Build a 2D view using information about attribute type size */
+    /** @todo ugh write an arrayCast variant for this (how?) */
+    return Containers::StridedArrayView2D<const char>{
+        /* The view size is there only for a size assert, we're pretty sure the
+           view is valid */
+        {static_cast<const char*>(_attributes[id].data.data()), ~std::size_t{}},
+        {_attributes[id].data.size(), meshAttributeTypeSize(_attributes[id].type)},
+        {_attributes[id].data.stride(), 1}};
+}
+
+Containers::StridedArrayView2D<char> MeshData::mutableAttribute(UnsignedInt id) {
+    CORRADE_ASSERT(_vertexDataFlags & DataFlag::Mutable,
+        "Trade::MeshData::mutableAttribute(): vertex data not mutable", {});
+    CORRADE_ASSERT(id < _attributes.size(),
+        "Trade::MeshData::mutableAttribute(): index" << id << "out of range for" << _attributes.size() << "attributes", nullptr);
+    /* Build a 2D view using information about attribute type size */
+    /** @todo ugh write an arrayCast variant for this (how?) */
+    return Containers::StridedArrayView2D<char>{
+        /* The view size is there only for a size assert, we're pretty sure the
+           view is valid */
+        {static_cast<char*>(const_cast<void*>(_attributes[id].data.data())), ~std::size_t{}},
+        {_attributes[id].data.size(), meshAttributeTypeSize(_attributes[id].type)},
+        {_attributes[id].data.stride(), 1}};
+}
+
+Containers::StridedArrayView2D<const char> MeshData::attribute(MeshAttributeName name, UnsignedInt id) const {
+    const UnsignedInt attributeId = attributeFor(name, id);
+    CORRADE_ASSERT(attributeId != ~UnsignedInt{}, "Trade::MeshData::attribute(): index" << id << "out of range for" << attributeCount(name) << name << "attributes", {});
+    return attribute(attributeId);
+}
+
+Containers::StridedArrayView2D<char> MeshData::mutableAttribute(MeshAttributeName name, UnsignedInt id) {
+    CORRADE_ASSERT(_vertexDataFlags & DataFlag::Mutable,
+        "Trade::MeshData::mutableAttribute(): vertex data not mutable", {});
+    const UnsignedInt attributeId = attributeFor(name, id);
+    CORRADE_ASSERT(attributeId != ~UnsignedInt{}, "Trade::MeshData::mutableAttribute(): index" << id << "out of range for" << attributeCount(name) << name << "attributes", {});
+    return mutableAttribute(attributeId);
 }
 
 namespace {

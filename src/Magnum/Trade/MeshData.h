@@ -229,6 +229,20 @@ class MAGNUM_TRADE_EXPORT MeshAttributeData {
         /**
          * @brief Constructor
          * @param name      Attribute name
+         * @param type      Attribute type
+         * @param data      Attribute data
+         *
+         * Expects that the second dimension of @p data is contiguous and its
+         * size matches @p type; and that @p type corresponds to @p name.
+         */
+        explicit MeshAttributeData(MeshAttributeName name, MeshAttributeType type, const Containers::StridedArrayView2D<const char>& data) noexcept;
+
+        /** @overload */
+        explicit MeshAttributeData(MeshAttributeName name, MeshAttributeType type, std::nullptr_t) noexcept: MeshAttributeData{name, type, nullptr, nullptr} {}
+
+        /**
+         * @brief Constructor
+         * @param name      Attribute name
          * @param data      Attribute data
          *
          * Detectes @ref MeshAttributeType based on @p T and calls
@@ -756,6 +770,26 @@ class MAGNUM_TRADE_EXPORT MeshData {
         /**
          * @brief Data for given attribute array
          *
+         * The @p id is expected to be smaller than @ref attributeCount() const.
+         * The second dimension represents the actual data type (its size is
+         * equal to type size) and is guaranteed to be contiguous. Use the
+         * templated overload below to get the attribute in a concrete type.
+         * @see @ref Corrade::Containers::StridedArrayView::isContiguous()
+         */
+        Containers::StridedArrayView2D<const char> attribute(UnsignedInt id) const;
+
+        /**
+         * @brief Mutable data for given attribute array
+         *
+         * Like @ref attribute(UnsignedInt) const, but returns a mutable view.
+         * Expects that the mesh is mutable.
+         * @see @ref vertexDataFlags()
+         */
+        Containers::StridedArrayView2D<char> mutableAttribute(UnsignedInt id);
+
+        /**
+         * @brief Data for given attribute array in a concrete type
+         *
          * The @p id is expected to be smaller than @ref attributeCount() const
          * and @p T is expected to correspond to
          * @ref attributeType(UnsignedInt) const. You can also use the
@@ -769,7 +803,7 @@ class MAGNUM_TRADE_EXPORT MeshData {
         template<class T> Containers::StridedArrayView1D<const T> attribute(UnsignedInt id) const;
 
         /**
-         * @brief Mutable data for given attribute array
+         * @brief Mutable data for given attribute array in a concrete type
          *
          * Like @ref attribute(UnsignedInt) const, but returns a mutable view.
          * Expects that the mesh is mutable.
@@ -779,6 +813,29 @@ class MAGNUM_TRADE_EXPORT MeshData {
 
         /**
          * @brief Data for given named attribute array
+         *
+         * The @p id is expected to be smaller than
+         * @ref attributeCount(MeshAttributeName) const. The second dimension
+         * represents the actual data type (its size is equal to type size) and
+         * is guaranteed to be contiguous. Use the templated overload below to
+         * get the attribute in a concrete type.
+         * @see @ref attribute(UnsignedInt) const,
+         *      @ref mutableAttribute(MeshAttributeName, UnsignedInt),
+         *      @ref Corrade::Containers::StridedArrayView::isContiguous()
+         */
+        Containers::StridedArrayView2D<const char> attribute(MeshAttributeName name, UnsignedInt id = 0) const;
+
+        /**
+         * @brief Mutable data for given named attribute array
+         *
+         * Like @ref attribute(MeshAttributeName, UnsignedInt) const, but
+         * returns a mutable view. Expects that the mesh is mutable.
+         * @see @ref vertexDataFlags()
+         */
+        Containers::StridedArrayView2D<char> mutableAttribute(MeshAttributeName name, UnsignedInt id = 0);
+
+        /**
+         * @brief Data for given named attribute array in a concrete type
          *
          * The @p id is expected to be smaller than
          * @ref attributeCount(MeshAttributeName) const and @p T is expected to
@@ -794,7 +851,7 @@ class MAGNUM_TRADE_EXPORT MeshData {
         template<class T> Containers::StridedArrayView1D<const T> attribute(MeshAttributeName name, UnsignedInt id = 0) const;
 
         /**
-         * @brief Mutable data for given named attribute array
+         * @brief Mutable data for given named attribute array in a concrete type
          *
          * Like @ref attribute(MeshAttributeName, UnsignedInt) const, but
          * returns a mutable view. Expects that the mesh is mutable.
@@ -1045,35 +1102,49 @@ template<class T> Containers::ArrayView<T> MeshData::mutableIndices() {
 }
 
 template<class T> Containers::StridedArrayView1D<const T> MeshData::attribute(UnsignedInt id) const {
-    CORRADE_ASSERT(id < _attributes.size(),
-        "Trade::MeshData::attribute(): index" << id << "out of range for" << _attributes.size() << "attributes", nullptr);
+    Containers::StridedArrayView2D<const char> data = attribute(id);
+    #ifdef CORRADE_GRACEFUL_ASSERT /* Sigh. Brittle. Better idea? */
+    if(!data.stride()[1]) return {};
+    #endif
     CORRADE_ASSERT(Implementation::meshAttributeTypeFor<T>() == _attributes[id].type,
         "Trade::MeshData::attribute(): improper type requested for" << _attributes[id].name << "of type" << _attributes[id].type, nullptr);
-    return Containers::arrayCast<const T>(_attributes[id].data);
+    return Containers::arrayCast<1, const T>(data);
 }
 
 template<class T> Containers::StridedArrayView1D<T> MeshData::mutableAttribute(UnsignedInt id) {
-    CORRADE_ASSERT(_vertexDataFlags & DataFlag::Mutable,
-        "Trade::MeshData::mutableAttribute(): vertex data not mutable", {});
-    CORRADE_ASSERT(id < _attributes.size(),
-        "Trade::MeshData::mutableAttribute(): index" << id << "out of range for" << _attributes.size() << "attributes", nullptr);
+    Containers::StridedArrayView2D<char> data = mutableAttribute(id);
+    #ifdef CORRADE_GRACEFUL_ASSERT /* Sigh. Brittle. Better idea? */
+    if(!data.stride()[1]) return {};
+    #endif
     CORRADE_ASSERT(Implementation::meshAttributeTypeFor<T>() == _attributes[id].type,
         "Trade::MeshData::mutableAttribute(): improper type requested for" << _attributes[id].name << "of type" << _attributes[id].type, nullptr);
-    return Containers::arrayCast<T>(reinterpret_cast<Containers::StridedArrayView1D<char>&>(_attributes[id].data));
+    return Containers::arrayCast<1, T>(data);
 }
 
 template<class T> Containers::StridedArrayView1D<const T> MeshData::attribute(MeshAttributeName name, UnsignedInt id) const {
+    Containers::StridedArrayView2D<const char> data = attribute(name, id);
+    #ifdef CORRADE_GRACEFUL_ASSERT /* Sigh. Brittle. Better idea? */
+    if(!data.stride()[1]) return {};
+    #endif
+    #ifndef CORRADE_NO_ASSERT
     const UnsignedInt attributeId = attributeFor(name, id);
-    CORRADE_ASSERT(attributeId != ~UnsignedInt{}, "Trade::MeshData::attribute(): index" << id << "out of range for" << attributeCount(name) << name << "attributes", {});
-    return attribute<T>(attributeId);
+    #endif
+    CORRADE_ASSERT(Implementation::meshAttributeTypeFor<T>() == _attributes[attributeId].type,
+        "Trade::MeshData::attribute(): improper type requested for" << _attributes[attributeId].name << "of type" << _attributes[attributeId].type, nullptr);
+    return Containers::arrayCast<1, const T>(data);
 }
 
 template<class T> Containers::StridedArrayView1D<T> MeshData::mutableAttribute(MeshAttributeName name, UnsignedInt id) {
-    CORRADE_ASSERT(_vertexDataFlags & DataFlag::Mutable,
-        "Trade::MeshData::mutableAttribute(): vertex data not mutable", {});
+    Containers::StridedArrayView2D<char> data = mutableAttribute(name, id);
+    #ifdef CORRADE_GRACEFUL_ASSERT /* Sigh. Brittle. Better idea? */
+    if(!data.stride()[1]) return {};
+    #endif
+    #ifndef CORRADE_NO_ASSERT
     const UnsignedInt attributeId = attributeFor(name, id);
-    CORRADE_ASSERT(attributeId != ~UnsignedInt{}, "Trade::MeshData::mutableAttribute(): index" << id << "out of range for" << attributeCount(name) << name << "attributes", {});
-    return mutableAttribute<T>(attributeId);
+    #endif
+    CORRADE_ASSERT(Implementation::meshAttributeTypeFor<T>() == _attributes[attributeId].type,
+        "Trade::MeshData::mutableAttribute(): improper type requested for" << _attributes[attributeId].name << "of type" << _attributes[attributeId].type, nullptr);
+    return Containers::arrayCast<1, T>(data);
 }
 
 }}
