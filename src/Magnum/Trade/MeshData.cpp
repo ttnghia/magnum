@@ -71,7 +71,7 @@ MeshData::MeshData(const MeshPrimitive primitive, Containers::Array<char>&& inde
             "Trade::MeshData: indices are expected to be valid if there are no attributes and vertex count isn't passed explicitly", );
         /** @todo some better value? attributeless indexed with defined vertex count? */
         _vertexCount = 0;
-    } else _vertexCount = _attributes[0].data.size();
+    } else _vertexCount = _attributes[0]._data.size();
 
     CORRADE_ASSERT(!_indices.empty() || !_indexData,
         "Trade::MeshData: indexData passed for a non-indexed mesh", );
@@ -87,11 +87,11 @@ MeshData::MeshData(const MeshPrimitive primitive, Containers::Array<char>&& inde
        constructors */
     for(std::size_t i = 0; i != _attributes.size(); ++i) {
         const MeshAttributeData& attribute = _attributes[i];
-        const Containers::StridedArrayView1D<const char> data = Containers::arrayCast<const char>(attribute.data);
+        const Containers::StridedArrayView1D<const char> data = Containers::arrayCast<const char>(attribute._data);
         CORRADE_ASSERT(data.size() == _vertexCount,
             "Trade::MeshData: attribute" << i << "has" << data.size() << "vertices but" << _vertexCount << "expected", );
-        CORRADE_ASSERT(data.empty() || (&data.front() >= _vertexData.begin() && &data.back() + meshAttributeTypeSize(attribute.type) <= _vertexData.end()),
-            "Trade::MeshData: attribute" << i << "[" << Debug::nospace << static_cast<const void*>(&data.front()) << Debug::nospace << ":" << Debug::nospace << static_cast<const void*>(&data.back() + meshAttributeTypeSize(attribute.type)) << Debug::nospace << "] is not contained in passed vertexData array [" << Debug::nospace << static_cast<const void*>(_vertexData.begin()) << Debug::nospace << ":" << Debug::nospace << static_cast<const void*>(_vertexData.end()) << Debug::nospace << "]", );
+        CORRADE_ASSERT(data.empty() || (&data.front() >= _vertexData.begin() && &data.back() + meshAttributeTypeSize(attribute._type) <= _vertexData.end()),
+            "Trade::MeshData: attribute" << i << "[" << Debug::nospace << static_cast<const void*>(&data.front()) << Debug::nospace << ":" << Debug::nospace << static_cast<const void*>(&data.back() + meshAttributeTypeSize(attribute._type)) << Debug::nospace << "] is not contained in passed vertexData array [" << Debug::nospace << static_cast<const void*>(_vertexData.begin()) << Debug::nospace << ":" << Debug::nospace << static_cast<const void*>(_vertexData.end()) << Debug::nospace << "]", );
     }
     #endif
 }
@@ -180,37 +180,37 @@ MeshIndexType MeshData::indexType() const {
 MeshAttributeName MeshData::attributeName(UnsignedInt id) const {
     CORRADE_ASSERT(id < _attributes.size(),
         "Trade::MeshData::attributeName(): index" << id << "out of range for" << _attributes.size() << "attributes", {});
-    return _attributes[id].name;
+    return _attributes[id]._name;
 }
 
 MeshAttributeType MeshData::attributeType(UnsignedInt id) const {
     CORRADE_ASSERT(id < _attributes.size(),
         "Trade::MeshData::attributeType(): index" << id << "out of range for" << _attributes.size() << "attributes", {});
-    return _attributes[id].type;
+    return _attributes[id]._type;
 }
 
 std::size_t MeshData::attributeOffset(UnsignedInt id) const {
     CORRADE_ASSERT(id < _attributes.size(),
         "Trade::MeshData::attributeOffset(): index" << id << "out of range for" << _attributes.size() << "attributes", {});
-    return static_cast<const char*>(_attributes[id].data.data()) - _vertexData.data();
+    return static_cast<const char*>(_attributes[id]._data.data()) - _vertexData.data();
 }
 
 UnsignedInt MeshData::attributeStride(UnsignedInt id) const {
     CORRADE_ASSERT(id < _attributes.size(),
         "Trade::MeshData::attributeStride(): index" << id << "out of range for" << _attributes.size() << "attributes", {});
-    return _attributes[id].data.stride();
+    return _attributes[id]._data.stride();
 }
 
 UnsignedInt MeshData::attributeCount(const MeshAttributeName name) const {
     UnsignedInt count = 0;
     for(const MeshAttributeData& attribute: _attributes)
-        if(attribute.name == name) ++count;
+        if(attribute._name == name) ++count;
     return count;
 }
 
 UnsignedInt MeshData::attributeFor(const MeshAttributeName name, UnsignedInt id) const {
     for(std::size_t i = 0; i != _attributes.size(); ++i) {
-        if(_attributes[i].name != name) continue;
+        if(_attributes[i]._name != name) continue;
         if(id-- == 0) return i;
     }
 
@@ -247,9 +247,9 @@ Containers::StridedArrayView2D<const char> MeshData::attribute(UnsignedInt id) c
     return Containers::StridedArrayView2D<const char>{
         /* The view size is there only for a size assert, we're pretty sure the
            view is valid */
-        {static_cast<const char*>(_attributes[id].data.data()), ~std::size_t{}},
-        {_attributes[id].data.size(), meshAttributeTypeSize(_attributes[id].type)},
-        {_attributes[id].data.stride(), 1}};
+        {static_cast<const char*>(_attributes[id]._data.data()), ~std::size_t{}},
+        {_attributes[id]._data.size(), meshAttributeTypeSize(_attributes[id]._type)},
+        {_attributes[id]._data.stride(), 1}};
 }
 
 Containers::StridedArrayView2D<char> MeshData::mutableAttribute(UnsignedInt id) {
@@ -262,9 +262,9 @@ Containers::StridedArrayView2D<char> MeshData::mutableAttribute(UnsignedInt id) 
     return Containers::StridedArrayView2D<char>{
         /* The view size is there only for a size assert, we're pretty sure the
            view is valid */
-        {static_cast<char*>(const_cast<void*>(_attributes[id].data.data())), ~std::size_t{}},
-        {_attributes[id].data.size(), meshAttributeTypeSize(_attributes[id].type)},
-        {_attributes[id].data.stride(), 1}};
+        {static_cast<char*>(const_cast<void*>(_attributes[id]._data.data())), ~std::size_t{}},
+        {_attributes[id]._data.size(), meshAttributeTypeSize(_attributes[id]._type)},
+        {_attributes[id]._data.stride(), 1}};
 }
 
 Containers::StridedArrayView2D<const char> MeshData::attribute(MeshAttributeName name, UnsignedInt id) const {
@@ -331,10 +331,10 @@ void MeshData::positions2DInto(const Containers::StridedArrayView1D<Vector2> des
     const MeshAttributeData& attribute = _attributes[attributeId];
 
     /* Copy 2D positions as-is, for 3D positions ignore Z */
-    if(attribute.type == MeshAttributeType::Vector2)
-        copyAsArray(attribute.type, destination, attribute.data);
-    else if(attribute.type == MeshAttributeType::Vector3)
-        copyAsArray(MeshAttributeType::Vector2, destination, attribute.data);
+    if(attribute._type == MeshAttributeType::Vector2)
+        copyAsArray(attribute._type, destination, attribute._data);
+    else if(attribute._type == MeshAttributeType::Vector3)
+        copyAsArray(MeshAttributeType::Vector2, destination, attribute._data);
     else CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 
@@ -351,12 +351,12 @@ void MeshData::positions3DInto(const Containers::StridedArrayView1D<Vector3> des
     const MeshAttributeData& attribute = _attributes[attributeId];
 
     /* For 2D positions set Z to zero, copy 3D positions as-is */
-    if(attribute.type == MeshAttributeType::Vector2) {
-        const auto input = Containers::arrayCast<const Vector2>(attribute.data);
+    if(attribute._type == MeshAttributeType::Vector2) {
+        const auto input = Containers::arrayCast<const Vector2>(attribute._data);
         for(std::size_t i = 0, max = input.size(); i != max; ++i)
             destination[i] = Vector3{input[i], 0.0f};
-    } else if(attribute.type == MeshAttributeType::Vector3) {
-        copyAsArray(attribute.type, destination, attribute.data);
+    } else if(attribute._type == MeshAttributeType::Vector3) {
+        copyAsArray(attribute._type, destination, attribute._data);
     } else CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 
@@ -372,7 +372,7 @@ void MeshData::normalsInto(const Containers::StridedArrayView1D<Vector3> destina
     CORRADE_ASSERT(destination.size() == _vertexCount, "Trade::MeshData::normalsInto(): expected a view with" << _vertexCount << "elements but got" << destination.size(), );
     const MeshAttributeData& attribute = _attributes[attributeId];
 
-    copyAsArray(attribute.type, destination, attribute.data);
+    copyAsArray(attribute._type, destination, attribute._data);
 }
 
 Containers::Array<Vector3> MeshData::normals(const UnsignedInt id) const {
@@ -387,7 +387,7 @@ void MeshData::textureCoordinates2DInto(const Containers::StridedArrayView1D<Vec
     CORRADE_ASSERT(destination.size() == _vertexCount, "Trade::MeshData::textureCoordinates2DInto(): expected a view with" << _vertexCount << "elements but got" << destination.size(), );
     const MeshAttributeData& attribute = _attributes[attributeId];
 
-    copyAsArray(attribute.type, destination, attribute.data);
+    copyAsArray(attribute._type, destination, attribute._data);
 }
 
 Containers::Array<Vector2> MeshData::textureCoordinates2D(const UnsignedInt id) const {
@@ -402,10 +402,10 @@ void MeshData::colorsInto(const Containers::StridedArrayView1D<Color4> destinati
     CORRADE_ASSERT(destination.size() == _vertexCount, "Trade::MeshData::colorsInto(): expected a view with" << _vertexCount << "elements but got" << destination.size(), );
     const MeshAttributeData& attribute = _attributes[attributeId];
 
-    if(_attributes[attributeId].type == MeshAttributeType::Vector3)
-        copyAsArray<Color4, Color3>(attribute.type, destination, attribute.data);
-    else if(_attributes[attributeId].type == MeshAttributeType::Vector4)
-        copyAsArray<Color4, Color4>(attribute.type, destination, attribute.data);
+    if(_attributes[attributeId]._type == MeshAttributeType::Vector3)
+        copyAsArray<Color4, Color3>(attribute._type, destination, attribute._data);
+    else if(_attributes[attributeId]._type == MeshAttributeType::Vector4)
+        copyAsArray<Color4, Color4>(attribute._type, destination, attribute._data);
     else CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 
