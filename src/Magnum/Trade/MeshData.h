@@ -258,6 +258,16 @@ class MAGNUM_TRADE_EXPORT MeshAttributeData {
         /** @overload */
         template<class T> constexpr explicit MeshAttributeData(MeshAttributeName name, const Containers::ArrayView<T>& data) noexcept: MeshAttributeData{name, Containers::stridedArrayView(data)} {}
 
+        /**
+         * @brief Construct a pad value
+         *
+         * Usable in various @ref MeshTools algorithms to insert padding
+         * between interleaved attributes. Negative values can be used to alias
+         * multiple different attributes onto each other. Not meant to be
+         * passed to @ref MeshData.
+         */
+        constexpr explicit MeshAttributeData(Int padding): _name{}, _type{}, _data{nullptr, 0, padding} {}
+
         /** @brief Attribute name */
         constexpr MeshAttributeName name() const { return _name; }
 
