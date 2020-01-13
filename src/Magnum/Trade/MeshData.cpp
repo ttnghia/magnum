@@ -38,6 +38,16 @@ MeshIndexData::MeshIndexData(const MeshIndexType type, const Containers::ArrayVi
         "Trade::MeshIndexData: view size" << data.size() << "does not correspond to" << type, );
 }
 
+MeshIndexData::MeshIndexData(const Containers::StridedArrayView2D<const char>& data) noexcept {
+    if(data.size()[1] == 4) _type = MeshIndexType::UnsignedInt;
+    else if(data.size()[1] == 2) _type = MeshIndexType::UnsignedShort;
+    else if(data.size()[1] == 1) _type = MeshIndexType::UnsignedByte;
+    else CORRADE_ASSERT(false, "Trade::MeshIndexData: expected index type size 1, 2 or 4 but got" << data.size()[2], );
+
+    CORRADE_ASSERT(data.isContiguous(), "Trade::MeshIndexData: view is not contiguous", );
+    _data = data.asContiguous();
+}
+
 MeshAttributeData::MeshAttributeData(const MeshAttributeName name, const MeshAttributeType type, const Containers::StridedArrayView1D<const void>& data) noexcept: MeshAttributeData{name, type, data, nullptr} {
     /* Yes, this calls into a constexpr function defined in the header --
        because I feel that makes more sense than duplicating the full assert
@@ -178,6 +188,36 @@ MeshIndexType MeshData::indexType() const {
     CORRADE_ASSERT(isIndexed(),
         "Trade::MeshData::indexType(): the mesh is not indexed", {});
     return _indexType;
+}
+
+Containers::StridedArrayView2D<const char> MeshData::indices() const {
+    CORRADE_ASSERT(isIndexed(),
+        "Trade::MeshData::indices(): the mesh is not indexed", {});
+    const std::size_t indexTypeSize = meshIndexTypeSize(_indexType);
+    /* Build a 2D view using information about attribute type size */
+    /** @todo ugh write an arrayCast variant for this (how?) */
+    return Containers::StridedArrayView2D<const char>{
+        /* The view size is there only for a size assert, we're pretty sure the
+           view is valid */
+        {_indices.data(), ~std::size_t{}},
+        {_indices.size()/indexTypeSize, indexTypeSize},
+        {std::ptrdiff_t(indexTypeSize), 1}};
+}
+
+Containers::StridedArrayView2D<char> MeshData::mutableIndices() {
+    CORRADE_ASSERT(_indexDataFlags & DataFlag::Mutable,
+        "Trade::MeshData::mutableIndices(): index data not mutable", {});
+    CORRADE_ASSERT(isIndexed(),
+        "Trade::MeshData::mutableIndices(): the mesh is not indexed", {});
+    const std::size_t indexTypeSize = meshIndexTypeSize(_indexType);
+    /* Build a 2D view using information about attribute type size */
+    /** @todo ugh write an arrayCast variant for this (how?) */
+    return Containers::StridedArrayView2D<char>{
+        /* The view size is there only for a size assert, we're pretty sure the
+           view is valid */
+        {const_cast<char*>(_indices.data()), ~std::size_t{}},
+        {_indices.size()/indexTypeSize, indexTypeSize},
+        {std::ptrdiff_t(indexTypeSize), 1}};
 }
 
 MeshAttributeName MeshData::attributeName(UnsignedInt id) const {
