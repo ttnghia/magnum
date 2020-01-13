@@ -1206,7 +1206,7 @@ template<class T> void MeshDataTest::indicesAsArray() {
     indexView[2] = 240;
 
     MeshData data{MeshPrimitive::Points, std::move(indexData), MeshIndexData{indexView}};
-    CORRADE_COMPARE_AS(data.indices(),
+    CORRADE_COMPARE_AS(data.indicesAsArray(),
         (Containers::Array<UnsignedInt>{Containers::InPlaceInit, {75, 131, 240}}),
         TestSuite::Compare::Container);
 }
@@ -1233,7 +1233,7 @@ template<class T> void MeshDataTest::positions2DAsArray() {
     positionsView[2] = T::pad(Vector2{-2.0f, 3.0f});
 
     MeshData data{MeshPrimitive::Points, std::move(vertexData), {MeshAttributeData{MeshAttributeName::Position, positionsView}}};
-    CORRADE_COMPARE_AS(data.positions2D(), (Containers::Array<Vector2>{
+    CORRADE_COMPARE_AS(data.positions2DAsArray(), (Containers::Array<Vector2>{
         Containers::InPlaceInit, {{2.0f, 1.0f}, {0.0f, -1.0f}, {-2.0f, 3.0f}}}),
         TestSuite::Compare::Container);
 }
@@ -1260,7 +1260,7 @@ template<class T> void MeshDataTest::positions3DAsArray() {
     positionsView[2] = T::pad(Vector3{-2.0f, 3.0f, 2.2f});
 
     MeshData data{MeshPrimitive::Points, std::move(vertexData), {MeshAttributeData{MeshAttributeName::Position, positionsView}}};
-    CORRADE_COMPARE_AS(data.positions3D(), (Containers::Array<Vector3>{
+    CORRADE_COMPARE_AS(data.positions3DAsArray(), (Containers::Array<Vector3>{
         Containers::InPlaceInit, {
             Vector3::pad(T::pad(Vector3{2.0f, 1.0f, 0.3f})),
             Vector3::pad(T::pad(Vector3{0.0f, -1.0f, 1.1f})),
@@ -1290,7 +1290,7 @@ template<class T> void MeshDataTest::normalsAsArray() {
     normalsView[2] = {-2.0f, 3.0f, 2.2f};
 
     MeshData data{MeshPrimitive::Points, std::move(vertexData), {MeshAttributeData{MeshAttributeName::Normal, normalsView}}};
-    CORRADE_COMPARE_AS(data.normals(), (Containers::Array<Vector3>{
+    CORRADE_COMPARE_AS(data.normalsAsArray(), (Containers::Array<Vector3>{
         Containers::InPlaceInit, {{2.0f, 1.0f, 0.3f}, {0.0f, -1.0f, 1.1f}, {-2.0f, 3.0f, 2.2f}}}),
         TestSuite::Compare::Container);
 }
@@ -1317,7 +1317,7 @@ template<class T> void MeshDataTest::textureCoordinates2DAsArray() {
     textureCoordinatesView[2] = {-2.0f, 3.0f};
 
     MeshData data{MeshPrimitive::Points, std::move(vertexData), {MeshAttributeData{MeshAttributeName::TextureCoordinates, textureCoordinatesView}}};
-    CORRADE_COMPARE_AS(data.textureCoordinates2D(), (Containers::Array<Vector2>{
+    CORRADE_COMPARE_AS(data.textureCoordinates2DAsArray(), (Containers::Array<Vector2>{
         Containers::InPlaceInit, {{2.0f, 1.0f}, {0.0f, -1.0f}, {-2.0f, 3.0f}}}),
         TestSuite::Compare::Container);
 }
@@ -1344,7 +1344,7 @@ template<class T> void MeshDataTest::colorsAsArray() {
     colorsView[2] = 0x3377ff_rgbf;
 
     MeshData data{MeshPrimitive::Points, std::move(vertexData), {MeshAttributeData{MeshAttributeName::Color, colorsView}}};
-    CORRADE_COMPARE_AS(data.colors(), (Containers::Array<Color4>{
+    CORRADE_COMPARE_AS(data.colorsAsArray(), (Containers::Array<Color4>{
         Containers::InPlaceInit, {0xff3366_rgbf, 0x99aacc_rgbf, 0x3377ff_rgbf}}),
         TestSuite::Compare::Container);
 }
@@ -1398,14 +1398,14 @@ void MeshDataTest::indicesNotIndexed() {
     data.indexCount();
     data.indexType();
     data.indices<UnsignedInt>();
-    data.indices();
+    data.indicesAsArray();
     UnsignedInt a[1];
     data.indicesInto(a);
     CORRADE_COMPARE(out.str(),
         "Trade::MeshData::indexCount(): the mesh is not indexed\n"
         "Trade::MeshData::indexType(): the mesh is not indexed\n"
         "Trade::MeshData::indices(): the mesh is not indexed\n"
-        "Trade::MeshData::indices(): the mesh is not indexed\n"
+        "Trade::MeshData::indicesAsArray(): the mesh is not indexed\n"
         "Trade::MeshData::indicesInto(): the mesh is not indexed\n");
 }
 
@@ -1444,11 +1444,11 @@ void MeshDataTest::attributeNotFound() {
     data.attribute(MeshAttributeName::Color, 2);
     data.attribute<Vector2>(MeshAttributeName::Position);
     data.attribute<Vector2>(MeshAttributeName::Color, 2);
-    data.positions2D();
-    data.positions3D();
-    data.normals();
-    data.textureCoordinates2D();
-    data.colors(2);
+    data.positions2DAsArray();
+    data.positions3DAsArray();
+    data.normalsAsArray();
+    data.textureCoordinates2DAsArray();
+    data.colorsAsArray(2);
     CORRADE_COMPARE(out.str(),
         "Trade::MeshData::attributeName(): index 2 out of range for 2 attributes\n"
         "Trade::MeshData::attributeType(): index 2 out of range for 2 attributes\n"

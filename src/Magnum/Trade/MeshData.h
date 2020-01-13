@@ -56,14 +56,15 @@ enum class MeshAttributeName: UnsignedByte {
      * @ref Magnum::Vector3 "Vector3" for 3D. Corresponds to
      * @ref Shaders::Generic::Position.
      * @see @ref MeshAttributeType::Vector2, @ref MeshAttributeType::Vector3,
-     *      @ref MeshData::positions2D(), @ref MeshData::positions3D()
+     *      @ref MeshData::positions2DAsArray(),
+     *      @ref MeshData::positions3DAsArray()
      */
     Position = 1,
 
     /**
      * Normal. Type is usually @ref Magnum::Vector3 "Vector3". Corresponds to
      * @ref Shaders::Generic::Normal.
-     * @see @ref MeshAttributeType::Vector3, @ref MeshData::normals()
+     * @see @ref MeshAttributeType::Vector3, @ref MeshData::normalsAsArray()
      */
     Normal,
 
@@ -71,7 +72,7 @@ enum class MeshAttributeName: UnsignedByte {
      * Texture coordinates. Type is usually @ref Magnum::Vector2 "Vector2" for
      * 2D coordinates. Corresponds to @ref Shaders::Generic::TextureCoordinates.
      * @see @ref MeshAttributeType::Vector2,
-     *      @ref MeshData::textureCoordinates2D()
+     *      @ref MeshData::textureCoordinates2DAsArray()
      */
     TextureCoordinates,
 
@@ -82,7 +83,7 @@ enum class MeshAttributeName: UnsignedByte {
      * @ref Shaders::Generic::Color4.
      * @see @ref MeshAttributeType::Vector3,
      *      @ref MeshAttributeType::Vector4,
-     *      @ref MeshData::colors()
+     *      @ref MeshData::colorsAsArray()
      */
     Color,
 
@@ -308,18 +309,18 @@ the @ref Primitives library.
 
 @section Trade-MeshData-usage Basic usage
 
-The simplest usage is through the convenience functions @ref positions2D(),
-@ref positions3D(), @ref normals(), @ref textureCoordinates2D() and
-@ref colors(). Each of these takes an index (as there can be multiple sets of
-texture coordinates, for example) and you're expected to check for attribute
-presence first with either @ref hasAttribute() or
+The simplest usage is through the convenience functions @ref positions2DAsArray(),
+@ref positions3DAsArray(), @ref normalsAsArray(), @ref textureCoordinates2DAsArray()
+and @ref colorsAsArray(). Each of these takes an index (as there can be
+multiple sets of texture coordinates, for example) and you're expected to check
+for attribute presence first with either @ref hasAttribute() or
 @ref attributeCount(MeshAttributeName) const:
 
 @snippet MagnumTrade.cpp MeshData-usage
 
 @section Trade-MeshData-usage-advanced Advanced usage
 
-The @ref positions2D(), ... functions shown above always return a
+The @ref positions2DAsArray(), ... functions shown above always return a
 newly-allocated @ref Corrade::Containers::Array instance with a clearly defined
 type that's large enough to represent most data. While that's fine for many use
 cases, sometimes you may want to minimize the import time of a large model or
@@ -673,9 +674,10 @@ class MAGNUM_TRADE_EXPORT MeshData {
          * @brief Mesh indices
          *
          * Expects that the mesh is indexed and that @p T corresponds to
-         * @ref indexType(). You can also use the non-templated @ref indices()
-         * accessor to get indices converted to 32-bit, but note that such
-         * operation involves extra allocation and data conversion.
+         * @ref indexType(). You can also use the non-templated
+         * @ref indicesAsArray() accessor to get indices converted to 32-bit,
+         * but note that such operation involves extra allocation and data
+         * conversion.
          * @see @ref isIndexed(), @ref attribute(), @ref mutableIndices()
          */
         template<class T> Containers::ArrayView<const T> indices() const;
@@ -828,10 +830,11 @@ class MAGNUM_TRADE_EXPORT MeshData {
          * The @p id is expected to be smaller than @ref attributeCount() const
          * and @p T is expected to correspond to
          * @ref attributeType(UnsignedInt) const. You can also use the
-         * non-templated @ref positions2D(), @ref positions3D(), @ref normals(),
-         * @ref textureCoordinates2D() and @ref colors() accessors to get
-         * common attributes converted to usual types, but note that these
-         * operations involve extra allocation and data conversion.
+         * non-templated @ref positions2DAsArray(), @ref positions3DAsArray(),
+         * @ref normalsAsArray(), @ref textureCoordinates2DAsArray() and
+         * @ref colorsAsArray() accessors to get common attributes converted to
+         * usual types, but note that these operations involve extra allocation
+         * and data conversion.
          * @see @ref attribute(MeshAttributeName, UnsignedInt) const,
          *      @ref mutableAttribute(MeshAttributeName, UnsignedInt)
          */
@@ -875,11 +878,12 @@ class MAGNUM_TRADE_EXPORT MeshData {
          * The @p id is expected to be smaller than
          * @ref attributeCount(MeshAttributeName) const and @p T is expected to
          * correspond to @ref attributeType(MeshAttributeName, UnsignedInt) const.
-         * You can also use the non-templated @ref positions2D(),
-         * @ref positions3D(), @ref normals(), @ref textureCoordinates2D() and
-         * @ref colors() accessors to get common attributes converted to usual
-         * types, but note that these operations involve extra data conversion
-         * and an allocation.
+         * You can also use the non-templated @ref positions2DAsArray(),
+         * @ref positions3DAsArray(), @ref normalsAsArray(),
+         * @ref textureCoordinates2DAsArray() and @ref colorsAsArray()
+         * accessors to get common attributes converted to usual types, but
+         * note that these operations involve extra data conversion and an
+         * allocation.
          * @see @ref attribute(UnsignedInt) const,
          *      @ref mutableAttribute(MeshAttributeName, UnsignedInt)
          */
@@ -902,14 +906,14 @@ class MAGNUM_TRADE_EXPORT MeshData {
          * a newly-allocated array.
          * @see @ref indicesInto()
          */
-        Containers::Array<UnsignedInt> indices() const;
+        Containers::Array<UnsignedInt> indicesAsArray() const;
 
         /**
          * @brief Positions as 32-bit integers into a pre-allocated view
          *
-         * Like @ref indices(), but puts the result into @p destination instead
-         * of allocating a new array. Expects that @p destination is sized to
-         * contain exactly all data.
+         * Like @ref indicesAsArray(), but puts the result into @p destination
+         * instead of allocating a new array. Expects that @p destination is
+         * sized to contain exactly all data.
          * @see @ref indexCount()
          */
         void indicesInto(Containers::ArrayView<UnsignedInt> destination) const;
@@ -924,14 +928,14 @@ class MAGNUM_TRADE_EXPORT MeshData {
          * three-component, the last component is dropped.
          * @see @ref positions2DInto()
          */
-        Containers::Array<Vector2> positions2D(UnsignedInt id = 0) const;
+        Containers::Array<Vector2> positions2DAsArray(UnsignedInt id = 0) const;
 
         /**
          * @brief Positions as 2D float vectors into a pre-allocated view
          *
-         * Like @ref positions2D(), but puts the result into @p destination
-         * instead of allocating a new array. Expects that @p destination is
-         * sized to contain exactly all data.
+         * Like @ref positions2DAsArray(), but puts the result into
+         * @p destination instead of allocating a new array. Expects that
+         * @p destination is sized to contain exactly all data.
          * @see @ref vertexCount()
          */
         void positions2DInto(Containers::StridedArrayView1D<Vector2> destination, UnsignedInt id = 0) const;
@@ -946,14 +950,14 @@ class MAGNUM_TRADE_EXPORT MeshData {
          * two-component, the Z component is set to @cpp 0.0f @ce.
          * @see @ref positions3DInto()
          */
-        Containers::Array<Vector3> positions3D(UnsignedInt id = 0) const;
+        Containers::Array<Vector3> positions3DAsArray(UnsignedInt id = 0) const;
 
         /**
          * @brief Positions as 3D float vectors into a pre-allocated view
          *
-         * Like @ref positions3D(), but puts the result into @p destination
-         * instead of allocating a new array. Expects that @p destination is
-         * sized to contain exactly all data.
+         * Like @ref positions3DAsArray(), but puts the result into
+         * @p destination instead of allocating a new array. Expects that
+         * @p destination is sized to contain exactly all data.
          * @see @ref vertexCount()
          */
         void positions3DInto(Containers::StridedArrayView1D<Vector3> destination, UnsignedInt id = 0) const;
@@ -967,14 +971,14 @@ class MAGNUM_TRADE_EXPORT MeshData {
          * in a newly-allocated array.
          * @see @ref normalsInto()
          */
-        Containers::Array<Vector3> normals(UnsignedInt id = 0) const;
+        Containers::Array<Vector3> normalsAsArray(UnsignedInt id = 0) const;
 
         /**
          * @brief Normals as 3D float vectors into a pre-allocated view
          *
-         * Like @ref normals(), but puts the result into @p destination instead
-         * of allocating a new array. Expects that @p destination is sized to
-         * contain exactly all data.
+         * Like @ref normalsAsArray(), but puts the result into @p destination
+         * instead of allocating a new array. Expects that @p destination is
+         * sized to contain exactly all data.
          * @see @ref vertexCount()
          */
         void normalsInto(Containers::StridedArrayView1D<Vector3> destination, UnsignedInt id = 0) const;
@@ -988,12 +992,12 @@ class MAGNUM_TRADE_EXPORT MeshData {
          * type and returns it in a newly-allocated array.
          * @see @ref textureCoordinates2DInto()
          */
-        Containers::Array<Vector2> textureCoordinates2D(UnsignedInt id = 0) const;
+        Containers::Array<Vector2> textureCoordinates2DAsArray(UnsignedInt id = 0) const;
 
         /**
          * @brief Texture coordinates as 2D float vectors into a pre-allocated view
          *
-         * Like @ref textureCoordinates2D(), but puts the result into
+         * Like @ref textureCoordinates2DAsArray(), but puts the result into
          * @p destination instead of allocating a new array. Expects that
          * @p destination is sized to contain exactly all data.
          * @see @ref vertexCount()
@@ -1010,14 +1014,14 @@ class MAGNUM_TRADE_EXPORT MeshData {
          * three-component, the alpha component is set to @cpp 1.0f @ce.
          * @see @ref colorsInto()
          */
-        Containers::Array<Color4> colors(UnsignedInt id = 0) const;
+        Containers::Array<Color4> colorsAsArray(UnsignedInt id = 0) const;
 
         /**
          * @brief Colors as RGBA floats into a pre-allocated view
          *
-         * Like @ref colors(), but puts the result into @p destination instead
-         * of allocating a new array. Expects that @p destination is sized to
-         * contain exactly all data.
+         * Like @ref colorsAsArray(), but puts the result into @p destination
+         * instead of allocating a new array. Expects that @p destination is
+         * sized to contain exactly all data.
          * @see @ref vertexCount()
          */
         void colorsInto(Containers::StridedArrayView1D<Color4> destination, UnsignedInt id = 0) const;

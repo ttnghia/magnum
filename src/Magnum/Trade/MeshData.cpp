@@ -307,10 +307,10 @@ void MeshData::indicesInto(const Containers::ArrayView<UnsignedInt> destination)
     CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 
-Containers::Array<UnsignedInt> MeshData::indices() const {
+Containers::Array<UnsignedInt> MeshData::indicesAsArray() const {
     /* Repeating the assert here because otherwise it would fire in
        indexCount() which may be confusing */
-    CORRADE_ASSERT(isIndexed(), "Trade::MeshData::indices(): the mesh is not indexed", {});
+    CORRADE_ASSERT(isIndexed(), "Trade::MeshData::indicesAsArray(): the mesh is not indexed", {});
     Containers::Array<UnsignedInt> output{indexCount()};
     indicesInto(output);
     return output;
@@ -341,7 +341,7 @@ void MeshData::positions2DInto(const Containers::StridedArrayView1D<Vector2> des
     else CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 
-Containers::Array<Vector2> MeshData::positions2D(const UnsignedInt id) const {
+Containers::Array<Vector2> MeshData::positions2DAsArray(const UnsignedInt id) const {
     Containers::Array<Vector2> out{_vertexCount};
     positions2DInto(out, id);
     return out;
@@ -363,7 +363,7 @@ void MeshData::positions3DInto(const Containers::StridedArrayView1D<Vector3> des
     } else CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 
-Containers::Array<Vector3> MeshData::positions3D(const UnsignedInt id) const {
+Containers::Array<Vector3> MeshData::positions3DAsArray(const UnsignedInt id) const {
     Containers::Array<Vector3> out{_vertexCount};
     positions3DInto(out, id);
     return out;
@@ -378,7 +378,7 @@ void MeshData::normalsInto(const Containers::StridedArrayView1D<Vector3> destina
     copyAsArray(attribute._type, destination, attribute._data);
 }
 
-Containers::Array<Vector3> MeshData::normals(const UnsignedInt id) const {
+Containers::Array<Vector3> MeshData::normalsAsArray(const UnsignedInt id) const {
     Containers::Array<Vector3> out{_vertexCount};
     normalsInto(out, id);
     return out;
@@ -393,7 +393,7 @@ void MeshData::textureCoordinates2DInto(const Containers::StridedArrayView1D<Vec
     copyAsArray(attribute._type, destination, attribute._data);
 }
 
-Containers::Array<Vector2> MeshData::textureCoordinates2D(const UnsignedInt id) const {
+Containers::Array<Vector2> MeshData::textureCoordinates2DAsArray(const UnsignedInt id) const {
     Containers::Array<Vector2> out{_vertexCount};
     textureCoordinates2DInto(out, id);
     return out;
@@ -412,7 +412,7 @@ void MeshData::colorsInto(const Containers::StridedArrayView1D<Color4> destinati
     else CORRADE_ASSERT_UNREACHABLE(); /* LCOV_EXCL_LINE */
 }
 
-Containers::Array<Color4> MeshData::colors(const UnsignedInt id) const {
+Containers::Array<Color4> MeshData::colorsAsArray(const UnsignedInt id) const {
     Containers::Array<Color4> out{_vertexCount};
     colorsInto(out, id);
     return out;

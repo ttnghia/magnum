@@ -249,14 +249,15 @@ if(!data.hasAttribute(Trade::MeshAttributeName::Position) ||
 
 /* Interleave vertex data */
 GL::Buffer vertices;
-vertices.setData(MeshTools::interleave(data.positions3D(), data.normals()));
+vertices.setData(MeshTools::interleave(data.positions3DAsArray(),
+                                       data.normalsAsArray()));
 mesh.addVertexBuffer(std::move(vertices), 0,
     Shaders::Phong::Position{}, Shaders::Phong::Normal{});
 
 /* Set up an index buffer, if the mesh is indexed*/
 if(data.isIndexed()) {
     GL::Buffer indices;
-    indices.setData(data.indices());
+    indices.setData(data.indicesAsArray());
     mesh.setIndexBuffer(std::move(indices), 0, MeshIndexType::UnsignedInt)
         .setCount(data.indexCount());
 } else mesh.setCount(data.vertexCount());
