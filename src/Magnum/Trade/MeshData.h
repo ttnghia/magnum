@@ -675,9 +675,20 @@ class MAGNUM_TRADE_EXPORT MeshData {
          * @brief Index type
          *
          * Expects that the mesh is indexed.
-         * @see @ref isIndexed()
+         * @see @ref isIndexed(), @ref attributeType()
          */
         MeshIndexType indexType() const;
+
+        /**
+         * @brief Index offset
+         *
+         * Byte offset of the first index from the beginning of the
+         * @ref indexData(), or a byte difference between pointers returned
+         * from @ref indexData() and @ref indices(). Expects that the mesh is
+         * indexed.
+         * @see @ref attributeOffset()
+         */
+        std::size_t indexOffset() const;
 
         /**
          * @brief Mesh indices
@@ -759,7 +770,7 @@ class MAGNUM_TRADE_EXPORT MeshData {
          * The @p is expected to be smaller than @ref attributeCount() const.
          * You can also use @ref attributeType(MeshAttributeName, UnsignedInt) const
          * to directly get a type of given named attribute.
-         * @see @ref attributeName()
+         * @see @ref attributeName(), @ref indexType()
          */
         MeshAttributeType attributeType(UnsignedInt id) const;
 
@@ -767,10 +778,13 @@ class MAGNUM_TRADE_EXPORT MeshData {
          * @brief Attribute offset
          *
          * Byte offset of the first element of given attribute from the
-         * beginning of the @ref vertexData() array. The @p is expected to be
-         * smaller than @ref attributeCount() const. You can also use
+         * beginning of the @ref vertexData() array, or a byte difference
+         * between pointers returned from @ref vertexData() and a particular
+         * @ref attribute(). The @p is expected to be smaller than
+         * @ref attributeCount() const. You can also use
          * @ref attributeOffset(MeshAttributeName, UnsignedInt) const to
          * directly get an offset of given named attribute.
+         * @see @ref indexOffset()
          */
         std::size_t attributeOffset(UnsignedInt id) const;
 

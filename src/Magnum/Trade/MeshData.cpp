@@ -42,7 +42,7 @@ MeshIndexData::MeshIndexData(const Containers::StridedArrayView2D<const char>& d
     if(data.size()[1] == 4) _type = MeshIndexType::UnsignedInt;
     else if(data.size()[1] == 2) _type = MeshIndexType::UnsignedShort;
     else if(data.size()[1] == 1) _type = MeshIndexType::UnsignedByte;
-    else CORRADE_ASSERT(false, "Trade::MeshIndexData: expected index type size 1, 2 or 4 but got" << data.size()[2], );
+    else CORRADE_ASSERT(false, "Trade::MeshIndexData: expected index type size 1, 2 or 4 but got" << data.size()[1], );
 
     CORRADE_ASSERT(data.isContiguous(), "Trade::MeshIndexData: view is not contiguous", );
     _data = data.asContiguous();
@@ -188,6 +188,12 @@ MeshIndexType MeshData::indexType() const {
     CORRADE_ASSERT(isIndexed(),
         "Trade::MeshData::indexType(): the mesh is not indexed", {});
     return _indexType;
+}
+
+std::size_t MeshData::indexOffset() const {
+    CORRADE_ASSERT(isIndexed(),
+        "Trade::MeshData::indexOffset(): the mesh is not indexed", {});
+    return _indices.data() - _indexData.data();
 }
 
 Containers::StridedArrayView2D<const char> MeshData::indices() const {
