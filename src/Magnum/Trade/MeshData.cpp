@@ -293,7 +293,7 @@ Containers::StridedArrayView2D<const char> MeshData::attribute(UnsignedInt id) c
         /* The view size is there only for a size assert, we're pretty sure the
            view is valid */
         {static_cast<const char*>(_attributes[id]._data.data()), ~std::size_t{}},
-        {_attributes[id]._data.size(), meshAttributeTypeSize(_attributes[id]._type)},
+        {_vertexCount, meshAttributeTypeSize(_attributes[id]._type)},
         {_attributes[id]._data.stride(), 1}};
 }
 
@@ -308,7 +308,7 @@ Containers::StridedArrayView2D<char> MeshData::mutableAttribute(UnsignedInt id) 
         /* The view size is there only for a size assert, we're pretty sure the
            view is valid */
         {static_cast<char*>(const_cast<void*>(_attributes[id]._data.data())), ~std::size_t{}},
-        {_attributes[id]._data.size(), meshAttributeTypeSize(_attributes[id]._type)},
+        {_vertexCount, meshAttributeTypeSize(_attributes[id]._type)},
         {_attributes[id]._data.stride(), 1}};
 }
 
@@ -461,14 +461,21 @@ Containers::Array<Color4> MeshData::colorsAsArray(const UnsignedInt id) const {
 }
 
 Containers::Array<char> MeshData::releaseIndexData() {
-    _indexType = MeshIndexType{}; /* so isIndexed() returns false */
-    _indices = nullptr;
-    return std::move(_indexData);
+    _indices = {_indices.data(), 0};
+    Containers::Array<char> out = std::move(_indexData);
+    _indexData = Containers::Array<char>{out.data(), 0, Implementation::nonOwnedArrayDeleter};
+    return out;
+}
+
+Containers::Array<MeshAttributeData> MeshData::releaseAttributeData() {
+    return std::move(_attributes);
 }
 
 Containers::Array<char> MeshData::releaseVertexData() {
-    _attributes = nullptr;
-    return std::move(_vertexData);
+    _vertexCount = 0;
+    Containers::Array<char> out = std::move(_vertexData);
+    _vertexData = Containers::Array<char>{out.data(), 0, Implementation::nonOwnedArrayDeleter};
+    return out;
 }
 
 Debug& operator<<(Debug& debug, const MeshAttributeName value) {
