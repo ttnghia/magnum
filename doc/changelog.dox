@@ -75,6 +75,8 @@ See also:
 
 @subsubsection changelog-latest-new-meshtools MeshTools library
 
+-   Added @ref MeshTools::interleavedLayout() for convenient creation of an
+    interleaved mesh layout using the new @ref Trade::MeshData API
 -   Added @ref MeshTools::subdivideInPlace() for allocation-less mesh
     subdivision
 -   New @ref MeshTools::removeDuplicates() variant that works on discrete data
