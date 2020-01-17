@@ -628,6 +628,11 @@ void MeshDataTest::construct() {
     CORRADE_COMPARE(data.attributeCount(meshAttributeNameCustom(13)), 1);
     CORRADE_COMPARE(data.attributeCount(MeshAttributeName::Color), 0);
     CORRADE_COMPARE(data.attributeCount(meshAttributeNameCustom(23)), 0);
+    CORRADE_COMPARE(data.attributeId(MeshAttributeName::Position), 0);
+    CORRADE_COMPARE(data.attributeId(MeshAttributeName::Normal), 2);
+    CORRADE_COMPARE(data.attributeId(MeshAttributeName::TextureCoordinates), 1);
+    CORRADE_COMPARE(data.attributeId(MeshAttributeName::TextureCoordinates, 1), 3);
+    CORRADE_COMPARE(data.attributeId(meshAttributeNameCustom(13)), 4);
     CORRADE_COMPARE(data.attributeType(MeshAttributeName::Position),
         MeshAttributeType::Vector3);
     CORRADE_COMPARE(data.attributeType(MeshAttributeName::Normal),
@@ -1531,6 +1536,8 @@ void MeshDataTest::attributeNotFound() {
     data.attributeStride(2);
     data.attribute(2);
     data.attribute<Vector2>(2);
+    data.attributeId(MeshAttributeName::Position);
+    data.attributeId(MeshAttributeName::Color, 2);
     data.attributeType(MeshAttributeName::Position);
     data.attributeType(MeshAttributeName::Color, 2);
     data.attributeOffset(MeshAttributeName::Position);
@@ -1553,6 +1560,8 @@ void MeshDataTest::attributeNotFound() {
         "Trade::MeshData::attributeStride(): index 2 out of range for 2 attributes\n"
         "Trade::MeshData::attribute(): index 2 out of range for 2 attributes\n"
         "Trade::MeshData::attribute(): index 2 out of range for 2 attributes\n"
+        "Trade::MeshData::attributeId(): index 0 out of range for 0 Trade::MeshAttributeName::Position attributes\n"
+        "Trade::MeshData::attributeId(): index 2 out of range for 2 Trade::MeshAttributeName::Color attributes\n"
         "Trade::MeshData::attributeType(): index 0 out of range for 0 Trade::MeshAttributeName::Position attributes\n"
         "Trade::MeshData::attributeType(): index 2 out of range for 2 Trade::MeshAttributeName::Color attributes\n"
         "Trade::MeshData::attributeOffset(): index 0 out of range for 0 Trade::MeshAttributeName::Position attributes\n"

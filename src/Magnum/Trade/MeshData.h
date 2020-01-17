@@ -816,6 +816,14 @@ class MAGNUM_TRADE_EXPORT MeshData {
         UnsignedInt attributeCount(MeshAttributeName name) const;
 
         /**
+         * @brief Absolute ID of given named attribute
+         *
+         * The @p id is expected to be smaller than
+         * @ref attributeCount(MeshAttributeName) const.
+         */
+        UnsignedInt attributeId(MeshAttributeName name, UnsignedInt id = 0) const;
+
+        /**
          * @brief Type of a named attribute
          *
          * The @p id is expected to be smaller than
@@ -1127,6 +1135,7 @@ class MAGNUM_TRADE_EXPORT MeshData {
            implementations. */
         friend AbstractImporter;
 
+        /* Internal helper that doesn't assert, unlike attributeId() */
         UnsignedInt attributeFor(MeshAttributeName name, UnsignedInt id) const;
 
         UnsignedInt _vertexCount;
