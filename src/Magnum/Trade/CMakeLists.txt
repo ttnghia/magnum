@@ -30,8 +30,6 @@ set(MagnumTrade_SRCS
     ArrayAllocator.cpp
     Data.cpp
     LightData.cpp
-    MeshData2D.cpp
-    MeshData3D.cpp
     MeshObjectData2D.cpp
     MeshObjectData3D.cpp
     SceneData.cpp
@@ -58,8 +56,6 @@ set(MagnumTrade_HEADERS
     ImageData.h
     LightData.h
     MeshData.h
-    MeshData2D.h
-    MeshData3D.h
     MeshObjectData2D.h
     MeshObjectData3D.h
     ObjectData2D.h
@@ -73,6 +69,15 @@ set(MagnumTrade_HEADERS
 
 set(MagnumTrade_PRIVATE_HEADERS
     Implementation/arrayUtilities.h)
+
+if(MAGNUM_BUILD_DEPRECATED)
+    list(APPEND MagnumTrade_SRCS
+        MeshData2D.cpp
+        MeshData3D.cpp)
+    list(APPEND MagnumTrade_HEADERS
+        MeshData2D.h
+        MeshData3D.h)
+endif()
 
 if(NOT CORRADE_PLUGINMANAGER_NO_DYNAMIC_PLUGIN_SUPPORT)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/configure.h.cmake

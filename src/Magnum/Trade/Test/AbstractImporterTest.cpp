@@ -46,6 +46,8 @@
 #include "Magnum/Trade/TextureData.h"
 
 #ifdef MAGNUM_BUILD_DEPRECATED
+#define _MAGNUM_NO_DEPRECATED_MESHDATA /* So it doesn't yell here */
+
 #include "Magnum/Trade/MeshData2D.h"
 #include "Magnum/Trade/MeshData3D.h"
 #endif
@@ -2508,10 +2510,12 @@ void AbstractImporterTest::mesh2D() {
             if(id == 7) return "eighth";
             else return {};
         }
+        CORRADE_IGNORE_DEPRECATED_PUSH
         Containers::Optional<MeshData2D> doMesh2D(UnsignedInt id) override {
             if(id == 7) return MeshData2D{{}, {}, {{}}, {}, {}, &state};
             else return {};
         }
+        CORRADE_IGNORE_DEPRECATED_POP
     } importer;
 
     CORRADE_IGNORE_DEPRECATED_PUSH
@@ -2696,10 +2700,12 @@ void AbstractImporterTest::mesh3D() {
             if(id == 7) return "eighth";
             else return {};
         }
+        CORRADE_IGNORE_DEPRECATED_PUSH
         Containers::Optional<MeshData3D> doMesh3D(UnsignedInt id) override {
             if(id == 7) return MeshData3D{{}, {}, {{}}, {}, {}, {}, &state};
             else return {};
         }
+        CORRADE_IGNORE_DEPRECATED_POP
     } importer;
 
     CORRADE_IGNORE_DEPRECATED_PUSH
