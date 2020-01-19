@@ -24,7 +24,9 @@
 */
 
 #include <sstream>
+#include <Corrade/Containers/StridedArrayView.h>
 #include <Corrade/TestSuite/Tester.h>
+#include <Corrade/TestSuite/Compare/Container.h>
 #include <Corrade/Utility/DebugStl.h>
 
 #include "Magnum/Math/Vector3.h"
@@ -36,13 +38,15 @@ struct FlipNormalsTest: TestSuite::Tester {
     explicit FlipNormalsTest();
 
     void wrongIndexCount();
-    void flipFaceWinding();
+    template<class T> void flipFaceWinding();
     void flipNormals();
 };
 
 FlipNormalsTest::FlipNormalsTest() {
     addTests({&FlipNormalsTest::wrongIndexCount,
-              &FlipNormalsTest::flipFaceWinding,
+              &FlipNormalsTest::flipFaceWinding<UnsignedByte>,
+              &FlipNormalsTest::flipFaceWinding<UnsignedShort>,
+              &FlipNormalsTest::flipFaceWinding<UnsignedInt>,
               &FlipNormalsTest::flipNormals});
 }
 
@@ -50,30 +54,31 @@ void FlipNormalsTest::wrongIndexCount() {
     std::stringstream ss;
     Error redirectError{&ss};
 
-    std::vector<UnsignedInt> indices{0, 1};
-    MeshTools::flipFaceWinding(indices);
+    UnsignedByte indices[2];
+    MeshTools::flipFaceWindingInPlace(Containers::stridedArrayView(indices));
 
     CORRADE_COMPARE(ss.str(), "MeshTools::flipNormals(): index count is not divisible by 3!\n");
 }
 
-void FlipNormalsTest::flipFaceWinding() {
-    std::vector<UnsignedInt> indices{0, 1, 2,
-                                       3, 4, 5};
-    MeshTools::flipFaceWinding(indices);
+template<class T> void FlipNormalsTest::flipFaceWinding() {
+    setTestCaseTemplateName(Math::TypeTraits<T>::name());
 
-    CORRADE_COMPARE(indices, (std::vector<UnsignedInt>{0, 2, 1,
-                                                         3, 5, 4}));
+    T indices[]{0, 1, 2, 3, 4, 5};
+    MeshTools::flipFaceWindingInPlace(indices);
+
+    CORRADE_COMPARE_AS(Containers::arrayView(indices),
+        Containers::arrayView<T>({0, 2, 1, 3, 5, 4}),
+        TestSuite::Compare::Container);
 }
 
 void FlipNormalsTest::flipNormals() {
-    std::vector<Vector3> normals{Vector3::xAxis(),
-                                 Vector3::yAxis(),
-                                 Vector3::zAxis()};
-    MeshTools::flipNormals(normals);
+    Vector3 normals[]{Vector3::xAxis(), Vector3::yAxis(), Vector3::zAxis()};
+    MeshTools::flipNormalsInPlace(normals);
 
-    CORRADE_COMPARE(normals, (std::vector<Vector3>{-Vector3::xAxis(),
-                                                   -Vector3::yAxis(),
-                                                   -Vector3::zAxis()}));
+    CORRADE_COMPARE_AS(Containers::arrayView(normals),
+        Containers::arrayView<Vector3>({
+            -Vector3::xAxis(), -Vector3::yAxis(), -Vector3::zAxis()
+        }), TestSuite::Compare::Container);
 }
 
 }}}}
