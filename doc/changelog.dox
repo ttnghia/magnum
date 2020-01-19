@@ -150,6 +150,13 @@ See also:
     variant
 -   Added @ref MeshTools::duplicateInto() variants that take type-erased
     2D strided array views
+-   @ref MeshTools::flipNormalsInPlace() and @ref MeshTools::flipFaceWindingInPlace()
+    were renamed for clarity and now accept a
+    @ref Corrade::Containers::StridedArrayView instead of a @ref std::vector,
+    additionally working on 8- and 16-byte index types as well
+-   @ref MeshTools::tipsifyInPlace() was renamed for clarity and now accepts a
+    @ref Corrade::Containers::StridedArrayView instead of a @ref std::vector,
+    additionally working on 8- and 16-byte index types as well
 -   Added @ref MeshTools::generateSmoothNormals() and
     @ref MeshTools::generateSmoothNormalsInto() variants taking type-erased
     index arrays
@@ -238,6 +245,12 @@ See also:
     @cpp Platform::Sdl2Application::Configuration::isMouseLocked() @ce is
     deprecated in favor of the new @ref Platform::Sdl2Application::setCursor()
     together with @ref Platform::Sdl2Application::Cursor::HiddenLocked
+-   @cpp MeshTools::flipNormals() @ce and @cpp MeshTools::flipFaceWinding() @ce
+    and @cpp MeshTools::tipsify() @ce are deprecated in favor of
+    @ref MeshTools::flipNormalsInPlace(),
+    @ref MeshTools::flipFaceWindingInPlace() and @ref MeshTools::tipsifyInPlace()
+    that accept a @ref Corrade::Containers::StridedArrayView instead of a
+    @ref std::vector and work with 8- and 16-byte index types as well.
 
 @subsection changelog-latest-compatibility Potential compatibility breakages, removed APIs
 
