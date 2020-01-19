@@ -71,6 +71,11 @@ See also:
 -   Added @ref Math::Quaternion::toEuler() and documented how to convert Euler
     angles to a quaternion (see [mosra/magnum#397](https://github.com/mosra/magnum/pull/397))
 
+@subsubsection changelog-latest-new-meshtools MeshTools library
+
+-   Added @ref MeshTools::subdivideInPlace() for allocation-less mesh
+    subdivision
+
 @subsubsection changelog-latest-new-platform Platform libraries
 
 -   Cursor management using @ref Platform::Sdl2Application::setCursor(),
@@ -138,8 +143,8 @@ See also:
 
 @subsubsection changelog-latest-changes-meshtools MeshTools library
 
--   Added @ref MeshTools::subdivideInPlace() that operates on a partially
-    filled array view instead of a @ref std::vector
+-   Added @ref MeshTools::subdivide() that operates on a (growable)
+    @ref Corrade::Containers::Array instead of a @ref std::vector
 -   Added @ref MeshTools::removeDuplicatesIndexed() that operates in-place on
     an indexed array view and a STL-less @ref MeshTools::removeDuplicates()
     variant
