@@ -37,27 +37,109 @@ struct RemoveDuplicatesTest: TestSuite::Tester {
     explicit RemoveDuplicatesTest();
 
     void removeDuplicates();
-    void removeDuplicatesStl();
+    void removeDuplicatesNonContiguous();
     template<class T> void removeDuplicatesIndexed();
     void removeDuplicatesIndexedSmallType();
     void removeDuplicatesIndexedEmptyIndices();
     void removeDuplicatesIndexedEmptyIndicesVertices();
+
+    void removeDuplicatesFuzzy();
+    void removeDuplicatesFuzzyStl();
+    template<class T> void removeDuplicatesFuzzyIndexed();
+    void removeDuplicatesFuzzyIndexedSmallType();
+    void removeDuplicatesFuzzyIndexedEmptyIndices();
+    void removeDuplicatesFuzzyIndexedEmptyIndicesVertices();
 
     /* this is additionally regression-tested in PrimitivesIcosphereTest */
 };
 
 RemoveDuplicatesTest::RemoveDuplicatesTest() {
     addTests({&RemoveDuplicatesTest::removeDuplicates,
-              &RemoveDuplicatesTest::removeDuplicatesStl,
+              &RemoveDuplicatesTest::removeDuplicatesNonContiguous,
               &RemoveDuplicatesTest::removeDuplicatesIndexed<UnsignedByte>,
               &RemoveDuplicatesTest::removeDuplicatesIndexed<UnsignedShort>,
               &RemoveDuplicatesTest::removeDuplicatesIndexed<UnsignedInt>,
               &RemoveDuplicatesTest::removeDuplicatesIndexedSmallType,
               &RemoveDuplicatesTest::removeDuplicatesIndexedEmptyIndices,
-              &RemoveDuplicatesTest::removeDuplicatesIndexedEmptyIndicesVertices});
+              &RemoveDuplicatesTest::removeDuplicatesIndexedEmptyIndicesVertices,
+
+              &RemoveDuplicatesTest::removeDuplicatesFuzzy,
+              &RemoveDuplicatesTest::removeDuplicatesFuzzyStl,
+              &RemoveDuplicatesTest::removeDuplicatesFuzzyIndexed<UnsignedByte>,
+              &RemoveDuplicatesTest::removeDuplicatesFuzzyIndexed<UnsignedShort>,
+              &RemoveDuplicatesTest::removeDuplicatesFuzzyIndexed<UnsignedInt>,
+              &RemoveDuplicatesTest::removeDuplicatesFuzzyIndexedSmallType,
+              &RemoveDuplicatesTest::removeDuplicatesFuzzyIndexedEmptyIndices,
+              &RemoveDuplicatesTest::removeDuplicatesFuzzyIndexedEmptyIndicesVertices});
 }
 
 void RemoveDuplicatesTest::removeDuplicates() {
+    Int data[]{-15, 32, 24, -15, 15, 7541, 24, 32};
+
+    std::pair<Containers::Array<UnsignedInt>, std::size_t> result =
+        MeshTools::removeDuplicates(Containers::arrayCast<2, char>(Containers::arrayView(data)));
+    CORRADE_COMPARE_AS(Containers::arrayView(result.first),
+        Containers::arrayView<UnsignedInt>({0, 1, 2, 0, 3, 4, 2, 1}),
+        TestSuite::Compare::Container);
+    CORRADE_COMPARE_AS(Containers::arrayView(data).prefix(result.second),
+        Containers::arrayView<Int>({-15, 32, 24, 15, 7541}),
+        TestSuite::Compare::Container);
+}
+
+void RemoveDuplicatesTest::removeDuplicatesNonContiguous() {
+    Int data[]{-15, 32, 24, -15, 15, 7541, 24, 32};
+
+    std::ostringstream out;
+    Error redirectError{&out};
+    MeshTools::removeDuplicates(Containers::arrayCast<2, char>(Containers::arrayView(data)).every({1, 2}));
+    CORRADE_COMPARE(out.str(), "MeshTools::removeDuplicates(): second data view dimension is not contiguous\n");
+}
+
+template<class T> void RemoveDuplicatesTest::removeDuplicatesIndexed() {
+    setTestCaseTemplateName(Math::TypeTraits<T>::name());
+
+    T indices[]{3, 2, 0, 1, 7, 6, 4, 2, 5, 0};
+    Int data[]{-15, 32, 24, -15, 15, 7541, 24, 32};
+    std::size_t count = MeshTools::removeDuplicatesIndexed(indices,
+        Containers::arrayCast<2, char>(Containers::arrayView(data)));
+
+    CORRADE_COMPARE_AS(Containers::arrayView(indices),
+        Containers::arrayView<T>({0, 2, 0, 1, 1, 2, 3, 2, 4, 0}),
+        TestSuite::Compare::Container);
+    CORRADE_COMPARE_AS(Containers::arrayView(data).prefix(count),
+        Containers::arrayView<Int>({-15, 32, 24, 15, 7541}),
+        TestSuite::Compare::Container);
+}
+
+void RemoveDuplicatesTest::removeDuplicatesIndexedSmallType() {
+    std::stringstream out;
+    Error redirectError{&out};
+
+    UnsignedByte indices[1];
+    Vector2i data[256]{};
+    MeshTools::removeDuplicatesIndexed(
+        Containers::stridedArrayView(indices),
+        Containers::arrayCast<2, char>(Containers::arrayView(data)));
+    CORRADE_COMPARE(out.str(), "MeshTools::removeDuplicatesIndexed(): a 1-byte index type is too small for 256 vertices\n");
+}
+
+void RemoveDuplicatesTest::removeDuplicatesIndexedEmptyIndices() {
+    Int data[]{-15, 32, 24, -15, 15, 7541, 24, 32};
+
+    std::size_t count = MeshTools::removeDuplicatesIndexed(
+        Containers::StridedArrayView1D<UnsignedInt>{},
+        Containers::arrayCast<2, char>(Containers::arrayView(data)));
+    CORRADE_COMPARE_AS(Containers::arrayView(data).prefix(count),
+        Containers::arrayView<Int>({-15, 32, 24, 15, 7541}),
+        TestSuite::Compare::Container);
+}
+
+void RemoveDuplicatesTest::removeDuplicatesIndexedEmptyIndicesVertices() {
+    CORRADE_COMPARE(MeshTools::removeDuplicatesIndexed(
+        Containers::StridedArrayView1D<UnsignedInt>{}, {}), 0);
+}
+
+void RemoveDuplicatesTest::removeDuplicatesFuzzy() {
     /* Numbers with distance 1 should be merged, numbers with distance 2 should
        be kept. Testing both even-odd and odd-even sequence to verify that
        half-epsilon translations are applied properly. */
@@ -77,7 +159,7 @@ void RemoveDuplicatesTest::removeDuplicates() {
         TestSuite::Compare::Container);
 }
 
-void RemoveDuplicatesTest::removeDuplicatesStl() {
+void RemoveDuplicatesTest::removeDuplicatesFuzzyStl() {
     /* Same but with implicit bloat. HEH HEH */
     std::vector<Vector2i> data{
         {1, 0},
@@ -95,7 +177,7 @@ void RemoveDuplicatesTest::removeDuplicatesStl() {
         TestSuite::Compare::Container);
 }
 
-template<class T> void RemoveDuplicatesTest::removeDuplicatesIndexed() {
+template<class T> void RemoveDuplicatesTest::removeDuplicatesFuzzyIndexed() {
     setTestCaseTemplateName(Math::TypeTraits<T>::name());
 
     /* Same as above, but with an explicit index buffer */
@@ -118,7 +200,7 @@ template<class T> void RemoveDuplicatesTest::removeDuplicatesIndexed() {
         TestSuite::Compare::Container);
 }
 
-void RemoveDuplicatesTest::removeDuplicatesIndexedSmallType() {
+void RemoveDuplicatesTest::removeDuplicatesFuzzyIndexedSmallType() {
     std::stringstream out;
     Error redirectError{&out};
 
@@ -130,7 +212,7 @@ void RemoveDuplicatesTest::removeDuplicatesIndexedSmallType() {
     CORRADE_COMPARE(out.str(), "MeshTools::removeDuplicatesIndexed(): a 1-byte index type is too small for 256 vertices\n");
 }
 
-void RemoveDuplicatesTest::removeDuplicatesIndexedEmptyIndices() {
+void RemoveDuplicatesTest::removeDuplicatesFuzzyIndexedEmptyIndices() {
     Vector2i data[]{
         {1, 0},
         {2, 1},
@@ -146,7 +228,7 @@ void RemoveDuplicatesTest::removeDuplicatesIndexedEmptyIndices() {
         TestSuite::Compare::Container);
 }
 
-void RemoveDuplicatesTest::removeDuplicatesIndexedEmptyIndicesVertices() {
+void RemoveDuplicatesTest::removeDuplicatesFuzzyIndexedEmptyIndicesVertices() {
     CORRADE_COMPARE((MeshTools::removeDuplicatesIndexed<UnsignedInt, Vector2i>({}, {}, 2)), 0);
 }
 
