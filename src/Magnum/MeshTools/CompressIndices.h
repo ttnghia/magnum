@@ -35,6 +35,7 @@
 
 #include "Magnum/Mesh.h"
 #include "Magnum/MeshTools/visibility.h"
+#include "Magnum/Trade/Trade.h"
 
 #ifdef MAGNUM_BUILD_DEPRECATED
 #include <tuple>
@@ -133,6 +134,25 @@ Same as @ref compressIndices(const Containers::StridedArrayView2D<const char>&, 
 with @p atLeast set to @ref MeshIndexType::UnsignedShort.
 */
 MAGNUM_MESHTOOLS_EXPORT std::pair<Containers::Array<char>, MeshIndexType> compressIndices(const Containers::StridedArrayView2D<const char>& indices, Long offset);
+
+/**
+@brief Compress mesh data indices
+
+Does the same as @ref compressIndices(const Containers::StridedArrayView1D<const UnsignedInt>&, MeshIndexType, Long),
+but together with adjusting vertex attribute offsets.
+*/
+MAGNUM_MESHTOOLS_EXPORT Trade::MeshData compressIndices(const Trade::MeshData& data, MeshIndexType atLeast = MeshIndexType::UnsignedShort);
+
+/**
+@brief Compress mesh data indices
+
+Compared to @ref compressIndices(const Trade::MeshData&, MeshIndexType) this
+function can transfer ownership of @p data vertex buffer (in case it is
+owned) to the returned instance instead of making copies of it. Index and
+attribute data are copied always.
+@see @ref Trade::MeshData::vertexDataFlags()
+*/
+MAGNUM_MESHTOOLS_EXPORT Trade::MeshData compressIndices(Trade::MeshData&& data, MeshIndexType atLeast = MeshIndexType::UnsignedShort);
 
 #ifdef MAGNUM_BUILD_DEPRECATED
 /**
