@@ -91,8 +91,10 @@ See @ref building, @ref cmake and @ref plugins for more information.
 
 @section Trade-ObjImporter-limitations Behavior and limitations
 
-Polygons (quads etc.), automatic normal generation and material properties are
-currently not supported.
+Meshes are imported interleaved with normals and texture coordinates, if
+available in the source file, and a compressed index buffer.
+
+Polygons (quads etc.) and material properties are currently not supported.
 */
 class MAGNUM_OBJIMPORTER_EXPORT ObjImporter: public AbstractImporter {
     public:
@@ -114,10 +116,10 @@ class MAGNUM_OBJIMPORTER_EXPORT ObjImporter: public AbstractImporter {
         MAGNUM_OBJIMPORTER_LOCAL void doOpenFile(const std::string& filename) override;
         MAGNUM_OBJIMPORTER_LOCAL void doClose() override;
 
-        MAGNUM_OBJIMPORTER_LOCAL UnsignedInt doMesh3DCount() const override;
-        MAGNUM_OBJIMPORTER_LOCAL Int doMesh3DForName(const std::string& name) override;
-        MAGNUM_OBJIMPORTER_LOCAL std::string doMesh3DName(UnsignedInt id) override;
-        MAGNUM_OBJIMPORTER_LOCAL Containers::Optional<MeshData3D> doMesh3D(UnsignedInt id) override;
+        MAGNUM_OBJIMPORTER_LOCAL UnsignedInt doMeshCount() const override;
+        MAGNUM_OBJIMPORTER_LOCAL Int doMeshForName(const std::string& name) override;
+        MAGNUM_OBJIMPORTER_LOCAL std::string doMeshName(UnsignedInt id) override;
+        MAGNUM_OBJIMPORTER_LOCAL Containers::Optional<MeshData> doMesh(UnsignedInt id) override;
 
         MAGNUM_OBJIMPORTER_LOCAL void parseMeshNames();
 
