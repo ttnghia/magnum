@@ -23,6 +23,8 @@
     DEALINGS IN THE SOFTWARE.
 */
 
+#include <tuple> /* for std::tie() :( */
+
 #include "Magnum/GL/Buffer.h"
 #include "Magnum/GL/Mesh.h"
 #include "Magnum/Math/Vector3.h"
@@ -35,6 +37,25 @@ int main() {
 
 {
 /* [compressIndices] */
+Containers::Array<UnsignedInt> indices;
+
+Containers::Array<char> indexData;
+MeshIndexType indexType;
+std::tie(indexData, indexType) = MeshTools::compressIndices(indices);
+
+GL::Buffer indexBuffer;
+indexBuffer.setData(indexData);
+
+GL::Mesh mesh;
+mesh.setCount(indices.size())
+    .setIndexBuffer(indexBuffer, 0, indexType);
+/* [compressIndices] */
+}
+
+#ifdef MAGNUM_BUILD_DEPRECATED
+{
+CORRADE_IGNORE_DEPRECATED_PUSH
+/* [compressIndices-stl] */
 std::vector<UnsignedInt> indices;
 
 Containers::Array<char> indexData;
@@ -49,8 +70,10 @@ indexBuffer.setData(indexData, GL::BufferUsage::StaticDraw);
 GL::Mesh mesh;
 mesh.setCount(indices.size())
     .setIndexBuffer(indexBuffer, 0, indexType, indexStart, indexEnd);
-/* [compressIndices] */
+/* [compressIndices-stl] */
 }
+CORRADE_IGNORE_DEPRECATED_POP
+#endif
 
 {
 struct MyShader {
