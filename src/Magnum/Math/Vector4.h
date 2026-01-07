@@ -315,6 +315,7 @@ template<class T> Vector4<T> planeEquation(const Vector3<T>& normal, const Vecto
 }
 
 namespace Implementation {
+    /* Used by Swizzle.h */
     template<class T> struct TypeForSize<4, T> { typedef Math::Vector4<typename T::Type> Type; };
     #ifndef MAGNUM_NO_MATH_STRICT_WEAK_ORDERING
     template<class T> struct StrictWeakOrdering<Vector4<T>>: StrictWeakOrdering<Vector<4, T>> {};

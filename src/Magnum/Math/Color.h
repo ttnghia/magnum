@@ -1942,6 +1942,7 @@ MAGNUM_EXPORT Debug& operator<<(Debug& debug, const Color4<UnsignedByte>& value)
 #endif
 
 namespace Implementation {
+    /* Used by Swizzle.h */
     template<class T> struct TypeForSize<3, Color3<T>> { typedef Color3<T> Type; };
     template<class T> struct TypeForSize<3, Color4<T>> { typedef Color3<T> Type; };
     template<class T> struct TypeForSize<4, Color3<T>> { typedef Color4<T> Type; };

@@ -288,6 +288,7 @@ _MAGNUM_VECTORn_OPERATOR_IMPLEMENTATION(3, Vector3)
 #endif
 
 namespace Implementation {
+    /* Used by Swizzle.h */
     template<class T> struct TypeForSize<3, T> { typedef Math::Vector3<typename T::Type> Type; };
     #ifndef MAGNUM_NO_MATH_STRICT_WEAK_ORDERING
     template<class T> struct StrictWeakOrdering<Vector3<T>>: StrictWeakOrdering<Vector<3, T>> {};

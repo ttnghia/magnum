@@ -59,6 +59,9 @@ namespace Implementation {
         template<class T> constexpr static T value(const Math::Vector<size, T>&) { return T(1); }
     };
 
+    /* Additional specializations in Vector2.h, Vector3.h, Vector4.h and
+       Color.h. That way it's possible to return a concrete Vector subtype
+       without having to include it directly from here. */
     template<std::size_t size, class T> struct TypeForSize {
         typedef Math::Vector<size, typename T::Type> Type;
     };

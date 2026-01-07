@@ -250,6 +250,7 @@ _MAGNUM_VECTORn_OPERATOR_IMPLEMENTATION(2, Vector2)
 #endif
 
 namespace Implementation {
+    /* Used by Swizzle.h */
     template<std::size_t, class> struct TypeForSize;
     template<class T> struct TypeForSize<2, T> { typedef Math::Vector2<typename T::Type> Type; };
     #ifndef MAGNUM_NO_MATH_STRICT_WEAK_ORDERING
