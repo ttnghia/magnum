@@ -1231,6 +1231,9 @@ See also:
     also for any use of @ref Platform application classes, fixing that would
     however only add warning suppression noise or force destructors to be
     `virtual` for no reason, so it's not done there. See [mosra/magnum#665](https://github.com/mosra/magnum/issues/665).
+-   Fixed a GCC warning about mismatched symbol export in @ref GL::Mesh on
+    static builds where user code didn't compile with `-fvisiblity=hidden`
+    (see [mosra/magnum#683](https://github.com/mosra/magnum/issues/683))
 
 @subsection changelog-latest-bugfixes Bug fixes
 

@@ -1203,7 +1203,7 @@ class MAGNUM_GL_EXPORT Mesh: public AbstractObject {
         friend MeshView;
         friend Implementation::MeshState;
 
-        struct MAGNUM_GL_LOCAL AttributeLayout;
+        struct AttributeLayout;
 
         /* Used by wrap() */
         explicit Mesh(GLuint id, MeshPrimitive primitive, ObjectFlags flags);
