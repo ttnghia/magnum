@@ -4,7 +4,7 @@ class Magnum < Formula
   # git describe origin/master, except the `v` prefix
   version "2020.06-3494-gb85f0c8df"
   # Clone instead of getting an archive to have tags for version.h generation
-  url "https://github.com/mosra/magnum.git", revision: "b85f0c8df"
+  url "https://github.com/mosra/magnum.git", revision: version.to_str().rpartition('g')[2]
   head "https://github.com/mosra/magnum.git"
 
   depends_on "cmake" => :build
