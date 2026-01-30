@@ -177,6 +177,10 @@ template<template<class> class Derived, class T> class Unit {
          *
          * Similar to @ref operator*=(T), except that the multiplication is
          * done in floating-point.
+         * @todo with this overload `py::overload_cast<&Deg::operator*>()` and
+         *      similar implementations no longer work, only explicit
+         *      static_cast with all types enumerated does, turning it into a
+         *      friend fixes that (but might break other things)
          */
         template<class FloatingPoint
             #ifndef DOXYGEN_GENERATING_OUTPUT
