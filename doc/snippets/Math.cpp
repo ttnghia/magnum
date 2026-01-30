@@ -186,11 +186,11 @@ static_cast<void>(x);
 Vector4i orig{-1, 2, 3, 4};
 Vector4i bgra = Math::gather<'b', 'g', 'r', 'a'>(orig); // {3, 2, -1, 4}
 Math::Vector<6, Int> w10xyz = Math::gather<'w', '1', '0', 'x', 'y', 'z'>(orig);
-                                        // {4, 1, 0, -1, 2, 3}
+                                            // {4, 1, 0, -1, 2, 3}
 
 Vector4 vec{1.5f, 3.0f, 0.1f, 1.1f};
 Vector2 coords{5.0f, -2.0f};
-Math::scatter<'z', 'w'>(vec, coords);   // {1.5f, 3.0f, 5.0f, -2.0f}
+Math::scatterInto<'z', 'w'>(vec, coords);   // {1.5f, 3.0f, 5.0f, -2.0f}
 
 /* [matrix-vector-access-swizzle] */
 static_cast<void>(bgra);
