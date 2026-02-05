@@ -163,7 +163,7 @@ struct MyApplication: Platform::Application {
 MyApplication::MyApplication(const Arguments& arguments):
     Platform::Application{arguments, Configuration{}
         .setTitle("My Application")
-        .setSize({12800, 800})}
+        .setSize({1280, 800})}
 {
     DOXYGEN_ELLIPSIS()
 }
