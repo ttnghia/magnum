@@ -206,7 +206,7 @@ template<UnsignedInt dimensions, class T> class Range {
         /**
          * @brief Raw data
          *
-         * Contrary to what Doxygen shows, returns reference to an
+         * Contrary to what Doxygen shows, returns reference to a
          * one-dimensional fixed-size array of @cpp dimensions*2 @ce elements,
          * i.e. @cpp T(&)[dimensions*2] @ce.
          * @see @ref min(), @ref max()

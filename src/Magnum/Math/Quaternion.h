@@ -419,7 +419,7 @@ template<class T> class Quaternion {
         /**
          * @brief Raw data
          *
-         * Contrary to what Doxygen shows, returns reference to an
+         * Contrary to what Doxygen shows, returns reference to a
          * one-dimensional fixed-size array of four elements, i.e.
          * @cpp T(&)[4] @ce, vector part first, scalar after.
          * @see @ref vector(), @ref scalar()

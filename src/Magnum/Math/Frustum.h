@@ -143,7 +143,7 @@ template<class T> class Frustum {
         /**
          * @brief Raw data
          *
-         * Contrary to what Doxygen shows, returns reference to an
+         * Contrary to what Doxygen shows, returns reference to a
          * one-dimensional fixed-size array of 24 elements, i.e.
          * @cpp T(&)[24] @ce.
          * @see @ref operator[]()

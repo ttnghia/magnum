@@ -246,7 +246,7 @@ template<std::size_t cols, std::size_t rows, class T> class RectangularMatrix {
         /**
          * @brief Raw data
          *
-         * Contrary to what Doxygen shows, returns reference to an
+         * Contrary to what Doxygen shows, returns reference to a
          * one-dimensional fixed-size array of @cpp cols*rows @ce elements,
          * i.e. @cpp T(&)[cols*rows] @ce.
          * @see @ref operator[]()

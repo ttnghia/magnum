@@ -268,7 +268,7 @@ template<std::size_t size, class T> class Vector {
         /**
          * @brief Raw data
          *
-         * Contrary to what Doxygen shows, returns reference to an
+         * Contrary to what Doxygen shows, returns reference to a
          * one-dimensional fixed-size array of `size` elements, i.e.
          * @cpp T(&)[size] @ce.
          * @see @ref operator[]()

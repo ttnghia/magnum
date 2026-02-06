@@ -135,7 +135,7 @@ template<class T> class Dual {
         /**
          * @brief Raw data
          *
-         * Contrary to what Doxygen shows, returns reference to an
+         * Contrary to what Doxygen shows, returns reference to a
          * one-dimensional fixed-size array of two elements, i.e.
          * @cpp T(&)[2] @ce.
          * @see @ref real(), @ref dual()

@@ -149,7 +149,7 @@ template<class T> class CubicHermite {
         /**
          * @brief Raw data
          *
-         * Contrary to what Doxygen shows, returns reference to an
+         * Contrary to what Doxygen shows, returns reference to a
          * one-dimensional fixed-size array of three elements, i.e.
          * @cpp T(&)[3] @ce.
          * @see @ref inTangent(), @ref point(), @ref outTangent()

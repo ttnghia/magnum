@@ -166,7 +166,7 @@ template<UnsignedInt order, UnsignedInt dimensions, class T> class Bezier {
         /**
          * @brief Raw data
          *
-         * Contrary to what Doxygen shows, returns reference to an
+         * Contrary to what Doxygen shows, returns reference to a
          * one-dimensional fixed-size array of @cpp order + 1 @ce elements,
          * i.e. @cpp T(&)[size] @ce.
          * @see @ref operator[]()

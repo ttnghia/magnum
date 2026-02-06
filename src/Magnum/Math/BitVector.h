@@ -145,7 +145,7 @@ template<std::size_t size> class BitVector {
         /**
          * @brief Raw data
          *
-         * Contrary to what Doxygen shows, returns reference to an
+         * Contrary to what Doxygen shows, returns reference to a
          * one-dimensional fixed-size array of @ref DataSize elements, i.e.
          * @cpp UnsignedByte(&)[DataSize] @ce.
          * @see @ref operator[](), @ref set()

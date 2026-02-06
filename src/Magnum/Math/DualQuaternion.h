@@ -343,7 +343,7 @@ template<class T> class DualQuaternion: public Dual<Quaternion<T>> {
         /**
          * @brief Raw data
          *
-         * Contrary to what Doxygen shows, returns reference to an
+         * Contrary to what Doxygen shows, returns reference to a
          * one-dimensional fixed-size array of eight elements, i.e.
          * @cpp T(&)[8] @ce.
          * @see @ref real(), @ref dual()
