@@ -220,8 +220,8 @@ void FunctionsTest::minmax() {
     CORRADE_COMPARE(Math::minmax(-5.0f, 4.0f), expectedScalar);
     CORRADE_COMPARE(Math::minmax(4.0f, -5.0f), expectedScalar);
 
-    const Vector3 a(5.0f, -4.0f, 1.0f);
-    const Vector3 b(7.0f, -3.0f, 1.0f);
+    const Vector3 a{5.0f, -4.0f, 1.0f};
+    const Vector3 b{7.0f, -3.0f, 1.0f};
     const Containers::Pair<Vector3, Vector3> expectedVector{{5.0f, -4.0f, 1.0f}, {7.0f, -3.0f, 1.0f}};
     CORRADE_COMPARE((Containers::Pair<Vector3, Vector3>{Math::minmax(a, b)}), expectedVector);
     CORRADE_COMPARE((Containers::Pair<Vector3, Vector3>{Math::minmax(b, a)}), expectedVector);
@@ -236,13 +236,12 @@ void FunctionsTest::clamp() {
     CORRADE_COMPARE(Math::clamp(-1.6f, -1.0f, 5.0f), -1.0f);
     CORRADE_COMPARE(Math::clamp(9.5f, -1.0f, 5.0f), 5.0f);
 
-    CORRADE_COMPARE(Math::clamp(
-        Vector3{0.5f, -1.6f, 9.5f},
-        Vector3{-1.0f, 2.0f, 0.3f},
-        Vector3{0.7f, 3.0f, 5.0f}),
-        Vector3(0.5f, 2.0f, 5.0f));
+    CORRADE_COMPARE(Math::clamp(Vector3{0.5f, -1.6f, 9.5f},
+                                Vector3{-1.0f, 2.0f, 0.3f},
+                                Vector3{0.7f, 3.0f, 5.0f}),
+        (Vector3{0.5f, 2.0f, 5.0f}));
 
-    CORRADE_COMPARE(Math::clamp(Vector3(0.5f, -1.6f, 9.5f), -1.0f, 5.0f), Vector3(0.5f, -1.0f, 5.0f));
+    CORRADE_COMPARE(Math::clamp(Vector3{0.5f, -1.6f, 9.5f}, -1.0f, 5.0f), (Vector3{0.5f, -1.0f, 5.0f}));
 
     /* Wrapped types */
     CORRADE_COMPARE(Math::clamp(0.5_degf, 0.75_degf, 1.0_degf), 0.75_degf);
@@ -294,7 +293,7 @@ void FunctionsTest::abs() {
 
 void FunctionsTest::floor() {
     CORRADE_COMPARE(Math::floor(0.7f), 0.0f);
-    CORRADE_COMPARE(Math::floor(Vector3(2.3f, 0.7f, 1.5f)), Vector3(2.0f, 0.0f, 1.0f));
+    CORRADE_COMPARE(Math::floor(Vector3{2.3f, 0.7f, 1.5f}), (Vector3{2.0f, 0.0f, 1.0f}));
 
     /* Wrapped types */
     CORRADE_COMPARE(Math::floor(2.7_degf), 2.0_degf);
@@ -304,7 +303,7 @@ void FunctionsTest::floor() {
 
 void FunctionsTest::round() {
     CORRADE_COMPARE(Math::round(2.3f), 2.0f);
-    CORRADE_COMPARE(Math::round(Vector3(2.3f, 0.7f, 1.5f)), Vector3(2.0f, 1.0f, 2.0f));
+    CORRADE_COMPARE(Math::round(Vector3{2.3f, 0.7f, 1.5f}), (Vector3{2.0f, 1.0f, 2.0f}));
 
     /* We are working around missing std::round() in Android, thus we must
        test that the behavior is the same on both implementations */
@@ -323,7 +322,7 @@ void FunctionsTest::round() {
 
 void FunctionsTest::ceil() {
     CORRADE_COMPARE(Math::ceil(2.3f), 3.0f);
-    CORRADE_COMPARE(Math::ceil(Vector3(2.3f, 0.7f, 1.5f)), Vector3(3.0f, 1.0f, 2.0f));
+    CORRADE_COMPARE(Math::ceil(Vector3{2.3f, 0.7f, 1.5f}), (Vector3{3.0f, 1.0f, 2.0f}));
 
     /* Wrapped types */
     CORRADE_COMPARE(Math::ceil(2.7_degf), 3.0_degf);
@@ -361,8 +360,8 @@ void FunctionsTest::binomialCoefficientOverflow() {
 
 void FunctionsTest::fmod() {
     CORRADE_COMPARE(Math::fmod(5.1f, 3.0f), 2.1f);
-    CORRADE_COMPARE(Math::fmod(Vector3(5.1f, -5.1f, 6.8f), Vector3(3.0f, -2.0f, 1.1f)), Vector3(2.1f, -1.1f, 0.2f));
-    CORRADE_COMPARE(Math::fmod(Vector3(5.1f, -5.1f, 6.8f), 3.0f), Vector3(2.1f, -2.1f, 0.8f));
+    CORRADE_COMPARE(Math::fmod(Vector3{5.1f, -5.1f, 6.8f}, Vector3{3.0f, -2.0f, 1.1f}), (Vector3{2.1f, -1.1f, 0.2f}));
+    CORRADE_COMPARE(Math::fmod(Vector3{5.1f, -5.1f, 6.8f}, 3.0f), (Vector3{2.1f, -2.1f, 0.8f}));
 
     /* Wrapped types */
     CORRADE_COMPARE(Math::fmod(2.7_degf, 1.3_degf), 0.1_degf);
@@ -379,7 +378,7 @@ void FunctionsTest::sqrt() {
 
 void FunctionsTest::sqrtInverted() {
     CORRADE_COMPARE(Math::sqrtInverted(16.0f), 0.25f);
-    CORRADE_COMPARE(Math::sqrtInverted(Vector3(1.0f, 4.0f, 16.0f)), Vector3(1.0f, 0.5f, 0.25f));
+    CORRADE_COMPARE(Math::sqrtInverted(Vector3{1.0f, 4.0f, 16.0f}), (Vector3{1.0f, 0.5f, 0.25f}));
 
     /* Not testing wrapped types -- what unit should have degrees squared? */
 }
@@ -390,9 +389,9 @@ void FunctionsTest::lerp() {
     CORRADE_COMPARE(Math::lerp(2, 5, 0.5f), 3);
 
     /* Floating-point vector */
-    Vector3 a(-1.0f, 2.0f, 3.0f);
-    Vector3 b(3.0f, -2.0f, 11.0f);
-    CORRADE_COMPARE(Math::lerp(a, b, 0.25f), Vector3(0.0f, 1.0f, 5.0f));
+    Vector3 a{-1.0f, 2.0f, 3.0f};
+    Vector3 b{3.0f, -2.0f, 11.0f};
+    CORRADE_COMPARE(Math::lerp(a, b, 0.25f), (Vector3{0.0f, 1.0f, 5.0f}));
 
     /* Integer vector */
     Vector3i c(0, 128, 64);
@@ -400,7 +399,7 @@ void FunctionsTest::lerp() {
     CORRADE_COMPARE(Math::lerp(c, d, 0.25f), Vector3i(4, 96, 56));
 
     /* Vector as interpolation phase */
-    CORRADE_COMPARE(Math::lerp(a, b, Vector3(0.25f, 0.5f, 0.75f)), Vector3(0.0f, 0.0f, 9.0f));
+    CORRADE_COMPARE(Math::lerp(a, b, Vector3{0.25f, 0.5f, 0.75f}), (Vector3{0.0f, 0.0f, 9.0f}));
 
     /* Wrapped types */
     CORRADE_COMPARE(Math::lerp(2.0_degf, 5.0_degf, 0.5f), 3.5_degf);
@@ -464,9 +463,9 @@ void FunctionsTest::lerpInverted() {
     CORRADE_COMPARE(Math::lerpInverted(2.0f, 5.0f, 3.5f), 0.5f);
 
     /* Floating-point vector */
-    Vector3 a(-1.0f, 2.0f, 3.0f);
-    Vector3 b(3.0f, -2.0f, 11.0f);
-    CORRADE_COMPARE(Math::lerpInverted(a, b, Vector3(0.0f, 0.0f, 9.0f)), Vector3(0.25f, 0.5f, 0.75f));
+    Vector3 a{-1.0f, 2.0f, 3.0f};
+    Vector3 b{3.0f, -2.0f, 11.0f};
+    CORRADE_COMPARE(Math::lerpInverted(a, b, Vector3{0.0f, 0.0f, 9.0f}), (Vector3{0.25f, 0.5f, 0.75f}));
 
     /* Wrapped types */
     CORRADE_COMPARE(Math::lerpInverted(2.0_degf, 5.0_degf, 3.5_degf), 0.5f);
@@ -486,13 +485,13 @@ void FunctionsTest::select() {
     CORRADE_COMPARE(Math::select(2, 5, 1.1f), 5);
 
     /* Floating-point vector */
-    Vector3 a(-1.0f, 2.0f, 3.0f);
-    Vector3 b(3.0f, -2.0f, 11.0f);
-    CORRADE_COMPARE(Math::select(a, b, -0.25f), Vector3(-1.0f, 2.0f, 3.0f));
-    CORRADE_COMPARE(Math::select(a, b, 5.5f), Vector3(3.0f, -2.0f, 11.0f));
+    Vector3 a{-1.0f, 2.0f, 3.0f};
+    Vector3 b{3.0f, -2.0f, 11.0f};
+    CORRADE_COMPARE(Math::select(a, b, -0.25f), (Vector3{-1.0f, 2.0f, 3.0f}));
+    CORRADE_COMPARE(Math::select(a, b, 5.5f), (Vector3{3.0f, -2.0f, 11.0f}));
 
     /* Vector as interpolation phase */
-    CORRADE_COMPARE(Math::select(a, b, Vector3(0.25f, 1.5f, 1.0f)), Vector3(-1.0f, -2.0f, 11.0f));
+    CORRADE_COMPARE(Math::select(a, b, Vector3{0.25f, 1.5f, 1.0f}), (Vector3{-1.0f, -2.0f, 11.0f}));
 
     /* Wrapped types */
     CORRADE_COMPARE(Math::select(2.0_degf, 5.0_degf, 0.5f), 2.0_degf);
@@ -507,10 +506,10 @@ void FunctionsTest::selectBool() {
 
 void FunctionsTest::fma() {
     CORRADE_COMPARE(Math::fma(2.0f, 3.0f, 0.75f), 6.75f);
-    CORRADE_COMPARE(Math::fma(Vector3( 2.0f,  1.5f,  0.5f),
-                              Vector3( 3.0f,  2.0f, -1.0f),
-                              Vector3(0.75f, 0.25f,  0.1f)),
-                              Vector3(6.75f, 3.25f, -0.4f));
+    CORRADE_COMPARE(Math::fma(Vector3{ 2.0f,  1.5f,  0.5f},
+                              Vector3{ 3.0f,  2.0f, -1.0f},
+                              Vector3{0.75f, 0.25f,  0.1f}),
+        (Vector3{6.75f, 3.25f, -0.4f}));
 }
 
 void FunctionsTest::logIntegral() {
