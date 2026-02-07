@@ -55,6 +55,7 @@ struct FunctionsTest: TestSuite::Tester {
     void round();
     void ceil();
     void fmod();
+    void fract();
 
     void binomialCoefficient();
     void binomialCoefficientInvalidInput();
@@ -122,6 +123,7 @@ FunctionsTest::FunctionsTest() {
               &FunctionsTest::round,
               &FunctionsTest::ceil,
               &FunctionsTest::fmod,
+              &FunctionsTest::fract,
 
               &FunctionsTest::binomialCoefficient,
               &FunctionsTest::binomialCoefficientInvalidInput,
@@ -367,6 +369,18 @@ void FunctionsTest::fmod() {
     CORRADE_COMPARE(Math::fmod(2.7_degf, 1.3_degf), 0.1_degf);
     /* Nanoseconds are an integer type */
     CORRADE_COMPARE(Math::fmod(Seconds{2.7_sec}, Seconds{1.3_sec}), Seconds{0.1_sec});
+}
+
+void FunctionsTest::fract() {
+    CORRADE_COMPARE(Math::fract(5.132f), 0.132f);
+    /* It works the other way for negative numbers */
+    CORRADE_COMPARE(Math::fract(-5.132f), 0.868f);
+    CORRADE_COMPARE(Math::fract(Vector3{5.132f, 4.0f, -2.474f}), (Vector3{0.132f, 0.0f, 0.526f}));
+
+    /* Wrapped types */
+    CORRADE_COMPARE(Math::fract(2.7_degf), 0.7_degf);
+    /* Nanoseconds are an integer type */
+    CORRADE_COMPARE(Math::fract(Seconds{2.7_sec}), Seconds{0.7_sec});
 }
 
 void FunctionsTest::sqrt() {

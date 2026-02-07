@@ -524,6 +524,7 @@ Calculates the remainder @f$ r @f$ of a floating point division: @f[
     numerator, whereas @glsl mod() @ce keeps the denumerator's sign.
 
 @m_keyword{mod(),GLSL mod(),}
+@see @ref fract()
 */
 template<class T
     #ifndef DOXYGEN_GENERATING_OUTPUT
@@ -552,6 +553,33 @@ template<std::size_t size, class T> inline Vector<size, T> fmod(const Vector<siz
     Vector<size, T> out{Magnum::NoInit};
     for(std::size_t i = 0; i != size; ++i)
         out[i] = Math::fmod(a[i], b);
+    return out;
+}
+
+/**
+@brief Fractional part of a floating point number
+@m_since_latest
+
+Equivalent to @cpp a - floor(a) @ce. In other words, the result is always
+non-negative.
+@see @ref fmod()
+*/
+template<class T
+    #ifndef DOXYGEN_GENERATING_OUTPUT
+    , typename std::enable_if<IsScalar<T>::value, int>::type = 0
+    #endif
+> inline T fract(T a) {
+    return T(UnderlyingTypeOf<T>(a) - std::floor(UnderlyingTypeOf<T>(a)));
+}
+
+/**
+@overload
+@m_since_latest
+*/
+template<std::size_t size, class T> inline Vector<size, T> fract(const Vector<size, T>& a) {
+    Vector<size, T> out{Magnum::NoInit};
+    for(std::size_t i = 0; i != size; ++i)
+        out[i] = Math::fract(a[i]);
     return out;
 }
 

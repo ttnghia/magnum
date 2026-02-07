@@ -48,7 +48,8 @@ floating-point type.
 
 Note that the @p texture is interpreted as having linear colors. Use
 @ref sampleSrgb() if you want to perform conversion from sRGB values instead.
-@see @ref Math::lerp(const T&, const T&, U), @ref Math::unpack(const Integral&)
+@see @ref Math::lerp(const T&, const T&, U),
+    @ref Math::unpack(const Integral&), @ref Math::fract()
 */
 MAGNUM_TEXTURETOOLS_EXPORT Color3 sampleLinear(const Containers::StridedArrayView1D<const Vector3ub>& texture, Float factor);
 

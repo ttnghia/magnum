@@ -263,6 +263,7 @@ See also:
 @subsubsection changelog-latest-new-math Math library
 
 -   Added @ref Math::fmod() (see [mosra/magnum#454](https://github.com/mosra/magnum/pull/454))
+-   Added @ref Math::fract()
 -   Added @ref Math::binomialCoefficient() (see [mosra/magnum#461](https://github.com/mosra/magnum/pull/461))
 -   Added @ref Math::popcount()
 -   Added @ref Math::Color3::fromLinearRgbInt(),
