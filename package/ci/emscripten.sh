@@ -32,6 +32,13 @@ cmake .. \
     -DCMAKE_BUILD_TYPE=Debug \
     -DCMAKE_INSTALL_PREFIX=$HOME/deps \
     -DCMAKE_FIND_ROOT_PATH=$HOME/deps \
+    `# Make libc++ remove transitive includes, both for faster build times` \
+    `# and to detect if we're missing a transitive include. Works with` \
+    `# libc++ 16+, which is used by Emscripten 3.1.18+ (i.e., will get used` \
+    `# next time emsdk is bumped). Not doing this for the Corrade build, as` \
+    `# that'd only add extra friction with no possibility of fixing from` \
+    `# here.` \
+    -DCMAKE_CXX_FLAGS="-D_LIBCPP_REMOVE_TRANSITIVE_INCLUDES" \
     -DMAGNUM_WITH_AUDIO=ON \
     -DMAGNUM_WITH_VK=OFF \
     -DMAGNUM_WITH_EMSCRIPTENAPPLICATION=ON \
