@@ -29,6 +29,7 @@
 
 #include "EmscriptenApplication.h"
 
+#include <algorithm> /* std::lower_bound() */
 #include <emscripten/emscripten.h>
 #include <emscripten/html5.h>
 #include <Corrade/Containers/ArrayView.h>
