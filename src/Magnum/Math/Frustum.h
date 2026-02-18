@@ -43,8 +43,16 @@
 #include "Magnum/Math/Vector4.h"
 
 #ifdef CORRADE_TARGET_WINDOWS /* I so HATE windef.h */
+/* far/near and FAR/NEAR are defined by minwindef.h, but the former are used by this file as variables.
+   While they are all empty defines, the Windows headers expect FAR/NEAR to be defined and so we redefine them here.
+   far/near are left undefined because they are not used directly in Windows headers.
+   */
 #undef near
+#undef NEAR
+#define NEAR
 #undef far
+#undef FAR
+#define FAR
 #endif
 
 namespace Magnum { namespace Math {
