@@ -168,6 +168,11 @@ void flextGLInit(Magnum::GL::Context&) {
     flextGL.TexParameterIuiv = reinterpret_cast<void(APIENTRY*)(GLenum, GLenum, const GLuint *)>(loader.load("glTexParameterIuiv"));
     flextGL.TexStorage3DMultisample = reinterpret_cast<void(APIENTRY*)(GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLsizei, GLboolean)>(loader.load("glTexStorage3DMultisample"));
 
+    /* GL_EXT_base_instance */
+    flextGL.DrawArraysInstancedBaseInstanceEXT = reinterpret_cast<void(APIENTRY*)(GLenum, GLint, GLsizei, GLsizei, GLuint)>(loader.load("glDrawArraysInstancedBaseInstanceEXT"));
+    flextGL.DrawElementsInstancedBaseInstanceEXT = reinterpret_cast<void(APIENTRY*)(GLenum, GLsizei, GLenum, const void *, GLsizei, GLuint)>(loader.load("glDrawElementsInstancedBaseInstanceEXT"));
+    flextGL.DrawElementsInstancedBaseVertexBaseInstanceEXT = reinterpret_cast<void(APIENTRY*)(GLenum, GLsizei, GLenum, const void *, GLsizei, GLint, GLuint)>(loader.load("glDrawElementsInstancedBaseVertexBaseInstanceEXT"));
+
     /* GL_EXT_blend_func_extended */
     flextGL.BindFragDataLocationEXT = reinterpret_cast<void(APIENTRY*)(GLuint, GLuint, const GLchar *)>(loader.load("glBindFragDataLocationEXT"));
     flextGL.BindFragDataLocationIndexedEXT = reinterpret_cast<void(APIENTRY*)(GLuint, GLuint, GLuint, const GLchar *)>(loader.load("glBindFragDataLocationIndexedEXT"));

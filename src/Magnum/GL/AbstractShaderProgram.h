@@ -884,6 +884,10 @@ class MAGNUM_GL_EXPORT AbstractShaderProgram: public AbstractObject {
          *      @gl_extension{NV,instanced_arrays},
          *      @gl_extension{NV,draw_instanced} in OpenGL ES 2.0 if
          *      @ref Mesh::instanceCount() is more than `1`.
+         * @requires_es_extension OpenGL ES 3.0 and extension
+         *      @gl_extension{EXT,base_instance} or OpenGL ES 3.1 and extension
+         *      @m_class{m-doc-external} [ANGLE_base_vertex_base_instance](https://chromium.googlesource.com/angle/angle/+/master/extensions/ANGLE_base_vertex_base_instance.txt)
+         *      if @ref Mesh::baseInstance() is not `0`.
          * @requires_webgl20 Extension @webgl_extension{ANGLE,instanced_arrays}
          *      in WebGL 1.0 if @ref Mesh::instanceCount() is more than `1`.
          * @requires_gl Specifying base vertex for indexed meshes is not
@@ -920,6 +924,10 @@ class MAGNUM_GL_EXPORT AbstractShaderProgram: public AbstractObject {
          *      @gl_extension{NV,instanced_arrays},
          *      @gl_extension{NV,draw_instanced} in OpenGL ES 2.0 if
          *      @ref MeshView::instanceCount() is more than `1`.
+         * @requires_es_extension OpenGL ES 3.0 and extension
+         *      @gl_extension{EXT,base_instance} or OpenGL ES 3.1 and extension
+         *      @m_class{m-doc-external} [ANGLE_base_vertex_base_instance](https://chromium.googlesource.com/angle/angle/+/master/extensions/ANGLE_base_vertex_base_instance.txt)
+         *      if @ref Mesh::baseInstance() is not `0`.
          * @requires_webgl20 Extension @webgl_extension{ANGLE,instanced_arrays}
          *      in WebGL 1.0 if @ref MeshView::instanceCount() is more than
          *      `1`

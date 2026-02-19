@@ -36,6 +36,9 @@
 #undef glMultiDrawElementsInstancedANGLE
 #undef glPolygonModeANGLE
 #undef glProvokingVertexANGLE
+#undef glDrawArraysInstancedBaseInstanceEXT
+#undef glDrawElementsInstancedBaseInstanceEXT
+#undef glDrawElementsInstancedBaseVertexBaseInstanceEXT
 #undef glBindFragDataLocationEXT
 #undef glBindFragDataLocationIndexedEXT
 #undef glGetFragDataIndexEXT
@@ -234,6 +237,13 @@ void flextGLInit(Magnum::GL::Context&) {
     /* GL_ANGLE_provoking_vertex */
     #if GL_ANGLE_provoking_vertex
     flextGL.ProvokingVertexANGLE = reinterpret_cast<void(APIENTRY*)(GLenum)>(glProvokingVertexANGLE);
+    #endif
+
+    /* GL_EXT_base_instance */
+    #if GL_EXT_base_instance
+    flextGL.DrawArraysInstancedBaseInstanceEXT = reinterpret_cast<void(APIENTRY*)(GLenum, GLint, GLsizei, GLsizei, GLuint)>(glDrawArraysInstancedBaseInstanceEXT);
+    flextGL.DrawElementsInstancedBaseInstanceEXT = reinterpret_cast<void(APIENTRY*)(GLenum, GLsizei, GLenum, const void *, GLsizei, GLuint)>(glDrawElementsInstancedBaseInstanceEXT);
+    flextGL.DrawElementsInstancedBaseVertexBaseInstanceEXT = reinterpret_cast<void(APIENTRY*)(GLenum, GLsizei, GLenum, const void *, GLsizei, GLint, GLuint)>(glDrawElementsInstancedBaseVertexBaseInstanceEXT);
     #endif
 
     /* GL_EXT_blend_func_extended */

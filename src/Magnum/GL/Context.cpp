@@ -395,6 +395,9 @@ constexpr Extension ExtensionList[]{
     Extensions::APPLE::texture_format_BGRA8888{},
     Extensions::ARM::shader_framebuffer_fetch{},
     Extensions::ARM::shader_framebuffer_fetch_depth_stencil{},
+    #ifndef MAGNUM_TARGET_GLES2
+    Extensions::EXT::base_instance{},
+    #endif
     Extensions::EXT::blend_func_extended{},
     #ifndef MAGNUM_TARGET_GLES2
     Extensions::EXT::buffer_storage{},

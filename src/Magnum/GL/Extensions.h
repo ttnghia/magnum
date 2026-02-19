@@ -525,54 +525,57 @@ namespace ANDROID {
     _extension( 72,EXT,texture_view,                GLES310,    None) // #185
     _extension( 73,EXT,primitive_bounding_box,      GLES310, GLES320) // #186
     #endif
-    _extension( 74,EXT,draw_elements_base_vertex,   GLES200,    None) // #204
     #ifndef MAGNUM_TARGET_GLES2
-    _extension( 75,EXT,multi_draw_indirect,         GLES310,    None) // #205
-    _extension( 76,EXT,texture_norm16,              GLES310,    None) // #207
-    _extension( 77,EXT,texture_sRGB_R8,             GLES300,    None) // #221
-    _extension( 78,EXT,texture_sRGB_RG8,            GLES300,    None) // #223
-    _extension( 79,EXT,buffer_storage,              GLES310,    None) // #239
+    _extension( 74,EXT,base_instance,               GLES300,    None) // #203
     #endif
-    _extension( 80,EXT,blend_func_extended,         GLES200,    None) // #247
-    _extension( 81,EXT,polygon_offset_clamp,        GLES200,    None) // #252
+    _extension( 75,EXT,draw_elements_base_vertex,   GLES200,    None) // #204
     #ifndef MAGNUM_TARGET_GLES2
-    _extension( 82,EXT,clip_cull_distance,          GLES300,    None) // #257
+    _extension( 76,EXT,multi_draw_indirect,         GLES310,    None) // #205
+    _extension( 77,EXT,texture_norm16,              GLES310,    None) // #207
+    _extension( 78,EXT,texture_sRGB_R8,             GLES300,    None) // #221
+    _extension( 79,EXT,texture_sRGB_RG8,            GLES300,    None) // #223
+    _extension( 80,EXT,buffer_storage,              GLES310,    None) // #239
+    #endif
+    _extension( 81,EXT,blend_func_extended,         GLES200,    None) // #247
+    _extension( 82,EXT,polygon_offset_clamp,        GLES200,    None) // #252
+    #ifndef MAGNUM_TARGET_GLES2
+    _extension( 83,EXT,clip_cull_distance,          GLES300,    None) // #257
     /* The extension says "Requires ARB_texture_storage or a version of OpenGL
        or OpenGL ES that incorporates it." There's EXT_texture_storage on ES2,
        however I don't think ES2 really matters today, so it's just ES3+. */
-    _extension( 83,EXT,memory_object,               GLES300,    None) // #280
-    _extension( 84,EXT,semaphore,                   GLES300,    None) // #280
+    _extension( 84,EXT,memory_object,               GLES300,    None) // #280
+    _extension( 85,EXT,semaphore,                   GLES300,    None) // #280
     /* These two pairs appear to be exclusive so they share the same indices */
     #ifndef CORRADE_TARGET_WINDOWS
-    _extension( 85,EXT,memory_object_fd,            GLES300,    None) // #281
-    _extension( 86,EXT,semaphore_fd,                GLES300,    None) // #281
+    _extension( 84,EXT,memory_object_fd,            GLES300,    None) // #281
+    _extension( 85,EXT,semaphore_fd,                GLES300,    None) // #281
     #else
-    _extension( 85,EXT,memory_object_win32,         GLES300,    None) // #282
-    _extension( 86,EXT,semaphore_win32,             GLES300,    None) // #282
+    _extension( 86,EXT,memory_object_win32,         GLES300,    None) // #282
+    _extension( 87,EXT,semaphore_win32,             GLES300,    None) // #282
     #endif
-    _extension( 87,EXT,texture_compression_rgtc,    GLES300,    None) // #286
-    _extension( 88,EXT,texture_compression_bptc,    GLES300,    None) // #287
+    _extension( 88,EXT,texture_compression_rgtc,    GLES300,    None) // #286
+    _extension( 89,EXT,texture_compression_bptc,    GLES300,    None) // #287
     #endif
-    _extension( 89,EXT,texture_compression_s3tc_srgb, GLES200,  None) // #289
-    _extension( 90,EXT,clip_control,                GLES200,    None) // #290
-    _extension( 91,EXT,texture_mirror_clamp_to_edge, GLES200,   None) // #291
-    _extension( 92,EXT,depth_clamp,                 GLES200,    None) // #309
+    _extension( 90,EXT,texture_compression_s3tc_srgb, GLES200,  None) // #289
+    _extension( 91,EXT,clip_control,                GLES200,    None) // #290
+    _extension( 92,EXT,texture_mirror_clamp_to_edge, GLES200,   None) // #291
+    _extension( 93,EXT,depth_clamp,                 GLES200,    None) // #309
 } namespace IMG {
-    _extension( 93,IMG,texture_compression_pvrtc,   GLES200,    None) // #54
+    _extension( 94,IMG,texture_compression_pvrtc,   GLES200,    None) // #54
 } namespace INTEL {
-    _extension( 94,INTEL,blackhole_render,    /*?*/ GLES200,    None) // #300
+    _extension( 95,INTEL,blackhole_render,    /*?*/ GLES200,    None) // #300
 } namespace KHR {
-    _extension( 95,KHR,texture_compression_astc_ldr,GLES200, GLES320) // #117
-    _extension( 96,KHR,texture_compression_astc_hdr,GLES200,    None) // #117
-    _extension( 97,KHR,debug,                       GLES200, GLES320) // #118
-    _extension( 98,KHR,blend_equation_advanced,     GLES200, GLES320) // #168
-    _extension( 99,KHR,blend_equation_advanced_coherent, GLES200, None) // #168
-    _extension(100,KHR,robustness,                  GLES200, GLES320) // #170
-    _extension(101,KHR,robust_buffer_access_behavior, GLES200, GLES320) // #189
-    _extension(102,KHR,context_flush_control,       GLES200,    None) // #191
-    _extension(103,KHR,no_error,                    GLES200,    None) // #243
-    _extension(104,KHR,texture_compression_astc_sliced_3d, GLES200, None) // #249
-    _extension(105,KHR,parallel_shader_compile,     GLES200,    None) // #288
+    _extension( 96,KHR,texture_compression_astc_ldr,GLES200, GLES320) // #117
+    _extension( 97,KHR,texture_compression_astc_hdr,GLES200,    None) // #117
+    _extension( 98,KHR,debug,                       GLES200, GLES320) // #118
+    _extension( 99,KHR,blend_equation_advanced,     GLES200, GLES320) // #168
+    _extension(100,KHR,blend_equation_advanced_coherent, GLES200, None) // #168
+    _extension(101,KHR,robustness,                  GLES200, GLES320) // #170
+    _extension(102,KHR,robust_buffer_access_behavior, GLES200, GLES320) // #189
+    _extension(103,KHR,context_flush_control,       GLES200,    None) // #191
+    _extension(104,KHR,no_error,                    GLES200,    None) // #243
+    _extension(105,KHR,texture_compression_astc_sliced_3d, GLES200, None) // #249
+    _extension(106,KHR,parallel_shader_compile,     GLES200,    None) // #288
 } namespace NV {
     #ifdef MAGNUM_TARGET_GLES2
     _extension(110,NV,draw_buffers,                 GLES200, GLES300) // #91

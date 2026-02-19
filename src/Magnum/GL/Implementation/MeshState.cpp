@@ -216,7 +216,14 @@ MeshState::MeshState(Context& context, ContextState& contextState, Containers::S
     #if defined(MAGNUM_TARGET_GLES) && !defined(MAGNUM_TARGET_GLES2)
     #ifndef MAGNUM_TARGET_WEBGL
     #ifndef MAGNUM_TARGET_GLES2
-    if(context.isExtensionSupported<Extensions::ANGLE::base_vertex_base_instance>()) {
+    if(context.isExtensionSupported<Extensions::EXT::base_instance>()) {
+        extensions[Extensions::EXT::base_instance::Index] =
+                   Extensions::EXT::base_instance::string();
+
+        drawArraysInstancedBaseInstanceImplementation = glDrawArraysInstancedBaseInstanceEXT;
+        drawElementsInstancedBaseInstanceImplementation = glDrawElementsInstancedBaseInstanceEXT;
+        drawElementsInstancedBaseVertexBaseInstanceImplementation = glDrawElementsInstancedBaseVertexBaseInstanceEXT;
+    } else if(context.isExtensionSupported<Extensions::ANGLE::base_vertex_base_instance>()) {
         extensions[Extensions::ANGLE::base_vertex_base_instance::Index] =
                    Extensions::ANGLE::base_vertex_base_instance::string();
 

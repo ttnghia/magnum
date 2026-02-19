@@ -68,6 +68,7 @@ extension EXT_multi_draw_indirect                   optional
 extension EXT_texture_norm16                        optional
 extension EXT_texture_sRGB_R8                       optional
 extension EXT_texture_sRGB_RG8                      optional
+extension EXT_base_instance                         optional
 extension EXT_buffer_storage                        optional
 extension EXT_blend_func_extended                   optional
 extension EXT_polygon_offset_clamp                  optional

@@ -846,7 +846,8 @@ class MAGNUM_GL_EXPORT Mesh: public AbstractObject {
          * Default is @cpp 0 @ce.
          * @see @ref setInstanceCount(), @ref setBaseVertex()
          * @requires_gl42 Extension @gl_extension{ARB,base_instance}
-         * @requires_es_extension OpenGL ES 3.1 and extension
+         * @requires_es_extension OpenGL ES 3.0 and extension
+         *      @gl_extension{EXT,base_instance} or OpenGL ES 3.1 and extension
          *      @m_class{m-doc-external} [ANGLE_base_vertex_base_instance](https://chromium.googlesource.com/angle/angle/+/master/extensions/ANGLE_base_vertex_base_instance.txt)
          * @requires_webgl_extension WebGL 2.0 and extension
          *      @webgl_extension{WEBGL,draw_instanced_base_vertex_base_instance}

@@ -2226,6 +2226,12 @@ struct FlextGL {
     void(APIENTRY *TexParameterIuiv)(GLenum, GLenum, const GLuint *);
     void(APIENTRY *TexStorage3DMultisample)(GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLsizei, GLboolean);
 
+    /* GL_EXT_base_instance */
+
+    void(APIENTRY *DrawArraysInstancedBaseInstanceEXT)(GLenum, GLint, GLsizei, GLsizei, GLuint);
+    void(APIENTRY *DrawElementsInstancedBaseInstanceEXT)(GLenum, GLsizei, GLenum, const void *, GLsizei, GLuint);
+    void(APIENTRY *DrawElementsInstancedBaseVertexBaseInstanceEXT)(GLenum, GLsizei, GLenum, const void *, GLsizei, GLint, GLuint);
+
     /* GL_EXT_blend_func_extended */
 
     void(APIENTRY *BindFragDataLocationEXT)(GLuint, GLuint, const GLchar *);
@@ -2857,6 +2863,12 @@ extern FLEXTGL_EXPORT FlextGL flextGL;
 #define glTexParameterIiv flextGL.TexParameterIiv
 #define glTexParameterIuiv flextGL.TexParameterIuiv
 #define glTexStorage3DMultisample flextGL.TexStorage3DMultisample
+
+/* GL_EXT_base_instance */
+
+#define glDrawArraysInstancedBaseInstanceEXT flextGL.DrawArraysInstancedBaseInstanceEXT
+#define glDrawElementsInstancedBaseInstanceEXT flextGL.DrawElementsInstancedBaseInstanceEXT
+#define glDrawElementsInstancedBaseVertexBaseInstanceEXT flextGL.DrawElementsInstancedBaseVertexBaseInstanceEXT
 
 /* GL_EXT_blend_func_extended */
 
