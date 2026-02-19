@@ -1235,6 +1235,9 @@ See also:
 -   Fixed a GCC warning about mismatched symbol export in @ref GL::Mesh on
     static builds where user code didn't compile with `-fvisiblity=hidden`
     (see [mosra/magnum#683](https://github.com/mosra/magnum/issues/683))
+-   Undefining the `near` and `far` macros on Windows in a more robust way
+    (see [mosra/magnum#689](https://github.com/mosra/magnum/issues/689) and
+    [mosra/magnum#690](https://github.com/mosra/magnum/pull/690))
 
 @subsection changelog-latest-bugfixes Bug fixes
 

@@ -6,6 +6,7 @@
     Copyright © 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
                 2020, 2021, 2022, 2023, 2024, 2025, 2026
               Vladimír Vondruš <mosra@centrum.cz>
+    Copyright © 2026 Samuel Longchamps <slongchamps@audiokinetic.com>
 
     Permission is hereby granted, free of charge, to any person obtaining a
     copy of this software and associated documentation files (the "Software"),
@@ -35,11 +36,12 @@
 #include "Magnum/SceneGraph/AbstractFeature.h"
 #include "Magnum/SceneGraph/visibility.h"
 
-#ifdef CORRADE_TARGET_WINDOWS /* I so HATE windef.h */
-/* far/near and FAR/NEAR are defined by minwindef.h, but the former are used by this file as variables.
-   While they are all empty defines, the Windows headers expect FAR/NEAR to be defined and so we redefine them here.
-   far/near are left undefined because they are not used directly in Windows headers.
-   */
+#ifdef CORRADE_TARGET_WINDOWS
+/* far/near and FAR/NEAR are defined by minwindef.h, with the latter being
+   aliases to the former, but the lowercase variants are used by this file as
+   identifiers. While they all ultimately expand to nothing, the Windows
+   headers expect FAR/NEAR to be defined and so we redefine them here. far/near
+   are left undefined because they are not used directly in Windows headers. */
 #undef near
 #undef NEAR
 #define NEAR
