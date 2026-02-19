@@ -96,6 +96,18 @@ constexpr Extension ExtensionList[]{
     Extensions::ATI::texture_mirror_once{},
     Extensions::EXT::debug_label{},
     Extensions::EXT::debug_marker{},
+    Extensions::EXT::memory_object{},
+    #ifndef CORRADE_TARGET_WINDOWS
+    Extensions::EXT::memory_object_fd{},
+    #else
+    Extensions::EXT::memory_object_win32{},
+    #endif
+    Extensions::EXT::semaphore{},
+    #ifndef CORRADE_TARGET_WINDOWS
+    Extensions::EXT::semaphore_fd{},
+    #else
+    Extensions::EXT::semaphore_win32{},
+    #endif
     Extensions::EXT::shader_integer_mix{},
     Extensions::EXT::texture_compression_dxt1{},
     Extensions::EXT::texture_compression_s3tc{},
@@ -396,13 +408,32 @@ constexpr Extension ExtensionList[]{
     Extensions::EXT::depth_clamp{},
     Extensions::EXT::disjoint_timer_query{},
     Extensions::EXT::draw_elements_base_vertex{},
+    #ifndef MAGNUM_TARGET_GLES2
+    Extensions::EXT::memory_object{},
+    #ifndef CORRADE_TARGET_WINDOWS
+    Extensions::EXT::memory_object_fd{},
+    #else
+    Extensions::EXT::memory_object_win32{},
+    #endif
+    #endif
     Extensions::EXT::multi_draw_arrays{},
+    #ifndef MAGNUM_TARGET_GLES2
+    Extensions::EXT::multi_draw_indirect{},
+    #endif
     Extensions::EXT::multisampled_render_to_texture{},
     Extensions::EXT::polygon_offset_clamp{},
     Extensions::EXT::pvrtc_sRGB{},
     Extensions::EXT::read_format_bgra{},
     Extensions::EXT::robustness{},
     Extensions::EXT::sRGB_write_control{},
+    #ifndef MAGNUM_TARGET_GLES2
+    Extensions::EXT::semaphore{},
+    #ifndef CORRADE_TARGET_WINDOWS
+    Extensions::EXT::semaphore_fd{},
+    #else
+    Extensions::EXT::semaphore_win32{},
+    #endif
+    #endif
     Extensions::EXT::separate_shader_objects{},
     Extensions::EXT::shader_framebuffer_fetch{},
     #ifndef MAGNUM_TARGET_GLES2

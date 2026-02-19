@@ -217,6 +217,50 @@ FlextGL flextGL{
     nullptr,
     nullptr,
 
+    /* GL_EXT_memory_object */
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+
+    /* GL_EXT_memory_object_fd */
+    nullptr,
+
+    /* GL_EXT_memory_object_win32 */
+    nullptr,
+    nullptr,
+
+    /* GL_EXT_semaphore */
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+
+    /* GL_EXT_semaphore_fd */
+    nullptr,
+
+    /* GL_EXT_semaphore_win32 */
+    nullptr,
+    nullptr,
+
     /* GL_GREMEDY_string_marker */
     nullptr,
 

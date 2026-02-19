@@ -87,6 +87,7 @@ OpenGL function                         | Matching API
 @fn_gl{BufferData}, \n `glNamedBufferData()` | @ref GL::Buffer::setData()
 @fn_gl_extension{BufferPageCommitment,ARB,sparse_buffer}, \n `glNamedBufferPageCommitmentEXT()`, \n `glNamedBufferPageCommitmentARB()` | |
 @fn_gl{BufferStorage}, \n `glNamedBufferStorage()` | @ref GL::Buffer::setStorage()
+@fn_gl_extension{BufferStorageMem,EXT,external_objects}, \n @fn_gl_extension{NamedBufferStorageMem,EXT,external_objects} | |
 @fn_gl{BufferSubData}, \n `glNamedBufferSubData()` | @ref GL::Buffer::setSubData()
 
 @subsection opengl-mapping-functions-c C
@@ -116,6 +117,7 @@ OpenGL function                         | Matching API
 @fn_gl{CopyImageSubData}                | |
 @fn_gl{CopyTexImage1D}, \n @fn_gl{CopyTexImage2D} | @ref GL::Framebuffer::copyImage()
 @fn_gl{CopyTexSubImage1D}, \n `glCopyTextureSubImage1D()`, \n @fn_gl{CopyTexSubImage2D}, \n `glCopyTextureSubImage2D()`, \n @fn_gl{CopyTexSubImage3D}, \n `glCopyTextureSubImage3D()` | @ref GL::Framebuffer::copySubImage()
+@fn_gl_extension{CreateMemoryObjects,EXT,external_objects}, \n @fn_gl_extension{DeleteMemoryObjects,EXT,external_objects} | |
 @fn_gl{CreateProgram}, @fn_gl{DeleteProgram} | @ref GL::AbstractShaderProgram constructor and destructor
 @fn_gl{CreateShader}, @fn_gl{DeleteShader} | @ref GL::Shader constructor and destructor
 @fn_gl{CreateShaderProgram}             | |
@@ -183,6 +185,7 @@ OpenGL function                         | Matching API
 @fn_gl{GenBuffers}, \n @fn_gl{CreateBuffers}, \n @fn_gl{DeleteBuffers} | @ref GL::Buffer constructor and destructor
 @fn_gl{GenFramebuffers}, \n @fn_gl{CreateFramebuffers}, \n @fn_gl{DeleteFramebuffers} | @ref GL::Framebuffer constructor and destructor
 @fn_gl{GenProgramPipelines}, \n @fn_gl{CreateProgramPipelines}, \n @fn_gl{DeleteProgramPipelines} | |
+@fn_gl_extension{GenSemaphores,EXT,external_objects}, \n @fn_gl_extension{DeleteSemaphores,EXT,external_objects} | |
 @fn_gl{GenQueries}, \n @fn_gl{CreateQueries}, \n @fn_gl{DeleteQueries} | @ref GL::AbstractQuery constructor and destructor
 @fn_gl{GenRenderbuffers}, \n @fn_gl{CreateRenderbuffers}, \n @fn_gl{DeleteRenderbuffers} | @ref GL::Renderbuffer constructor and destructor
 @fn_gl{GenSamplers}, \n @fn_gl{CreateSamplers}, \n @fn_gl{DeleteSamplers} | |
@@ -190,7 +193,7 @@ OpenGL function                         | Matching API
 @fn_gl{GenTransformFeedbacks}, \n @fn_gl{CreateTransformFeedbacks}, \n @fn_gl{DeleteTransformFeedbacks} | @ref GL::TransformFeedback constructor and destructor
 @fn_gl{GenVertexArrays}, \n @fn_gl{CreateVertexArrays}, \n @fn_gl{DeleteVertexArrays} | @ref GL::Mesh constructor and destructor
 @fn_gl{GenerateMipmap}, \n `glGenerateTextureMipmap()` | @ref GL::Texture::generateMipmap(), \n @ref GL::TextureArray::generateMipmap(), \n @ref GL::CubeMapTexture::generateMipmap(), \n @ref GL::CubeMapTextureArray::generateMipmap()
-@fn_gl{Get}                             | see @ref opengl-mapping-state "table below"
+@fn_gl{Get}, \n @fn_gl_extension{GetUnsignedBytev,EXT,external_objects}, \n @fn_gl_extension{GetUnsignedBytei_v,EXT,external_objects} | see @ref opengl-mapping-state "table below"
 @fn_gl2{GetActiveAtomicCounterBuffer,GetActiveAtomicCounterBufferiv} | not queryable
 @fn_gl{GetActiveAttrib}, \n @fn_gl{GetActiveSubroutineName}, \n @fn_gl{GetActiveSubroutineUniform}, \n @fn_gl{GetActiveSubroutineUniformName}, \n @fn_gl{GetActiveUniform}, \n @fn_gl{GetActiveUniformBlock}, \n @fn_gl{GetActiveUniformBlockName}, \n @fn_gl{GetActiveUniformName}, \n @fn_gl{GetActiveUniforms} | not queryable
 @fn_gl{GetAttachedShaders}              | not queryable, @ref GL::AbstractShaderProgram::attachShader() setter only
@@ -208,6 +211,7 @@ OpenGL function                         | Matching API
 @fn_gl{GetGraphicsResetStatus}, \n @fn_gl_extension{GetGraphicsResetStatus,ARB,robustness} | @ref GL::Renderer::graphicsResetStatus()
 @fn_gl_extension{GetImageHandle,ARB,bindless_texture} | |
 @fn_gl{GetInternalformat}               | |
+@fn_gl_extension{GetMemoryObjectParameteriv,EXT,external_objects} | |
 @fn_gl{GetMultisample}                  | |
 @fn_gl{GetObjectLabel}, \n @fn_gl{GetObjectPtrLabel} | @ref GL::AbstractShaderProgram::label(), \n @ref GL::AbstractQuery::label(), \n @ref GL::AbstractTexture::label(), \n @ref GL::Buffer::label(), \n @ref GL::Framebuffer::label(), \n @ref GL::Mesh::label(), \n @ref GL::Renderbuffer::label(), \n @ref GL::Shader::label()
 @fn_gl{GetProgram}, \n @fn_gl{GetProgramInfoLog} | @ref GL::AbstractShaderProgram::link(), \n @ref GL::AbstractShaderProgram::validate()
@@ -217,6 +221,7 @@ OpenGL function                         | Matching API
 @fn_gl{GetProgramPipelineInfoLog}       | |
 @fn_gl{GetProgramResource}, \n @fn_gl{GetProgramResourceIndex}, \n @fn_gl{GetProgramResourceLocation}, \n @fn_gl{GetProgramResourceLocationIndex}, \n @fn_gl{GetProgramResourceName} | not queryable, set them in shader code directly as described in @ref GL::AbstractShaderProgram docs
 @fn_gl{GetProgramStage}                 | |
+@fn_gl_extension{GetSemaphoreParameterui64v,EXT,external_objects} | |
 @fn_gl{GetQueryIndexed}                 | |
 @fn_gl{GetQueryObject}                  | @ref GL::AbstractQuery::result()
 @fn_gl{GetQueryBufferObject}            | |
@@ -259,6 +264,12 @@ OpenGL function                         | Matching API
 
 OpenGL function                         | Matching API
 --------------------------------------- | ------------
+@fn_gl_extension{ImportMemoryFd,EXT,external_objects_fd} | |
+@fn_gl_extension{ImportMemoryWin32Handle,EXT,external_objects_win32} | |
+@fn_gl_extension{ImportMemoryWin32Name,EXT,external_objects_win32} | |
+@fn_gl_extension{ImportSemaphoreFd,EXT,external_objects_fd} | |
+@fn_gl_extension{ImportSemaphoreWin32Handle,EXT,external_objects_win32} | |
+@fn_gl_extension{ImportSemaphoreWin32Name,EXT,external_objects_win32} | |
 @fn_gl{InvalidateBufferData}            | @ref GL::Buffer::invalidateData()
 @fn_gl{InvalidateBufferSubData}         | @ref GL::Buffer::invalidateSubData()
 @fn_gl{InvalidateFramebuffer}, \n `glInvalidateNamedFramebufferData()`, \n @fn_gl_extension{DiscardFramebuffer,EXT,discard_framebuffer} | @ref GL::DefaultFramebuffer::invalidate(), \n @ref GL::Framebuffer::invalidate()
@@ -266,6 +277,7 @@ OpenGL function                         | Matching API
 @fn_gl{InvalidateTexImage}              | @ref GL::Texture::invalidateImage(), \n @ref GL::TextureArray::invalidateImage(), \n @ref GL::CubeMapTexture::invalidateImage(), \n @ref GL::CubeMapTextureArray::invalidateImage(), \n @ref GL::RectangleTexture::invalidateImage(), \n @ref GL::MultisampleTexture::invalidateImage()
 @fn_gl{InvalidateTexSubImage}           | @ref GL::Texture::invalidateSubImage(), \n @ref GL::TextureArray::invalidateSubImage(), \n @ref GL::CubeMapTexture::invalidateSubImage(), \n @ref GL::CubeMapTextureArray::invalidateSubImage(), \n @ref GL::RectangleTexture::invalidateSubImage(), \n @ref GL::MultisampleTexture::invalidateSubImage()
 @fn_gl{IsBuffer}, \n @fn_gl{IsFramebuffer}, \n @fn_gl{IsProgram}, \n @fn_gl{IsProgramPipeline}, \n @fn_gl{IsQuery}, \n @fn_gl{IsRenderbuffer}, \n @fn_gl{IsSampler}, \n @fn_gl{IsShader}, \n @fn_gl{IsSync}, \n @fn_gl{IsTexture}, \n @fn_gl{IsTransformFeedback}, \n @fn_gl{IsVertexArray} | not needed, objects are strongly typed
+@fn_gl_extension{IsMemoryObject,EXT,external_objects}, \n @fn_gl_extension{IsSemaphore,EXT,external_objects} | |
 @fn_gl{IsEnabled}, `glIsEnabledi()` | not queryable, @ref GL::Renderer::setFeature() setter only
 @fn_gl_extension{IsImageHandleResident,ARB,bindless_texture} | |
 @fn_gl_extension{IsTextureHandleResident,ARB,bindless_texture} | |
@@ -293,6 +305,7 @@ OpenGL function                         | Matching API
 @fn_gl{MapBuffer}, \n `glMapNamedBuffer()`, \n @fn_gl{MapBufferRange}, \n `glMapNamedBufferRange()`, \n @fn_gl{UnmapBuffer}, \n `glUnmapNamedBuffer()` | @ref GL::Buffer::map(), @ref GL::Buffer::unmap()
 @fn_gl_extension{MaxShaderCompilerThreads,KHR,parallel_shader_compile} | |
 @fn_gl{MemoryBarrier}, \n `glMemoryBarrierByRegion()` | @ref GL::Renderer::setMemoryBarrier(), \n @ref GL::Renderer::setMemoryBarrierByRegion()
+@fn_gl_extension{MemoryObjectParameteriv,EXT,external_objects} | |
 @fn_gl{MinSampleShading}                | @ref GL::Renderer::setMinSampleShading()
 @fn_gl{MultiDrawArrays}, \n @fn_gl{MultiDrawElements}, \n @fn_gl{MultiDrawElementsBaseVertex} | @ref GL::AbstractShaderProgram::draw(const Containers::Iterable<MeshView>&)
 @fn_gl{MultiDrawArraysIndirectCount}, \n @fn_gl{MultiDrawElementsIndirectCount} | |
@@ -356,12 +369,14 @@ OpenGL function                         | Matching API
 @fn_gl{SampleCoverage}                  | @ref GL::Renderer::setSampleCoverage()
 @fn_gl{SampleMaski}                     | |
 @fn_gl{SamplerParameter}                | |
+@fn_gl_extension{SemaphoreParameterui64v,EXT,external_objects} | |
 @fn_gl{Scissor}                         | @ref GL::Renderer::setScissor()
 @fn_gl{ScissorArray}                    | |
 @fn_gl{ScissorIndexed}                  | |
 @fn_gl{ShaderBinary}                    | |
 @fn_gl{ShaderSource}                    | @ref GL::Shader::addFile(), \n @ref GL::Shader::addSource()
 @fn_gl{ShaderStorageBlockBinding}       | |
+@fn_gl_extension{SignalSemaphore,EXT,external_objects} | |
 @fn_gl{SpecializeShader}                | |
 @fn_gl{StencilFunc}, \n @fn_gl{StencilFuncSeparate} | @ref GL::Renderer::setStencilFunction()
 @fn_gl{StencilMask}, \n @fn_gl{StencilMaskSeparate} | @ref GL::Renderer::setStencilMask()
@@ -379,7 +394,9 @@ OpenGL function                         | Matching API
 @fn_gl_extension{TexPageCommitment,ARB,sparse_texture} | |
 @fn_gl{TexParameter}, \n `glTextureParameter()` | @ref GL::Texture::setBaseLevel() "*Texture::setBaseLevel()", \n @ref GL::Texture::setMaxLevel() "*Texture::setMaxLevel()", \n @ref GL::Texture::setMinificationFilter() "*Texture::setMinificationFilter()", \n @ref GL::Texture::setMagnificationFilter() "*Texture::setMagnificationFilter()", \n @ref GL::Texture::setMinLod() "*Texture::setMinLod()", \n @ref GL::Texture::setMaxLod() "*Texture::setMaxLod()", \n @ref GL::Texture::setLodBias() "*Texture::setLodBias()", \n @ref GL::Texture::setWrapping() "*Texture::setWrapping()", \n @ref GL::Texture::setBorderColor() "*Texture::setBorderColor()", \n @ref GL::Texture::setMaxAnisotropy() "*Texture::setMaxAnisotropy()", \n @ref GL::Texture::setSrgbDecode() "*Texture::setSrgbDecode()", \n @ref GL::Texture::setSwizzle() "*Texture::setSwizzle()", \n @ref GL::Texture::setCompareMode() "*Texture::setCompareMode()", \n @ref GL::Texture::setCompareFunction() "*Texture::setCompareFunction()", \n @ref GL::Texture::setDepthStencilMode() "*Texture::setDepthStencilMode()"
 @fn_gl{TexStorage1D}, \n `glTextureStorage1D()`, \n @fn_gl{TexStorage2D}, \n `glTextureStorage2D()`, \n @fn_gl{TexStorage3D}, \n `glTextureStorage3D()` | @ref GL::Texture::setStorage(), \n @ref GL::TextureArray::setStorage(), \n @ref GL::CubeMapTexture::setStorage(), \n @ref GL::CubeMapTextureArray::setStorage(), \n @ref GL::RectangleTexture::setStorage()
+@fn_gl_extension{TexStorageMem1D,EXT,external_objects}, \n @fn_gl_extension{TextureStorageMem1D,EXT,external_objects}, \n @fn_gl_extension{TexStorageMem2D,EXT,external_objects}, \n @fn_gl_extension{TextureStorageMem2D,EXT,external_objects}, \n @fn_gl_extension{TexStorageMem3D,EXT,external_objects}, \n @fn_gl_extension{TextureStorageMem3D,EXT,external_objects} | |
 @fn_gl{TexStorage2DMultisample}, \n `glTextureStorage2DMultisample()`, \n @fn_gl{TexStorage3DMultisample}, \n `glTextureStorage3DMultisample()` | @ref GL::MultisampleTexture::setStorage()
+@fn_gl_extension{TexStorageMem2DMultisample,EXT,external_objects}, \n @fn_gl_extension{TextureStorageMem2DMultisample,EXT,external_objects}, \n @fn_gl_extension{TexStorageMem3DMultisample,EXT,external_objects}, \n @fn_gl_extension{TextureStorageMem3DMultisample,EXT,external_objects} | |
 @fn_gl{TexSubImage1D}, \n `glTextureSubImage1D()`, \n @fn_gl{TexSubImage2D}, \n `glTextureSubImage2D()`, \n @fn_gl{TexSubImage3D}, \n `glTextureSubImage3D()` | @ref GL::Texture::setSubImage(), \n @ref GL::TextureArray::setSubImage(), \n @ref GL::CubeMapTexture::setSubImage(), \n @ref GL::CubeMapTextureArray::setSubImage(), \n @ref GL::RectangleTexture::setSubImage()
 @fn_gl{TextureBarrier}                  | @ref GL::Renderer::setTextureBarrier()
 @fn_gl{TextureView}                     | @ref GL::Texture::view(), \n @ref GL::TextureArray::view(), \n @ref GL::CubeMapTexture::view(), \n @ref GL::CubeMapTextureArray::view(), @ref GL::MultisampleTexture::view(), \n @ref GL::RectangleTexture::view()
@@ -424,6 +441,7 @@ OpenGL function                         | Matching API
 
 OpenGL function                         | Matching API
 --------------------------------------- | ------------
+@fn_gl_extension{WaitSemaphore,EXT,external_objects} | |
 @fn_gl{WaitSync}                        | |
 
 @section opengl-mapping-state Limit and state queries
@@ -449,6 +467,10 @@ glGet() parameter                       | Matching API
 @def_gl{DEBUG_GROUP_STACK_DEPTH}        | |
 @def_gl{DEPTH_FUNC}                     | not queryable, @ref GL::Renderer::setDepthFunction() setter only
 @def_gl{DEPTH_RANGE}                    | not queryable
+@def_gl_extension{DEVICE_LUID,EXT,external_objects_win32} | |
+@def_gl_extension{DEVICE_NODE_MASK,EXT,external_objects_win32} | |
+@def_gl_extension{DEVICE_UUID,EXT,external_objects} | |
+@def_gl_extension{DRIVER_UUID,EXT,external_objects} | |
 @def_gl{DOUBLEBUFFER}, \n @def_gl{STEREO} | |
 @def_gl{DRAW_BUFFERi}, \n @def_gl{DRAW_BUFFER}, \n @def_gl{READ_BUFFER} | not queryable, @ref GL::DefaultFramebuffer::mapForDraw(), \n @ref GL::DefaultFramebuffer::mapForRead(), \n @ref GL::Framebuffer::mapForDraw() and \n @ref GL::Framebuffer::mapForRead() setters only
 @def_gl{DRAW_FRAMEBUFFER_BINDING}, \n @def_gl{READ_FRAMEBUFFER_BINDING} | not queryable but tracked internally
@@ -537,6 +559,7 @@ glGet() parameter                       | Matching API
 @def_gl{MIN_PROGRAM_TEXEL_OFFSET}, \n @def_gl{MAX_PROGRAM_TEXEL_OFFSET} | @ref GL::AbstractShaderProgram::minTexelOffset(), \n @ref GL::AbstractShaderProgram::maxTexelOffset()
 @def_gl{MIN_PROGRAM_TEXTURE_GATHER_OFFSET}, \n @def_gl{MAX_PROGRAM_TEXTURE_GATHER_OFFSET} | |
 @def_gl{MIN_SAMPLE_SHADING_VALUE}       | |
+@def_gl_extension{NUM_DEVICE_UUIDS,EXT,external_objects} | |
 @def_gl{NUM_EXTENSIONS}                 | @ref GL::Context::extensionStrings()
 @def_gl{NUM_PROGRAM_BINARY_FORMATS}, \n @def_gl{PROGRAM_BINARY_FORMATS} | |
 @def_gl{NUM_SHADER_BINARY_FORMATS}, \n @def_gl{SHADER_BINARY_FORMATS} | |

@@ -33,6 +33,12 @@ extension EXT_texture_sRGB_decode               optional
 extension EXT_shader_integer_mix                optional
 extension EXT_debug_label                       optional
 extension EXT_debug_marker                      optional
+extension EXT_memory_object                     optional
+extension EXT_memory_object_fd                  optional
+extension EXT_memory_object_win32               optional
+extension EXT_semaphore                         optional
+extension EXT_semaphore_fd                      optional
+extension EXT_semaphore_win32                   optional
 extension EXT_texture_sRGB_R8                   optional
 extension EXT_texture_sRGB_RG8                  optional
 extension GREMEDY_string_marker                 optional

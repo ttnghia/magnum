@@ -243,37 +243,47 @@ namespace AMD {
     _extension(153,EXT,shader_integer_mix,              GL300,  None) // #437
     _extension(154,EXT,debug_label,                     GL210,  None) // #439
     _extension(155,EXT,debug_marker,                    GL210,  None) // #440
-    _extension(156,EXT,texture_sRGB_R8,                 GL210,  None) // #534
-    _extension(157,EXT,texture_sRGB_RG8,                GL210,  None) // #555
+    _extension(156,EXT,memory_object,                   GL210,  None) // #503
+    _extension(157,EXT,semaphore,                       GL210,  None) // #503
+    /* These two pairs appear to be exclusive so they share the same indices */
+    #ifndef CORRADE_TARGET_WINDOWS
+    _extension(158,EXT,memory_object_fd,                GL210,  None) // #504
+    _extension(159,EXT,semaphore_fd,                    GL210,  None) // #504
+    #else
+    _extension(158,EXT,memory_object_win32,             GL210,  None) // #505
+    _extension(159,EXT,semaphore_win32,                 GL210,  None) // #505
+    #endif
+    _extension(160,EXT,texture_sRGB_R8,                 GL210,  None) // #534
+    _extension(161,EXT,texture_sRGB_RG8,                GL210,  None) // #555
 } namespace GREMEDY {
-    _extension(158,GREMEDY,string_marker,               GL210,  None) // #311
+    _extension(162,GREMEDY,string_marker,               GL210,  None) // #311
 } namespace INTEL {
-    _extension(159,INTEL,blackhole_render,              GL300,  None) // #521
+    _extension(163,INTEL,blackhole_render,              GL300,  None) // #521
 } namespace KHR {
-    _extension(160,KHR,texture_compression_astc_ldr,    GL210,  None) // #118
-    _extension(161,KHR,texture_compression_astc_hdr,    GL210,  None) // #118
-    _extension(162,KHR,debug,                           GL210, GL430) // #119
-    _extension(163,KHR,context_flush_control,           GL210, GL450) // #168
-    _extension(164,KHR,robust_buffer_access_behavior,   GL320,  None) // #169
-    _extension(165,KHR,robustness,                      GL320, GL450) // #170
-    _extension(166,KHR,blend_equation_advanced,         GL210,  None) // #174
-    _extension(167,KHR,blend_equation_advanced_coherent, GL210, None) // #174
-    _extension(168,KHR,no_error,                        GL210, GL460) // #175
-    _extension(169,KHR,texture_compression_astc_sliced_3d, GL210, None) // #189
-    _extension(170,KHR,parallel_shader_compile,         GL210,  None) // #192
+    _extension(170,KHR,texture_compression_astc_ldr,    GL210,  None) // #118
+    _extension(171,KHR,texture_compression_astc_hdr,    GL210,  None) // #118
+    _extension(172,KHR,debug,                           GL210, GL430) // #119
+    _extension(173,KHR,context_flush_control,           GL210, GL450) // #168
+    _extension(174,KHR,robust_buffer_access_behavior,   GL320,  None) // #169
+    _extension(175,KHR,robustness,                      GL320, GL450) // #170
+    _extension(176,KHR,blend_equation_advanced,         GL210,  None) // #174
+    _extension(177,KHR,blend_equation_advanced_coherent, GL210, None) // #174
+    _extension(178,KHR,no_error,                        GL210, GL460) // #175
+    _extension(179,KHR,texture_compression_astc_sliced_3d, GL210, None) // #189
+    _extension(180,KHR,parallel_shader_compile,         GL210,  None) // #192
 } namespace MAGNUM {
-    _extension(171,MAGNUM,shader_vertex_id,             GL300, GL300)
+    _extension(181,MAGNUM,shader_vertex_id,             GL300, GL300)
 } namespace NV {
-    _extension(175,NV,primitive_restart,                GL210, GL310) // #285
-    _extension(176,NV,depth_buffer_float,               GL210,  None) // #334
-    _extension(177,NV,conditional_render,               GL210, GL300) // #346
+    _extension(182,NV,primitive_restart,                GL210, GL310) // #285
+    _extension(183,NV,depth_buffer_float,               GL210,  None) // #334
+    _extension(184,NV,conditional_render,               GL210, GL300) // #346
     /* NV_draw_texture not supported */                               // #430
-    _extension(178,NV,geometry_shader_passthrough,      GL330,  None) // #470
-    _extension(179,NV,sample_locations,                 GL210,  None) // #472
-    _extension(180,NV,fragment_shader_barycentric,      GL450,  None) // #526
+    _extension(185,NV,geometry_shader_passthrough,      GL330,  None) // #470
+    _extension(186,NV,sample_locations,                 GL210,  None) // #472
+    _extension(187,NV,fragment_shader_barycentric,      GL450,  None) // #526
 } namespace OVR {
-    _extension(185,OVR,multiview,                       GL300,  None) // #478
-    _extension(186,OVR,multiview2,                      GL300,  None) // #479
+    _extension(188,OVR,multiview,                       GL300,  None) // #478
+    _extension(189,OVR,multiview2,                      GL300,  None) // #479
 }
 #elif defined(MAGNUM_TARGET_WEBGL)
 namespace ANGLE {
@@ -517,24 +527,40 @@ namespace ANDROID {
     #endif
     _extension( 74,EXT,draw_elements_base_vertex,   GLES200,    None) // #204
     #ifndef MAGNUM_TARGET_GLES2
-    _extension( 75,EXT,texture_norm16,              GLES310,    None) // #207
-    _extension( 76,EXT,texture_sRGB_R8,             GLES300,    None) // #221
-    _extension( 77,EXT,texture_sRGB_RG8,            GLES300,    None) // #223
-    _extension( 78,EXT,buffer_storage,              GLES310,    None) // #239
+    _extension( 75,EXT,multi_draw_indirect,         GLES310,    None) // #205
+    _extension( 76,EXT,texture_norm16,              GLES310,    None) // #207
+    _extension( 77,EXT,texture_sRGB_R8,             GLES300,    None) // #221
+    _extension( 78,EXT,texture_sRGB_RG8,            GLES300,    None) // #223
+    _extension( 79,EXT,buffer_storage,              GLES310,    None) // #239
     #endif
-    _extension( 79,EXT,blend_func_extended,         GLES200,    None) // #247
-    _extension( 80,EXT,polygon_offset_clamp,        GLES200,    None) // #252
+    _extension( 80,EXT,blend_func_extended,         GLES200,    None) // #247
+    _extension( 81,EXT,polygon_offset_clamp,        GLES200,    None) // #252
     #ifndef MAGNUM_TARGET_GLES2
-    _extension( 81,EXT,clip_cull_distance,          GLES300,    None) // #257
-    _extension( 82,EXT,texture_compression_rgtc,    GLES300,    None) // #286
-    _extension( 83,EXT,texture_compression_bptc,    GLES300,    None) // #287
+    _extension( 82,EXT,clip_cull_distance,          GLES300,    None) // #257
     #endif
-    _extension( 84,EXT,texture_compression_s3tc_srgb, GLES200,  None) // #289
-    _extension( 85,EXT,clip_control,                GLES200,    None) // #290
-    _extension( 86,EXT,texture_mirror_clamp_to_edge, GLES200,   None) // #291
-    _extension( 87,EXT,depth_clamp,                 GLES200,    None) // #309
+    /* The extension says "Requires ARB_texture_storage or a version of OpenGL
+       or OpenGL ES that incorporates it." There's EXT_texture_storage on ES2,
+       however I don't think ES2 really matters today, so it's just ES3+. */
+    _extension( 83,EXT,memory_object,               GLES300,    None) // #280
+    _extension( 84,EXT,semaphore,                   GLES300,    None) // #280
+    /* These two pairs appear to be exclusive so they share the same indices */
+    #ifndef CORRADE_TARGET_WINDOWS
+    _extension( 85,EXT,memory_object_fd,            GLES300,    None) // #281
+    _extension( 86,EXT,semaphore_fd,                GLES300,    None) // #281
+    #else
+    _extension( 85,EXT,memory_object_win32,         GLES300,    None) // #282
+    _extension( 86,EXT,semaphore_win32,             GLES300,    None) // #282
+    #endif
+    #ifndef MAGNUM_TARGET_GLES2
+    _extension( 87,EXT,texture_compression_rgtc,    GLES300,    None) // #286
+    _extension( 88,EXT,texture_compression_bptc,    GLES300,    None) // #287
+    #endif
+    _extension( 89,EXT,texture_compression_s3tc_srgb, GLES200,  None) // #289
+    _extension( 90,EXT,clip_control,                GLES200,    None) // #290
+    _extension( 91,EXT,texture_mirror_clamp_to_edge, GLES200,   None) // #291
+    _extension( 92,EXT,depth_clamp,                 GLES200,    None) // #309
 } namespace IMG {
-    _extension( 88,IMG,texture_compression_pvrtc,   GLES200,    None) // #54
+    _extension( 93,IMG,texture_compression_pvrtc,   GLES200,    None) // #54
 } namespace INTEL {
     _extension( 94,INTEL,blackhole_render,    /*?*/ GLES200,    None) // #300
 } namespace KHR {

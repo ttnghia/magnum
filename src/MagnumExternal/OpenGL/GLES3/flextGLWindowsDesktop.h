@@ -1565,6 +1565,36 @@ typedef void (APIENTRY *GLDEBUGPROCKHR)(GLenum source,GLenum type,GLuint id,GLen
 #define GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV2_IMG 0x93F0
 #define GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV2_IMG 0x93F1
 
+/* GL_EXT_memory_object */
+
+#define GL_TEXTURE_TILING_EXT 0x9580
+#define GL_DEDICATED_MEMORY_OBJECT_EXT 0x9581
+#define GL_PROTECTED_MEMORY_OBJECT_EXT 0x959B
+#define GL_NUM_TILING_TYPES_EXT 0x9582
+#define GL_TILING_TYPES_EXT 0x9583
+#define GL_OPTIMAL_TILING_EXT 0x9584
+#define GL_LINEAR_TILING_EXT 0x9585
+#define GL_NUM_DEVICE_UUIDS_EXT 0x9596
+#define GL_DEVICE_UUID_EXT 0x9597
+#define GL_DRIVER_UUID_EXT 0x9598
+#define GL_UUID_SIZE_EXT 16
+
+/* GL_EXT_memory_object_fd */
+
+#define GL_HANDLE_TYPE_OPAQUE_FD_EXT 0x9586
+
+/* GL_EXT_memory_object_win32 */
+
+#define GL_HANDLE_TYPE_OPAQUE_WIN32_EXT 0x9587
+#define GL_HANDLE_TYPE_OPAQUE_WIN32_KMT_EXT 0x9588
+#define GL_DEVICE_LUID_EXT 0x9599
+#define GL_DEVICE_NODE_MASK_EXT 0x959A
+#define GL_LUID_SIZE_EXT 8
+#define GL_HANDLE_TYPE_D3D12_TILEPOOL_EXT 0x9589
+#define GL_HANDLE_TYPE_D3D12_RESOURCE_EXT 0x958A
+#define GL_HANDLE_TYPE_D3D11_IMAGE_EXT 0x958B
+#define GL_HANDLE_TYPE_D3D11_IMAGE_KMT_EXT 0x958C
+
 /* GL_EXT_texture_norm16 */
 
 #define GL_R16_EXT 0x822A
@@ -1623,6 +1653,36 @@ typedef void (APIENTRY *GLDEBUGPROCKHR)(GLenum source,GLenum type,GLuint id,GLen
 #define GL_CLIP_DISTANCE5_EXT 0x3005
 #define GL_CLIP_DISTANCE6_EXT 0x3006
 #define GL_CLIP_DISTANCE7_EXT 0x3007
+
+/* GL_EXT_semaphore */
+
+#define GL_NUM_DEVICE_UUIDS_EXT 0x9596
+#define GL_DEVICE_UUID_EXT 0x9597
+#define GL_DRIVER_UUID_EXT 0x9598
+#define GL_UUID_SIZE_EXT 16
+#define GL_LAYOUT_GENERAL_EXT 0x958D
+#define GL_LAYOUT_COLOR_ATTACHMENT_EXT 0x958E
+#define GL_LAYOUT_DEPTH_STENCIL_ATTACHMENT_EXT 0x958F
+#define GL_LAYOUT_DEPTH_STENCIL_READ_ONLY_EXT 0x9590
+#define GL_LAYOUT_SHADER_READ_ONLY_EXT 0x9591
+#define GL_LAYOUT_TRANSFER_SRC_EXT 0x9592
+#define GL_LAYOUT_TRANSFER_DST_EXT 0x9593
+#define GL_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_EXT 0x9530
+#define GL_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_EXT 0x9531
+
+/* GL_EXT_semaphore_fd */
+
+#define GL_HANDLE_TYPE_OPAQUE_FD_EXT 0x9586
+
+/* GL_EXT_semaphore_win32 */
+
+#define GL_HANDLE_TYPE_OPAQUE_WIN32_EXT 0x9587
+#define GL_HANDLE_TYPE_OPAQUE_WIN32_KMT_EXT 0x9588
+#define GL_DEVICE_LUID_EXT 0x9599
+#define GL_DEVICE_NODE_MASK_EXT 0x959A
+#define GL_LUID_SIZE_EXT 8
+#define GL_HANDLE_TYPE_D3D12_FENCE_EXT 0x9594
+#define GL_D3D12_FENCE_VALUE_EXT 0x9595
 
 /* GL_EXT_texture_compression_rgtc */
 
@@ -2233,10 +2293,44 @@ struct FlextGL {
 
     void(APIENTRY *FramebufferTextureEXT)(GLenum, GLenum, GLuint, GLint);
 
+    /* GL_EXT_memory_object */
+
+    void(APIENTRY *BufferStorageMemEXT)(GLenum, GLsizeiptr, GLuint, GLuint64);
+    void(APIENTRY *CreateMemoryObjectsEXT)(GLsizei, GLuint *);
+    void(APIENTRY *DeleteMemoryObjectsEXT)(GLsizei, const GLuint *);
+    void(APIENTRY *GetMemoryObjectParameterivEXT)(GLuint, GLenum, GLint *);
+    void(APIENTRY *GetUnsignedBytei_vEXT)(GLenum, GLuint, GLubyte *);
+    void(APIENTRY *GetUnsignedBytevEXT)(GLenum, GLubyte *);
+    GLboolean(APIENTRY *IsMemoryObjectEXT)(GLuint);
+    void(APIENTRY *MemoryObjectParameterivEXT)(GLuint, GLenum, const GLint *);
+    void(APIENTRY *NamedBufferStorageMemEXT)(GLuint, GLsizeiptr, GLuint, GLuint64);
+    void(APIENTRY *TexStorageMem2DEXT)(GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLuint, GLuint64);
+    void(APIENTRY *TexStorageMem2DMultisampleEXT)(GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLboolean, GLuint, GLuint64);
+    void(APIENTRY *TexStorageMem3DEXT)(GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLsizei, GLuint, GLuint64);
+    void(APIENTRY *TexStorageMem3DMultisampleEXT)(GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLsizei, GLboolean, GLuint, GLuint64);
+    void(APIENTRY *TextureStorageMem2DEXT)(GLuint, GLsizei, GLenum, GLsizei, GLsizei, GLuint, GLuint64);
+    void(APIENTRY *TextureStorageMem2DMultisampleEXT)(GLuint, GLsizei, GLenum, GLsizei, GLsizei, GLboolean, GLuint, GLuint64);
+    void(APIENTRY *TextureStorageMem3DEXT)(GLuint, GLsizei, GLenum, GLsizei, GLsizei, GLsizei, GLuint, GLuint64);
+    void(APIENTRY *TextureStorageMem3DMultisampleEXT)(GLuint, GLsizei, GLenum, GLsizei, GLsizei, GLsizei, GLboolean, GLuint, GLuint64);
+
+    /* GL_EXT_memory_object_fd */
+
+    void(APIENTRY *ImportMemoryFdEXT)(GLuint, GLuint64, GLenum, GLint);
+
+    /* GL_EXT_memory_object_win32 */
+
+    void(APIENTRY *ImportMemoryWin32HandleEXT)(GLuint, GLuint64, GLenum, void *);
+    void(APIENTRY *ImportMemoryWin32NameEXT)(GLuint, GLuint64, GLenum, const void *);
+
     /* GL_EXT_multi_draw_arrays */
 
     void(APIENTRY *MultiDrawArraysEXT)(GLenum, const GLint *, const GLsizei *, GLsizei);
     void(APIENTRY *MultiDrawElementsEXT)(GLenum, const GLsizei *, GLenum, const void *const*, GLsizei);
+
+    /* GL_EXT_multi_draw_indirect */
+
+    void(APIENTRY *MultiDrawArraysIndirectEXT)(GLenum, const void *, GLsizei, GLsizei);
+    void(APIENTRY *MultiDrawElementsIndirectEXT)(GLenum, GLenum, const void *, GLsizei, GLsizei);
 
     /* GL_EXT_multisampled_render_to_texture */
 
@@ -2257,6 +2351,25 @@ struct FlextGL {
     void(APIENTRY *GetnUniformfvEXT)(GLuint, GLint, GLsizei, GLfloat *);
     void(APIENTRY *GetnUniformivEXT)(GLuint, GLint, GLsizei, GLint *);
     void(APIENTRY *ReadnPixelsEXT)(GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, GLsizei, void *);
+
+    /* GL_EXT_semaphore */
+
+    void(APIENTRY *DeleteSemaphoresEXT)(GLsizei, const GLuint *);
+    void(APIENTRY *GenSemaphoresEXT)(GLsizei, GLuint *);
+    void(APIENTRY *GetSemaphoreParameterui64vEXT)(GLuint, GLenum, GLuint64 *);
+    GLboolean(APIENTRY *IsSemaphoreEXT)(GLuint);
+    void(APIENTRY *SemaphoreParameterui64vEXT)(GLuint, GLenum, const GLuint64 *);
+    void(APIENTRY *SignalSemaphoreEXT)(GLuint, GLuint, const GLuint *, GLuint, const GLuint *, const GLenum *);
+    void(APIENTRY *WaitSemaphoreEXT)(GLuint, GLuint, const GLuint *, GLuint, const GLuint *, const GLenum *);
+
+    /* GL_EXT_semaphore_fd */
+
+    void(APIENTRY *ImportSemaphoreFdEXT)(GLuint, GLenum, GLint);
+
+    /* GL_EXT_semaphore_win32 */
+
+    void(APIENTRY *ImportSemaphoreWin32HandleEXT)(GLuint, GLenum, void *);
+    void(APIENTRY *ImportSemaphoreWin32NameEXT)(GLuint, GLenum, const void *);
 
     /* GL_EXT_separate_shader_objects */
 
@@ -2812,10 +2925,44 @@ extern FLEXTGL_EXPORT FlextGL flextGL;
 
 #define glFramebufferTextureEXT flextGL.FramebufferTextureEXT
 
+/* GL_EXT_memory_object */
+
+#define glBufferStorageMemEXT flextGL.BufferStorageMemEXT
+#define glCreateMemoryObjectsEXT flextGL.CreateMemoryObjectsEXT
+#define glDeleteMemoryObjectsEXT flextGL.DeleteMemoryObjectsEXT
+#define glGetMemoryObjectParameterivEXT flextGL.GetMemoryObjectParameterivEXT
+#define glGetUnsignedBytei_vEXT flextGL.GetUnsignedBytei_vEXT
+#define glGetUnsignedBytevEXT flextGL.GetUnsignedBytevEXT
+#define glIsMemoryObjectEXT flextGL.IsMemoryObjectEXT
+#define glMemoryObjectParameterivEXT flextGL.MemoryObjectParameterivEXT
+#define glNamedBufferStorageMemEXT flextGL.NamedBufferStorageMemEXT
+#define glTexStorageMem2DEXT flextGL.TexStorageMem2DEXT
+#define glTexStorageMem2DMultisampleEXT flextGL.TexStorageMem2DMultisampleEXT
+#define glTexStorageMem3DEXT flextGL.TexStorageMem3DEXT
+#define glTexStorageMem3DMultisampleEXT flextGL.TexStorageMem3DMultisampleEXT
+#define glTextureStorageMem2DEXT flextGL.TextureStorageMem2DEXT
+#define glTextureStorageMem2DMultisampleEXT flextGL.TextureStorageMem2DMultisampleEXT
+#define glTextureStorageMem3DEXT flextGL.TextureStorageMem3DEXT
+#define glTextureStorageMem3DMultisampleEXT flextGL.TextureStorageMem3DMultisampleEXT
+
+/* GL_EXT_memory_object_fd */
+
+#define glImportMemoryFdEXT flextGL.ImportMemoryFdEXT
+
+/* GL_EXT_memory_object_win32 */
+
+#define glImportMemoryWin32HandleEXT flextGL.ImportMemoryWin32HandleEXT
+#define glImportMemoryWin32NameEXT flextGL.ImportMemoryWin32NameEXT
+
 /* GL_EXT_multi_draw_arrays */
 
 #define glMultiDrawArraysEXT flextGL.MultiDrawArraysEXT
 #define glMultiDrawElementsEXT flextGL.MultiDrawElementsEXT
+
+/* GL_EXT_multi_draw_indirect */
+
+#define glMultiDrawArraysIndirectEXT flextGL.MultiDrawArraysIndirectEXT
+#define glMultiDrawElementsIndirectEXT flextGL.MultiDrawElementsIndirectEXT
 
 /* GL_EXT_multisampled_render_to_texture */
 
@@ -2836,6 +2983,25 @@ extern FLEXTGL_EXPORT FlextGL flextGL;
 #define glGetnUniformfvEXT flextGL.GetnUniformfvEXT
 #define glGetnUniformivEXT flextGL.GetnUniformivEXT
 #define glReadnPixelsEXT flextGL.ReadnPixelsEXT
+
+/* GL_EXT_semaphore */
+
+#define glDeleteSemaphoresEXT flextGL.DeleteSemaphoresEXT
+#define glGenSemaphoresEXT flextGL.GenSemaphoresEXT
+#define glGetSemaphoreParameterui64vEXT flextGL.GetSemaphoreParameterui64vEXT
+#define glIsSemaphoreEXT flextGL.IsSemaphoreEXT
+#define glSemaphoreParameterui64vEXT flextGL.SemaphoreParameterui64vEXT
+#define glSignalSemaphoreEXT flextGL.SignalSemaphoreEXT
+#define glWaitSemaphoreEXT flextGL.WaitSemaphoreEXT
+
+/* GL_EXT_semaphore_fd */
+
+#define glImportSemaphoreFdEXT flextGL.ImportSemaphoreFdEXT
+
+/* GL_EXT_semaphore_win32 */
+
+#define glImportSemaphoreWin32HandleEXT flextGL.ImportSemaphoreWin32HandleEXT
+#define glImportSemaphoreWin32NameEXT flextGL.ImportSemaphoreWin32NameEXT
 
 /* GL_EXT_separate_shader_objects */
 

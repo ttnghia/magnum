@@ -61,6 +61,10 @@ extension EXT_texture_compression_s3tc              optional
 extension EXT_pvrtc_sRGB                            optional
 extension EXT_shader_integer_mix                    optional
 extension EXT_draw_elements_base_vertex             optional
+extension EXT_memory_object                         optional
+extension EXT_memory_object_fd                      optional
+extension EXT_memory_object_win32                   optional
+extension EXT_multi_draw_indirect                   optional
 extension EXT_texture_norm16                        optional
 extension EXT_texture_sRGB_R8                       optional
 extension EXT_texture_sRGB_RG8                      optional
@@ -68,6 +72,9 @@ extension EXT_buffer_storage                        optional
 extension EXT_blend_func_extended                   optional
 extension EXT_polygon_offset_clamp                  optional
 extension EXT_clip_cull_distance                    optional
+extension EXT_semaphore                             optional
+extension EXT_semaphore_fd                          optional
+extension EXT_semaphore_win32                       optional
 extension EXT_texture_compression_rgtc              optional
 extension EXT_texture_compression_bptc              optional
 extension EXT_texture_compression_s3tc_srgb         optional

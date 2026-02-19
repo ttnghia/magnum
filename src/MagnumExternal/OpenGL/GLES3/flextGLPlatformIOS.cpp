@@ -73,8 +73,30 @@
 #undef glDrawRangeElementsBaseVertexEXT
 #undef glMultiDrawElementsBaseVertexEXT
 #undef glFramebufferTextureEXT
+#undef glBufferStorageMemEXT
+#undef glCreateMemoryObjectsEXT
+#undef glDeleteMemoryObjectsEXT
+#undef glGetMemoryObjectParameterivEXT
+#undef glGetUnsignedBytei_vEXT
+#undef glGetUnsignedBytevEXT
+#undef glIsMemoryObjectEXT
+#undef glMemoryObjectParameterivEXT
+#undef glNamedBufferStorageMemEXT
+#undef glTexStorageMem2DEXT
+#undef glTexStorageMem2DMultisampleEXT
+#undef glTexStorageMem3DEXT
+#undef glTexStorageMem3DMultisampleEXT
+#undef glTextureStorageMem2DEXT
+#undef glTextureStorageMem2DMultisampleEXT
+#undef glTextureStorageMem3DEXT
+#undef glTextureStorageMem3DMultisampleEXT
+#undef glImportMemoryFdEXT
+#undef glImportMemoryWin32HandleEXT
+#undef glImportMemoryWin32NameEXT
 #undef glMultiDrawArraysEXT
 #undef glMultiDrawElementsEXT
+#undef glMultiDrawArraysIndirectEXT
+#undef glMultiDrawElementsIndirectEXT
 #undef glFramebufferTexture2DMultisampleEXT
 #undef glRenderbufferStorageMultisampleEXT
 #undef glPolygonOffsetClampEXT
@@ -83,6 +105,16 @@
 #undef glGetnUniformfvEXT
 #undef glGetnUniformivEXT
 #undef glReadnPixelsEXT
+#undef glDeleteSemaphoresEXT
+#undef glGenSemaphoresEXT
+#undef glGetSemaphoreParameterui64vEXT
+#undef glIsSemaphoreEXT
+#undef glSemaphoreParameterui64vEXT
+#undef glSignalSemaphoreEXT
+#undef glWaitSemaphoreEXT
+#undef glImportSemaphoreFdEXT
+#undef glImportSemaphoreWin32HandleEXT
+#undef glImportSemaphoreWin32NameEXT
 #undef glActiveShaderProgramEXT
 #undef glBindProgramPipelineEXT
 #undef glCreateShaderProgramvEXT
@@ -281,10 +313,48 @@ void flextGLInit(Magnum::GL::Context&) {
     flextGL.FramebufferTextureEXT = reinterpret_cast<void(APIENTRY*)(GLenum, GLenum, GLuint, GLint)>(glFramebufferTextureEXT);
     #endif
 
+    /* GL_EXT_memory_object */
+    #if GL_EXT_memory_object
+    flextGL.BufferStorageMemEXT = reinterpret_cast<void(APIENTRY*)(GLenum, GLsizeiptr, GLuint, GLuint64)>(glBufferStorageMemEXT);
+    flextGL.CreateMemoryObjectsEXT = reinterpret_cast<void(APIENTRY*)(GLsizei, GLuint *)>(glCreateMemoryObjectsEXT);
+    flextGL.DeleteMemoryObjectsEXT = reinterpret_cast<void(APIENTRY*)(GLsizei, const GLuint *)>(glDeleteMemoryObjectsEXT);
+    flextGL.GetMemoryObjectParameterivEXT = reinterpret_cast<void(APIENTRY*)(GLuint, GLenum, GLint *)>(glGetMemoryObjectParameterivEXT);
+    flextGL.GetUnsignedBytei_vEXT = reinterpret_cast<void(APIENTRY*)(GLenum, GLuint, GLubyte *)>(glGetUnsignedBytei_vEXT);
+    flextGL.GetUnsignedBytevEXT = reinterpret_cast<void(APIENTRY*)(GLenum, GLubyte *)>(glGetUnsignedBytevEXT);
+    flextGL.IsMemoryObjectEXT = reinterpret_cast<GLboolean(APIENTRY*)(GLuint)>(glIsMemoryObjectEXT);
+    flextGL.MemoryObjectParameterivEXT = reinterpret_cast<void(APIENTRY*)(GLuint, GLenum, const GLint *)>(glMemoryObjectParameterivEXT);
+    flextGL.NamedBufferStorageMemEXT = reinterpret_cast<void(APIENTRY*)(GLuint, GLsizeiptr, GLuint, GLuint64)>(glNamedBufferStorageMemEXT);
+    flextGL.TexStorageMem2DEXT = reinterpret_cast<void(APIENTRY*)(GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLuint, GLuint64)>(glTexStorageMem2DEXT);
+    flextGL.TexStorageMem2DMultisampleEXT = reinterpret_cast<void(APIENTRY*)(GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLboolean, GLuint, GLuint64)>(glTexStorageMem2DMultisampleEXT);
+    flextGL.TexStorageMem3DEXT = reinterpret_cast<void(APIENTRY*)(GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLsizei, GLuint, GLuint64)>(glTexStorageMem3DEXT);
+    flextGL.TexStorageMem3DMultisampleEXT = reinterpret_cast<void(APIENTRY*)(GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLsizei, GLboolean, GLuint, GLuint64)>(glTexStorageMem3DMultisampleEXT);
+    flextGL.TextureStorageMem2DEXT = reinterpret_cast<void(APIENTRY*)(GLuint, GLsizei, GLenum, GLsizei, GLsizei, GLuint, GLuint64)>(glTextureStorageMem2DEXT);
+    flextGL.TextureStorageMem2DMultisampleEXT = reinterpret_cast<void(APIENTRY*)(GLuint, GLsizei, GLenum, GLsizei, GLsizei, GLboolean, GLuint, GLuint64)>(glTextureStorageMem2DMultisampleEXT);
+    flextGL.TextureStorageMem3DEXT = reinterpret_cast<void(APIENTRY*)(GLuint, GLsizei, GLenum, GLsizei, GLsizei, GLsizei, GLuint, GLuint64)>(glTextureStorageMem3DEXT);
+    flextGL.TextureStorageMem3DMultisampleEXT = reinterpret_cast<void(APIENTRY*)(GLuint, GLsizei, GLenum, GLsizei, GLsizei, GLsizei, GLboolean, GLuint, GLuint64)>(glTextureStorageMem3DMultisampleEXT);
+    #endif
+
+    /* GL_EXT_memory_object_fd */
+    #if GL_EXT_memory_object_fd
+    flextGL.ImportMemoryFdEXT = reinterpret_cast<void(APIENTRY*)(GLuint, GLuint64, GLenum, GLint)>(glImportMemoryFdEXT);
+    #endif
+
+    /* GL_EXT_memory_object_win32 */
+    #if GL_EXT_memory_object_win32
+    flextGL.ImportMemoryWin32HandleEXT = reinterpret_cast<void(APIENTRY*)(GLuint, GLuint64, GLenum, void *)>(glImportMemoryWin32HandleEXT);
+    flextGL.ImportMemoryWin32NameEXT = reinterpret_cast<void(APIENTRY*)(GLuint, GLuint64, GLenum, const void *)>(glImportMemoryWin32NameEXT);
+    #endif
+
     /* GL_EXT_multi_draw_arrays */
     #if GL_EXT_multi_draw_arrays
     flextGL.MultiDrawArraysEXT = reinterpret_cast<void(APIENTRY*)(GLenum, const GLint *, const GLsizei *, GLsizei)>(glMultiDrawArraysEXT);
     flextGL.MultiDrawElementsEXT = reinterpret_cast<void(APIENTRY*)(GLenum, const GLsizei *, GLenum, const void *const*, GLsizei)>(glMultiDrawElementsEXT);
+    #endif
+
+    /* GL_EXT_multi_draw_indirect */
+    #if GL_EXT_multi_draw_indirect
+    flextGL.MultiDrawArraysIndirectEXT = reinterpret_cast<void(APIENTRY*)(GLenum, const void *, GLsizei, GLsizei)>(glMultiDrawArraysIndirectEXT);
+    flextGL.MultiDrawElementsIndirectEXT = reinterpret_cast<void(APIENTRY*)(GLenum, GLenum, const void *, GLsizei, GLsizei)>(glMultiDrawElementsIndirectEXT);
     #endif
 
     /* GL_EXT_multisampled_render_to_texture */
@@ -309,6 +379,28 @@ void flextGLInit(Magnum::GL::Context&) {
     flextGL.GetnUniformfvEXT = reinterpret_cast<void(APIENTRY*)(GLuint, GLint, GLsizei, GLfloat *)>(glGetnUniformfvEXT);
     flextGL.GetnUniformivEXT = reinterpret_cast<void(APIENTRY*)(GLuint, GLint, GLsizei, GLint *)>(glGetnUniformivEXT);
     flextGL.ReadnPixelsEXT = reinterpret_cast<void(APIENTRY*)(GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, GLsizei, void *)>(glReadnPixelsEXT);
+    #endif
+
+    /* GL_EXT_semaphore */
+    #if GL_EXT_semaphore
+    flextGL.DeleteSemaphoresEXT = reinterpret_cast<void(APIENTRY*)(GLsizei, const GLuint *)>(glDeleteSemaphoresEXT);
+    flextGL.GenSemaphoresEXT = reinterpret_cast<void(APIENTRY*)(GLsizei, GLuint *)>(glGenSemaphoresEXT);
+    flextGL.GetSemaphoreParameterui64vEXT = reinterpret_cast<void(APIENTRY*)(GLuint, GLenum, GLuint64 *)>(glGetSemaphoreParameterui64vEXT);
+    flextGL.IsSemaphoreEXT = reinterpret_cast<GLboolean(APIENTRY*)(GLuint)>(glIsSemaphoreEXT);
+    flextGL.SemaphoreParameterui64vEXT = reinterpret_cast<void(APIENTRY*)(GLuint, GLenum, const GLuint64 *)>(glSemaphoreParameterui64vEXT);
+    flextGL.SignalSemaphoreEXT = reinterpret_cast<void(APIENTRY*)(GLuint, GLuint, const GLuint *, GLuint, const GLuint *, const GLenum *)>(glSignalSemaphoreEXT);
+    flextGL.WaitSemaphoreEXT = reinterpret_cast<void(APIENTRY*)(GLuint, GLuint, const GLuint *, GLuint, const GLuint *, const GLenum *)>(glWaitSemaphoreEXT);
+    #endif
+
+    /* GL_EXT_semaphore_fd */
+    #if GL_EXT_semaphore_fd
+    flextGL.ImportSemaphoreFdEXT = reinterpret_cast<void(APIENTRY*)(GLuint, GLenum, GLint)>(glImportSemaphoreFdEXT);
+    #endif
+
+    /* GL_EXT_semaphore_win32 */
+    #if GL_EXT_semaphore_win32
+    flextGL.ImportSemaphoreWin32HandleEXT = reinterpret_cast<void(APIENTRY*)(GLuint, GLenum, void *)>(glImportSemaphoreWin32HandleEXT);
+    flextGL.ImportSemaphoreWin32NameEXT = reinterpret_cast<void(APIENTRY*)(GLuint, GLenum, const void *)>(glImportSemaphoreWin32NameEXT);
     #endif
 
     /* GL_EXT_separate_shader_objects */

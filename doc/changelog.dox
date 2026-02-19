@@ -195,6 +195,15 @@ See also:
     -   @webgl_extension{WEBGL,multi_draw}
     -   @webgl_extension{WEBGL,draw_instanced_base_vertex_base_instance}
     -   @webgl_extension{WEBGL,multi_draw_instanced_base_vertex_base_instance}
+-   Recognizing the @gl_extension{EXT,multi_draw_indirect} OpenGL ES extension
+-   Recognizing the @gl_extension2{EXT,memory_object,EXT_external_objects},
+    @gl_extension2{EXT,semaphore,EXT_external_objects},
+    @gl_extension2{EXT,memory_object_fd,EXT_external_objects_fd},
+    @gl_extension2{EXT,semaphore_fd,EXT_external_objects_fd},
+    @gl_extension2{EXT,memory_object_win32,EXT_external_objects_win32} and
+    @gl_extension2{EXT,semaphore_win32,EXT_external_objects_win32} OpenGL and
+    OpenGL ES extensions for interoperation with other GPU APIs (see
+    [mosra/magnum#688](https://github.com/mosra/magnum/issues/688))
 -   Recognizing @m_class{m-doc-external} [ANGLE_compressed_texture_etc](https://chromium.googlesource.com/angle/angle/+/master/extensions/ANGLE_compressed_texture_etc.txt)
     OpenGL ES and @webgl_extension{WEBGL,compressed_texture_etc} WebGL
     extensions, making ETC and EAC @ref GL::CompressedPixelFormat and
