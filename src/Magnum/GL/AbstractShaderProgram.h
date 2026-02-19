@@ -29,7 +29,7 @@
 */
 
 /** @file
- * @brief Class @ref Magnum::GL::AbstractShaderProgram, macro @ref MAGNUM_GL_ABSTRACTSHADERPROGRAM_SUBCLASS_DRAW_IMPLEMENTATION(), @ref MAGNUM_GL_ABSTRACTSHADERPROGRAM_SUBCLASS_DISPATCH_IMPLEMENTATION()
+ * @brief Class @ref Magnum::GL::AbstractShaderProgram, struct @ref Magnum::GL::DrawArraysIndirect, @ref Magnum::GL::DrawElementsIndirect, macro @ref MAGNUM_GL_ABSTRACTSHADERPROGRAM_SUBCLASS_DRAW_IMPLEMENTATION(), @ref MAGNUM_GL_ABSTRACTSHADERPROGRAM_SUBCLASS_DISPATCH_IMPLEMENTATION()
  */
 
 #include "Magnum/Tags.h"
@@ -58,6 +58,111 @@
 namespace Magnum { namespace GL {
 
 namespace Implementation { struct ShaderProgramState; }
+
+#if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
+/**
+@brief Non-indexed draw indirect command
+@m_since_latest
+
+Layout for a @ref Buffer containing indirect draw commands for *non-indexed*
+meshes drawn with @ref AbstractShaderProgram::drawIndirect(Mesh&, Buffer&, GLintptr),
+@ref AbstractShaderProgram::drawIndirect(Mesh&, Buffer&, GLintptr, GLsizei, GLsizei)
+and @ref AbstractShaderProgram::drawIndirect(Mesh&, Buffer&, GLintptr, Buffer&, GLintptr, GLsizei, GLsizei).
+See the @ref GL-AbstractShaderProgram-rendering-workflow-indirect "AbstractShaderProgram indirect draw documentation"
+for more information and usage examples.
+@requires_gl43 Extension @gl_extension{ARB,multi_draw_indirect}
+@requires_gles31 OpenGL ES 3.1 and @gl_extension{EXT,multi_draw_indirect}
+@requires_gles Indirect rendering isn't availabe in WebGL.
+*/
+struct DrawArraysIndirect {
+    /**
+     * @brief Vertex count
+     *
+     * Corresponds to the value passed to @ref Mesh::setCount().
+     */
+    UnsignedInt count;
+
+    /**
+     * @brief Instance count
+     *
+     * Corresponds to the value passed to @ref Mesh::setInstanceCount().
+     */
+    UnsignedInt instanceCount;
+
+    /**
+     * @brief Vertex offset
+     *
+     * Corresponds to the value passed to @ref Mesh::setBaseVertex().
+     */
+    UnsignedInt vertexOffset;
+
+    /**
+     * @brief Instance offset
+     *
+     * Corresponds to the value passed to @ref Mesh::setBaseInstance().
+     * @requires_gl42 Extension @gl_extension{ARB,base_instance}, required to
+     *      be set to `0` otherwise.
+     * @requires_es_extension Extension @gl_extension{EXT,base_instance},
+     *      required to be set to `0` otherwise.
+     */
+    UnsignedInt instanceOffset;
+};
+
+/**
+@brief Indexed draw indirect command
+@m_since_latest
+
+Layout for a @ref Buffer containing indirect draw commands for *indexed* meshes
+drawn with @ref AbstractShaderProgram::drawIndirect(Mesh&, Buffer&, GLintptr),
+@ref AbstractShaderProgram::drawIndirect(Mesh&, Buffer&, GLintptr, GLsizei, GLsizei)
+and @ref AbstractShaderProgram::drawIndirect(Mesh&, Buffer&, GLintptr, Buffer&, GLintptr, GLsizei, GLsizei).
+See the @ref GL-AbstractShaderProgram-rendering-workflow-indirect "AbstractShaderProgram indirect draw documentation"
+for more information and usage examples.
+@requires_gl43 Extension @gl_extension{ARB,multi_draw_indirect}
+@requires_gles31 OpenGL ES 3.1 and @gl_extension{EXT,multi_draw_indirect}
+@requires_gles Indirect rendering isn't availabe in WebGL.
+*/
+struct DrawElementsIndirect {
+    /**
+     * @brief Index count
+     *
+     * Corresponds to the value passed to @ref Mesh::setCount().
+     */
+    UnsignedInt count;
+
+    /**
+     * @brief Instance count
+     *
+     * Corresponds to the value passed to @ref Mesh::setInstanceCount().
+     */
+    UnsignedInt instanceCount;
+
+    /**
+     * @brief Index offset
+     *
+     * Corresponds to the value passed to @ref Mesh::setIndexOffset().
+     */
+    UnsignedInt indexOffset;
+
+    /**
+     * @brief Vertex offset
+     *
+     * Corresponds to the value passed to @ref Mesh::setBaseVertex().
+     */
+    UnsignedInt vertexOffset;
+
+    /**
+     * @brief Instance offset
+     *
+     * Corresponds to the value passed to @ref Mesh::setBaseInstance().
+     * @requires_gl42 Extension @gl_extension{ARB,base_instance}, required to
+     *      be set to `0` otherwise.
+     * @requires_es_extension Extension @gl_extension{EXT,base_instance},
+     *      required to be set to `0` otherwise.
+     */
+    UnsignedInt instanceOffset;
+};
+#endif
 
 /**
 @brief Base for shader program implementations
@@ -1275,7 +1380,119 @@ class MAGNUM_GL_EXPORT AbstractShaderProgram: public AbstractObject {
          */
         AbstractShaderProgram& draw(const Containers::Iterable<MeshView>& meshes);
 
+        #if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
+        /**
+         * @brief Draw a mesh view indirectly
+         * @param mesh                  Mesh to draw
+         * @param indirectBuffer        Buffer to take the indirect command
+         *      from
+         * @param indirectBufferOffset  Four-byte-aligned offset of the
+         *      indirect command in the buffer
+         * @return Reference to self (for method chaining)
+         * @m_since_latest
+         *
+         * The @p indirectBuffer is assumed to have a @ref DrawArraysIndirect
+         * structure for a non-indexed @p mesh or a @ref DrawElementsIndirect
+         * structure for an indexed @p mesh at @p indirectBufferOffset.
+         * @see @fn_gl{UseProgram}, @fn_gl_keyword{EnableVertexAttribArray},
+         *      @fn_gl{BindBuffer}, @fn_gl_keyword{VertexAttribPointer},
+         *      @fn_gl_keyword{DisableVertexAttribArray} or
+         *      @fn_gl{BindVertexArray}, @fn_gl_keyword{DrawArraysIndirect} or
+         *      @fn_gl_keyword{DrawElementsIndirect}
+         * @requires_gl40 Extension @gl_extension{ARB,draw_indirect}
+         * @requires_gl42 Extension @gl_extension{ARB,base_instance} if
+         *      @ref DrawArraysIndirect::instanceOffset or
+         *      @ref DrawElementsIndirect::instanceOffset is not `0`
+         * @requires_gles31 Indirect rendering isn't available in OpenGL ES
+         *      3.0 and older.
+         * @requires_es_extension Extension @gl_extension{EXT,base_instance} if
+         *      @ref DrawArraysIndirect::instanceOffset or
+         *      @ref DrawElementsIndirect::instanceOffset is not `0`
+         * @requires_gles Indirect rendering isn't availabe in WebGL.
+         */
+        AbstractShaderProgram& drawIndirect(Mesh& mesh, Buffer& indirectBuffer, GLintptr indirectBufferOffset);
+
+        /**
+         * @brief Draw multiple mesh views indirectly
+         * @param mesh                  Mesh to draw
+         * @param indirectBuffer        Buffer to take the indirect command
+         *      from
+         * @param indirectBufferOffset  Four-byte-aligned offset of the
+         *      indirect command in the buffer
+         * @param count                 Draw count
+         * @param stride                Four-byte-aligned stride between
+         *      commands or @cpp 0 @ce if it's a tightly-packed sequence of
+         *      @ref DrawArraysIndirect structures for a non-indexed @p mesh or
+         *      @ref DrawElementsIndirect structures for an indexed @p mesh.
+         * @return Reference to self (for method chaining)
+         * @m_since_latest
+         *
+         * The @p indirectBuffer is assumed to have a list of
+         * @ref DrawArraysIndirect structures for a non-indexed @p mesh or
+         * @ref DrawElementsIndirect structures for an indexed @p mesh at
+         * @p indirectBufferOffset with @p count items and a @p stride.
+         * @see @fn_gl{UseProgram}, @fn_gl_keyword{EnableVertexAttribArray},
+         *      @fn_gl{BindBuffer}, @fn_gl_keyword{VertexAttribPointer},
+         *      @fn_gl_keyword{DisableVertexAttribArray} or
+         *      @fn_gl{BindVertexArray}, @fn_gl_keyword{MultiDrawArraysIndirect} or
+         *      @fn_gl_keyword{MultiDrawElementsIndirect}
+         * @requires_gl43 Extension @gl_extension{ARB,multi_draw_indirect}
+         * @requires_gl42 Extension @gl_extension{ARB,base_instance} if
+         *      @ref DrawArraysIndirect::instanceOffset or
+         *      @ref DrawElementsIndirect::instanceOffset is not `0`
+         * @requires_gles31 OpenGL ES 3.1 and @gl_extension{EXT,multi_draw_indirect}
+         * @requires_es_extension Extension @gl_extension{EXT,base_instance} if
+         *      @ref DrawArraysIndirect::instanceOffset or
+         *      @ref DrawElementsIndirect::instanceOffset is not `0`
+         * @requires_gles Indirect rendering isn't availabe in WebGL.
+         */
+        AbstractShaderProgram& drawIndirect(Mesh& mesh, Buffer& indirectBuffer, GLintptr indirectBufferOffset, GLsizei count, GLsizei stride);
+        #endif
+
         #ifndef MAGNUM_TARGET_GLES
+        /**
+         * @brief Draw multiple mesh views indirectly with indirect draw count
+         * @param mesh                  Mesh to draw
+         * @param indirectBuffer        Buffer to take the indirect command
+         *      from
+         * @param indirectBufferOffset  Four-byte-aligned offset of the
+         *      indirect command in the buffer
+         * @param countBuffer           Buffer to take the draw count from
+         * @param countBufferOffset     Four-byte-aligned offset of a 32-bit
+         *      draw count value in the buffer
+         * @param maxCount              Max draw count
+         * @param stride                Four-byte-aligned stride between
+         *      commands or @cpp 0 @ce if it's a tightly-packed sequence of
+         *      @ref DrawArraysIndirect structures for a non-indexed @p mesh or
+         *      @ref DrawElementsIndirect structures for an indexed @p mesh.
+         * @return Reference to self (for method chaining)
+         * @m_since_latest
+         *
+         * Compared to @ref drawIndirect(Mesh&, Buffer&, GLintptr, GLsizei, GLsizei),
+         * not only the draw commands themselves are taken from a buffer but
+         * their count as well. The @p indirectBuffer is assumed to have a list
+         * of @ref DrawArraysIndirect structures for a non-indexed @p mesh or
+         * @ref DrawElementsIndirect structures for an indexed @p mesh at
+         * @p indirectBufferOffset with a @p stride. The @p countBuffer is
+         * assumed to have a 32-bit value describing draw count at
+         * @p countBufferOffset. If the value in the buffer is larger than
+         * @p maxCount, only @p maxCount draws is performed.
+         * @see @ref Buffer::TargetHint::Parameter, @fn_gl{UseProgram},
+         *      @fn_gl_keyword{EnableVertexAttribArray}, @fn_gl{BindBuffer},
+         *      @fn_gl_keyword{VertexAttribPointer},
+         *      @fn_gl_keyword{DisableVertexAttribArray} or
+         *      @fn_gl{BindVertexArray},
+         *      @fn_gl_keyword{MultiDrawArraysIndirectCount} or
+         *      @fn_gl_keyword{MultiDrawElementsIndirectCount}
+         * @requires_gl46 Extension @gl_extension{ARB,indirect_parameters}
+         * @requires_gl42 Extension @gl_extension{ARB,base_instance} if
+         *      @ref DrawArraysIndirect::instanceOffset or
+         *      @ref DrawElementsIndirect::instanceOffset is not `0`
+         * @requires_gl Indirect multidraw with indirect draw count is not
+         *      available in OpenGL ES or WebGL.
+         */
+        AbstractShaderProgram& drawIndirect(Mesh& mesh, Buffer& indirectBuffer, GLintptr indirectBufferOffset, Buffer& countBuffer, GLintptr countBufferOffset, GLsizei maxCount, GLsizei stride);
+
         /**
          * @brief Draw a mesh with vertices coming out of transform feedback
          * @param mesh      Mesh to draw
@@ -1348,6 +1565,25 @@ class MAGNUM_GL_EXPORT AbstractShaderProgram: public AbstractObject {
          * @requires_gles Compute shaders are not available in WebGL.
          */
         AbstractShaderProgram& dispatchCompute(const Vector3ui& workgroupCount);
+
+        /**
+         * @brief Dispatch compute indirectly
+         * @param indirectBuffer        Buffer to take the workgroup count from
+         * @param indirectBufferOffset  Four-byte-aligned offset of the
+         *      workgroup count in the buffer
+         * @return Reference to self (for method chaining)
+         * @m_since_latest
+         *
+         * Valid only on programs with compute shader attached. The
+         * @p indirectBuffer is assumed to have three 32-bit values describing
+         * X, Y and Z workgroup count at @p indirectBufferOffset.
+         * @see @fn_gl{DispatchComputeIndirect}
+         * @requires_gl43 Extension @gl_extension{ARB,compute_shader}
+         * @requires_gles31 Compute shaders are not available in OpenGL ES 3.0
+         *      and older.
+         * @requires_gles Compute shaders are not available in WebGL.
+         */
+        AbstractShaderProgram& dispatchComputeIndirect(Buffer& indirectBuffer, GLintptr indirectBufferOffset);
         #endif
 
         /**
@@ -2051,6 +2287,9 @@ class MAGNUM_GL_EXPORT AbstractShaderProgram: public AbstractObject {
 #else
 #define _MAGNUM_GL_ABSTRACTSHADERPROGRAM_SUBCLASS_DRAW_IMPLEMENTATION_GLES(...)
 #define _MAGNUM_GL_ABSTRACTSHADERPROGRAM_SUBCLASS_DRAW_IMPLEMENTATION_NOT_GLES(...) \
+    __VA_ARGS__& drawIndirect(Magnum::GL::Mesh& mesh, Magnum::GL::Buffer& indirectBuffer, GLintptr indirectBufferOffset, Magnum::GL::Buffer& countBuffer, GLintptr countBufferOffset, GLsizei maxCount, GLsizei stride) { \
+        return static_cast<__VA_ARGS__&>(Magnum::GL::AbstractShaderProgram::drawIndirect(mesh, indirectBuffer, indirectBufferOffset, countBuffer, countBufferOffset, maxCount, stride)); \
+    }                                                                       \
     __VA_ARGS__& drawTransformFeedback(Magnum::GL::Mesh& mesh, Magnum::GL::TransformFeedback& xfb, Magnum::UnsignedInt stream = 0) { \
         return static_cast<__VA_ARGS__&>(Magnum::GL::AbstractShaderProgram::drawTransformFeedback(mesh, xfb, stream)); \
     }                                                                       \
@@ -2065,9 +2304,24 @@ class MAGNUM_GL_EXPORT AbstractShaderProgram: public AbstractObject {
 #define _MAGNUM_GL_ABSTRACTSHADERPROGRAM_SUBCLASS_DRAW_IMPLEMENTATION_HIDE_XFB
 #endif
 #if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
+/* The drawIndirect() variant with indirect count is already in
+   _MAGNUM_GL_ABSTRACTSHADERPROGRAM_SUBCLASS_DRAW_IMPLEMENTATION_NOT_GLES */
+#define _MAGNUM_GL_ABSTRACTSHADERPROGRAM_SUBCLASS_DRAW_INDIRECT_IMPLEMENTATION(...) \
+    __VA_ARGS__& drawIndirect(Magnum::GL::Mesh& mesh, Magnum::GL::Buffer& indirectBuffer, GLintptr indirectBufferOffset) { \
+        return static_cast<__VA_ARGS__&>(Magnum::GL::AbstractShaderProgram::drawIndirect(mesh, indirectBuffer, indirectBufferOffset)); \
+    }                                                                       \
+    __VA_ARGS__& drawIndirect(Magnum::GL::Mesh& mesh, Magnum::GL::Buffer& indirectBuffer, GLintptr indirectBufferOffset, GLsizei count, GLsizei stride) { \
+        return static_cast<__VA_ARGS__&>(Magnum::GL::AbstractShaderProgram::drawIndirect(mesh, indirectBuffer, indirectBufferOffset, count, stride)); \
+    }
+#define _MAGNUM_GL_ABSTRACTSHADERPROGRAM_SUBCLASS_DRAW_IMPLEMENTATION_HIDE_DRAW \
+    using Magnum::GL::AbstractShaderProgram::draw;                          \
+    using Magnum::GL::AbstractShaderProgram::drawIndirect;
 #define _MAGNUM_GL_ABSTRACTSHADERPROGRAM_SUBCLASS_DRAW_IMPLEMENTATION_HIDE_COMPUTE \
     using Magnum::GL::AbstractShaderProgram::dispatchCompute;
 #else
+#define _MAGNUM_GL_ABSTRACTSHADERPROGRAM_SUBCLASS_DRAW_INDIRECT_IMPLEMENTATION(...)
+#define _MAGNUM_GL_ABSTRACTSHADERPROGRAM_SUBCLASS_DRAW_IMPLEMENTATION_HIDE_DRAW \
+    using Magnum::GL::AbstractShaderProgram::draw;
 #define _MAGNUM_GL_ABSTRACTSHADERPROGRAM_SUBCLASS_DRAW_IMPLEMENTATION_HIDE_COMPUTE
 #endif
 #endif
@@ -2108,7 +2362,8 @@ accidental calls to
         __VA_ARGS__& draw(const Corrade::Containers::Iterable<Magnum::GL::MeshView>& meshes) { \
             return static_cast<__VA_ARGS__&>(Magnum::GL::AbstractShaderProgram::draw(meshes)); \
         }                                                                   \
-        _MAGNUM_GL_ABSTRACTSHADERPROGRAM_SUBCLASS_DRAW_IMPLEMENTATION_NOT_GLES(__VA_ARGS__)
+        _MAGNUM_GL_ABSTRACTSHADERPROGRAM_SUBCLASS_DRAW_IMPLEMENTATION_NOT_GLES(__VA_ARGS__) \
+        _MAGNUM_GL_ABSTRACTSHADERPROGRAM_SUBCLASS_DRAW_INDIRECT_IMPLEMENTATION(__VA_ARGS__)
 
 #if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
 /**
@@ -2126,11 +2381,14 @@ accidental calls to @relativeref{Magnum::GL,AbstractShaderProgram::draw()} and
 */
 #define MAGNUM_GL_ABSTRACTSHADERPROGRAM_SUBCLASS_DISPATCH_IMPLEMENTATION(...) \
     private:                                                                \
-        using Magnum::GL::AbstractShaderProgram::draw;                      \
+        _MAGNUM_GL_ABSTRACTSHADERPROGRAM_SUBCLASS_DRAW_IMPLEMENTATION_HIDE_DRAW \
         _MAGNUM_GL_ABSTRACTSHADERPROGRAM_SUBCLASS_DRAW_IMPLEMENTATION_HIDE_XFB \
     public:                                                                 \
         __VA_ARGS__& dispatchCompute(const Magnum::Vector3ui& workgroupCount) {     \
             return static_cast<__VA_ARGS__&>(Magnum::GL::AbstractShaderProgram::dispatchCompute(workgroupCount)); \
+        }                                                                   \
+        __VA_ARGS__& dispatchComputeIndirect(Magnum::GL::Buffer& indirectBuffer, GLintptr indirectBufferOffset) {     \
+            return static_cast<__VA_ARGS__&>(Magnum::GL::AbstractShaderProgram::dispatchComputeIndirect(indirectBuffer, indirectBufferOffset)); \
         }
 #endif
 

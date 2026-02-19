@@ -547,8 +547,8 @@ namespace ANDROID {
     _extension( 85,EXT,semaphore,                   GLES300,    None) // #280
     /* These two pairs appear to be exclusive so they share the same indices */
     #ifndef CORRADE_TARGET_WINDOWS
-    _extension( 84,EXT,memory_object_fd,            GLES300,    None) // #281
-    _extension( 85,EXT,semaphore_fd,                GLES300,    None) // #281
+    _extension( 86,EXT,memory_object_fd,            GLES300,    None) // #281
+    _extension( 87,EXT,semaphore_fd,                GLES300,    None) // #281
     #else
     _extension( 86,EXT,memory_object_win32,         GLES300,    None) // #282
     _extension( 87,EXT,semaphore_win32,             GLES300,    None) // #282

@@ -1325,6 +1325,14 @@ class MAGNUM_GL_EXPORT Mesh: public AbstractObject {
         #endif
         #endif
 
+        #if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
+        MAGNUM_GL_LOCAL void drawInternal(Buffer& indirectBuffer, GLintptr indirectBufferOffset);
+        MAGNUM_GL_LOCAL void drawInternal(Buffer& indirectBuffer, GLintptr indirectBufferOffset, GLsizei count, GLsizei stride);
+        #endif
+        #ifndef MAGNUM_TARGET_GLES
+        MAGNUM_GL_LOCAL void drawInternal(Buffer& indirectBuffer, GLintptr indirectBufferOffset, Buffer& countBuffer, GLintptr countBufferOffset, GLsizei maxCount, GLsizei stride);
+        #endif
+
         #ifndef MAGNUM_TARGET_GLES
         MAGNUM_GL_LOCAL void drawInternal(TransformFeedback& xfb, UnsignedInt stream, Int instanceCount);
         #endif

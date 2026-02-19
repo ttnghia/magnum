@@ -40,6 +40,7 @@
 #include "Magnum/GL/AbstractShaderProgram.h"
 #include "Magnum/GL/Context.h"
 #include "Magnum/GL/Extensions.h"
+#include "Magnum/GL/Framebuffer.h"
 #if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
 #include "Magnum/GL/ImageFormat.h"
 #endif
@@ -47,6 +48,8 @@
 #include "Magnum/GL/MeshView.h"
 #include "Magnum/GL/OpenGLTester.h"
 #include "Magnum/GL/PixelFormat.h"
+#include "Magnum/GL/Renderbuffer.h"
+#include "Magnum/GL/RenderbufferFormat.h"
 #include "Magnum/GL/Shader.h"
 #include "Magnum/GL/Texture.h"
 #include "Magnum/GL/TextureFormat.h"
@@ -106,12 +109,15 @@ struct AbstractShaderProgramGLTest: OpenGLTester {
 
     #ifndef MAGNUM_TARGET_WEBGL
     void compute();
+    void computeIndirect();
     #endif
     #endif
 
     void subclassDraw();
     #if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
+    void subclassDrawIndirect();
     void subclassDispatch();
+    void subclassDispatchIndirect();
     #endif
 };
 
@@ -214,12 +220,15 @@ AbstractShaderProgramGLTest::AbstractShaderProgramGLTest() {
 
               #ifndef MAGNUM_TARGET_WEBGL
               &AbstractShaderProgramGLTest::compute,
+              &AbstractShaderProgramGLTest::computeIndirect,
               #endif
               #endif
 
               &AbstractShaderProgramGLTest::subclassDraw,
               #if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
-              &AbstractShaderProgramGLTest::subclassDispatch
+              &AbstractShaderProgramGLTest::subclassDrawIndirect,
+              &AbstractShaderProgramGLTest::subclassDispatch,
+              &AbstractShaderProgramGLTest::subclassDispatchIndirect,
               #endif
               });
 }
@@ -1311,6 +1320,90 @@ void AbstractShaderProgramGLTest::compute() {
         TestSuite::Compare::Container);
     #endif
 }
+
+void AbstractShaderProgramGLTest::computeIndirect() {
+    /* Like compute(), just with the workgroup count taken from a buffer */
+
+    #ifndef MAGNUM_TARGET_GLES
+    if(!Context::current().isExtensionSupported<Extensions::ARB::compute_shader>())
+        CORRADE_SKIP(Extensions::ARB::compute_shader::string() << "is not supported.");
+    #else
+    if(!Context::current().isVersionSupported(Version::GLES310))
+        CORRADE_SKIP("OpenGL ES 3.1 is not supported.");
+    #endif
+
+    struct ComputeShader: AbstractShaderProgram {
+        explicit ComputeShader() {
+            Utility::Resource rs("AbstractShaderProgramGLTest");
+
+            Shader compute(
+                #ifndef MAGNUM_TARGET_GLES
+                Version::GL430,
+                #else
+                Version::GLES310,
+                #endif
+                Shader::Type::Compute);
+            compute.addSource(rs.getString("ComputeShader.comp"));
+            CORRADE_INTERNAL_ASSERT_OUTPUT(compute.compile());
+
+            attachShader(compute);
+            CORRADE_INTERNAL_ASSERT_OUTPUT(link());
+        }
+
+        ComputeShader& setImages(Texture2D& input, Texture2D& output) {
+            input.bindImage(0, 0, ImageAccess::ReadOnly, ImageFormat::RGBA8UI);
+            output.bindImage(1, 0, ImageAccess::WriteOnly, ImageFormat::RGBA8UI);
+            return *this;
+        }
+    } shader;
+
+    MAGNUM_VERIFY_NO_GL_ERROR();
+
+    const Color4ub inData[] = {
+        { 10,  20,  30,  40},
+        { 50,  60,  70,  80},
+        { 90, 100, 110, 120},
+        {130, 140, 150, 160}
+    };
+
+    #ifndef MAGNUM_TARGET_GLES
+    const Color4ub outData[] = {
+        { 15,  30,  45,  60},
+        { 75,  90, 105, 120},
+        {135, 150, 165, 180},
+        {195, 210, 225, 240}
+    };
+    #endif
+
+    Texture2D in;
+    in.setStorage(1, TextureFormat::RGBA8UI, {2, 2})
+        .setSubImage(0, {}, ImageView2D{PixelFormat::RGBAInteger, PixelType::UnsignedByte, {2, 2}, inData});
+
+    Texture2D out;
+    out.setStorage(1, TextureFormat::RGBA8UI, {2, 2});
+
+    /* The first element is skipped to verify the offset argument */
+    UnsignedInt workgroupCount[]{45, 1, 1, 1};
+    Buffer indirectBuffer{workgroupCount};
+
+    MAGNUM_VERIFY_NO_GL_ERROR();
+
+    shader.setImages(in, out)
+        .dispatchComputeIndirect(indirectBuffer, sizeof(UnsignedInt));
+
+    MAGNUM_VERIFY_NO_GL_ERROR();
+
+    /** @todo Test on ES */
+    #ifndef MAGNUM_TARGET_GLES
+    const auto data = out.image(0, {PixelFormat::RGBAInteger, PixelType::UnsignedByte}).release();
+
+    MAGNUM_VERIFY_NO_GL_ERROR();
+
+    CORRADE_COMPARE_AS(Containers::arrayCast<const Color4ub>(data),
+        Containers::arrayView(outData),
+        TestSuite::Compare::Container);
+    #endif
+}
 #endif
 #endif
 
@@ -1320,10 +1413,47 @@ void AbstractShaderProgramGLTest::compute() {
    names */
 namespace {
     struct ShaderSubclassDraw: Magnum::GL::AbstractShaderProgram {
+        explicit ShaderSubclassDraw() {
+            using namespace Magnum::GL; /* Here I allow myself to be lazy, yes */
+            #ifndef MAGNUM_TARGET_GLES
+            const Version version = Context::current().supportedVersion({Version::GL310, Version::GL300, Version::GL210});
+            #else
+            const Version version = Context::current().supportedVersion({Version::GLES300, Version::GLES200});
+            #endif
+
+            Shader vert{version, Shader::Type::Vertex};
+            vert.addSource("void main() {}");
+            Shader frag{version, Shader::Type::Fragment};
+            frag.addSource("void main() {}");
+            CORRADE_INTERNAL_ASSERT_OUTPUT(vert.compile() && frag.compile());
+
+            attachShaders({vert, frag});
+            CORRADE_INTERNAL_ASSERT_OUTPUT(link());
+        }
+
         MAGNUM_GL_ABSTRACTSHADERPROGRAM_SUBCLASS_DRAW_IMPLEMENTATION(ShaderSubclassDraw)
     };
     #if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
     struct ShaderSubclassDispatch: Magnum::GL::AbstractShaderProgram {
+        explicit ShaderSubclassDispatch() {
+            using namespace Magnum::GL; /* Here I allow myself to be lazy, yes */
+
+            Shader compute(
+                #ifndef MAGNUM_TARGET_GLES
+                Version::GL430,
+                #else
+                Version::GLES310,
+                #endif
+                Shader::Type::Compute);
+            compute.addSource(
+                "layout(local_size_x = 1) in;\n"
+                "void main() {}");
+            CORRADE_INTERNAL_ASSERT_OUTPUT(compute.compile());
+
+            attachShader(compute);
+            CORRADE_INTERNAL_ASSERT_OUTPUT(link());
+        }
+
         MAGNUM_GL_ABSTRACTSHADERPROGRAM_SUBCLASS_DISPATCH_IMPLEMENTATION(ShaderSubclassDispatch)
     };
     #endif
@@ -1403,13 +1533,91 @@ void AbstractShaderProgramGLTest::subclassDraw() {
 }
 
 #if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
+void AbstractShaderProgramGLTest::subclassDrawIndirect() {
+    #ifndef MAGNUM_TARGET_GLES
+    if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::draw_indirect>())
+        CORRADE_SKIP(GL::Extensions::ARB::draw_indirect::string() << "is not supported.");
+    #else
+    if(!GL::Context::current().isVersionSupported(Version::GLES310))
+        CORRADE_SKIP(Version::GLES310 << "is not supported.");
+    #endif
+
+    ShaderSubclassDraw shader;
+    Mesh mesh;
+
+    /* Zero counts, instance counts etc */
+    DrawArraysIndirect indirect[1]{};
+    Buffer indirectBuffer{indirect};
+    UnsignedInt count[1]{};
+    Buffer countBuffer{count};
+
+    /* Need to create a framebuffer because even an empty draw goes through all
+       GL validation */
+    Renderbuffer renderbuffer;
+    renderbuffer.setStorage(RenderbufferFormat::RGBA8, Vector2i{1});
+
+    Framebuffer framebuffer{{{}, Vector2i{1}}};
+    framebuffer
+        .attachRenderbuffer(Framebuffer::ColorAttachment{0}, renderbuffer)
+        .bind();
+
+    /* These should all be a no-op because we either specify all zeros in the
+       buffer or a zero multidraw count, and the shader itself does nothing.
+       And if everything is alright, the returned type should still be
+       ShaderSubclassDraw& even after all these. */
+    ShaderSubclassDraw& out = shader
+        .drawIndirect(mesh, indirectBuffer, 0)
+        /* These two require the multi_draw_indirect / indirect_parameters
+           extensions, but as the count / maxCount is 0 they exit early without
+           calling into GL at all, it's fine */
+        .drawIndirect(mesh, indirectBuffer, 0, 0, 0)
+        #ifndef MAGNUM_TARGET_GLES
+        .drawIndirect(mesh, indirectBuffer, 0, countBuffer, 0, 0, 0)
+        #endif
+        ;
+
+    CORRADE_VERIFY(out.id());
+    MAGNUM_VERIFY_NO_GL_ERROR();
+}
+
 void AbstractShaderProgramGLTest::subclassDispatch() {
+    #ifndef MAGNUM_TARGET_GLES
+    if(!Context::current().isExtensionSupported<Extensions::ARB::compute_shader>())
+        CORRADE_SKIP(Extensions::ARB::compute_shader::string() << "is not supported.");
+    #else
+    if(!Context::current().isVersionSupported(Version::GLES310))
+        CORRADE_SKIP("OpenGL ES 3.1 is not supported.");
+    #endif
+
     ShaderSubclassDispatch shader;
 
-    /* These should all be a no-op because the count is empty. And if
-       everything is alright, the returned type should still be
-       ShaderSubclassDispatch& again. */
+    /* This one should be a no-op because the count is empty. And if everything
+       is alright, the returned type should still be ShaderSubclassDispatch&
+       again. */
     ShaderSubclassDispatch& out = shader.dispatchCompute({});
+
+    CORRADE_VERIFY(out.id());
+    MAGNUM_VERIFY_NO_GL_ERROR();
+}
+
+void AbstractShaderProgramGLTest::subclassDispatchIndirect() {
+    #ifndef MAGNUM_TARGET_GLES
+    if(!Context::current().isExtensionSupported<Extensions::ARB::compute_shader>())
+        CORRADE_SKIP(Extensions::ARB::compute_shader::string() << "is not supported.");
+    #else
+    if(!Context::current().isVersionSupported(Version::GLES310))
+        CORRADE_SKIP("OpenGL ES 3.1 is not supported.");
+    #endif
+
+    ShaderSubclassDispatch shader;
+
+    UnsignedInt indirect[3]{};
+    Buffer indirectBuffer{indirect};
+
+    /* This one should be a no-op because there are all zeros in the buffer,
+       and the shader itself does nothing. And if everything is alright, the
+       returned type should still be ShaderSubclassDispatch& again. */
+    ShaderSubclassDispatch& out = shader.dispatchComputeIndirect(indirectBuffer, 0);
 
     CORRADE_VERIFY(out.id());
     MAGNUM_VERIFY_NO_GL_ERROR();

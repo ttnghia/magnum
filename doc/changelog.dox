@@ -197,7 +197,11 @@ See also:
     -   @webgl_extension{WEBGL,multi_draw}
     -   @webgl_extension{WEBGL,draw_instanced_base_vertex_base_instance}
     -   @webgl_extension{WEBGL,multi_draw_instanced_base_vertex_base_instance}
--   Recognizing the @gl_extension{EXT,multi_draw_indirect} OpenGL ES extension
+-   Implemented @ref GL::AbstractShaderProgram::drawIndirect() and
+    @ref GL::AbstractShaderProgram::dispatchComputeIndirect() along with
+    recognizing the @gl_extension{EXT,multi_draw_indirect} and
+    @gl_extension{EXT,base_instance} OpenGL ES extensions (see
+    [mosra/magnum#687](https://github.com/mosra/magnum/discussions/687))
 -   Recognizing the @gl_extension2{EXT,memory_object,EXT_external_objects},
     @gl_extension2{EXT,semaphore,EXT_external_objects},
     @gl_extension2{EXT,memory_object_fd,EXT_external_objects_fd},

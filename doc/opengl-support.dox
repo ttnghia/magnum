@@ -143,7 +143,7 @@ GLSL 4.00                                   | done
 @gl_extension{ARB,texture_cube_map_array}   | done
 @gl_extension{ARB,texture_gather}           | missing limit queries
 @gl_extension{ARB,texture_query_lod}        | done (shading language only)
-@gl_extension{ARB,draw_indirect}            | |
+@gl_extension{ARB,draw_indirect}            | done
 @gl_extension{ARB,gpu_shader5}              | missing limit queries
 @gl_extension{ARB,gpu_shader_fp64}          | done
 @gl_extension{ARB,shader_subroutine}        | |
@@ -204,7 +204,7 @@ GLSL 4.30                                   | done
 @gl_extension{ARB,framebuffer_no_attachments} | done
 @gl_extension{ARB,internalformat_query2}    | only compressed texture block queries
 @gl_extension{ARB,invalidate_subdata}       | done
-@gl_extension{ARB,multi_draw_indirect}      | |
+@gl_extension{ARB,multi_draw_indirect}      | done
 @gl_extension{ARB,program_interface_query}  | |
 @gl_extension{ARB,robust_buffer_access_behavior} | done (nothing to do)
 @gl_extension{ARB,shader_image_size}        | done (shading language only)
@@ -262,7 +262,7 @@ GLSL 4.50                                   | done
 Extension                                   | Status
 ------------------------------------------- | ------
 GLSL 4.60                                   | done
-@gl_extension{ARB,indirect_parameters}      | |
+@gl_extension{ARB,indirect_parameters}      | done
 @gl_extension{ARB,shader_draw_parameters}   | done (shading language only)
 @gl_extension{ARB,shader_group_vote}        | done (shading language only)
 @gl_extension{ARB,pipeline_statistics_query} | done

@@ -236,6 +236,21 @@ struct MeshGLTest: OpenGLTester {
     void multiDrawInstancedBaseInstanceNoExtensionAvailable();
     #endif
     #endif
+
+    #if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
+    void drawIndirect();
+    void drawIndirectIndexed();
+    void multiDrawIndirect();
+    void multiDrawIndirectSparseBuffer();
+    void multiDrawIndirectIndexed();
+    void multiDrawIndirectIndexedSparseBuffer();
+    #endif
+    #ifndef MAGNUM_TARGET_GLES
+    void multiDrawIndirectCount();
+    void multiDrawIndirectCountSparseBuffer();
+    void multiDrawIndirectCountIndexed();
+    void multiDrawIndirectCountIndexedSparseBuffer();
+    #endif
 };
 
 const struct {
@@ -397,7 +412,6 @@ const struct {
         {0.25f, 0.5f, 0.0f, 1.0f}}
 };
 
-#ifdef MAGNUM_TARGET_GLES
 const struct {
     const char* name;
     bool vertexId;
@@ -489,6 +503,74 @@ const struct {
     #endif
 };
 
+#if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
+/* Copy of MultiDrawInstancedData, taking just the single draw variants and no
+   draw ID, and adding variants with vertex / instance offset */
+const struct {
+    const char* name;
+    bool vertexId;
+    Vector3 values[2];
+    UnsignedInt count;
+    UnsignedInt instanceCount;
+    UnsignedInt vertexOffset;
+    UnsignedInt instanceOffset;
+    Vector4 expected;
+} DrawIndirectData[] {
+    {"zero vertex count", false,
+        {{0.25f, 0.75f, 0.0f},
+         {0.5f, 1.0f, 0.0f}},
+        0,
+        1,
+        0,
+        0,
+        {0.0f, 0.0f, 0.0f, 0.0f}},
+    {"zero instance count", false,
+        {{0.25f, 0.75f, 0.0f},
+         {0.5f, 1.0f, 0.0f}},
+        1,
+        0,
+        0,
+        0,
+        {0.0f, 0.0f, 0.0f, 0.0f}},
+    {"", false,
+        {{0.25f, 0.75f, 0.0f},
+         {0.5f, 1.0f, 0.0f}},
+        2,
+        2,
+        0,
+        0,
+        {0.25f, 0.5f, 0.75f, 1.0f}},
+    {"vertex offset", false,
+        {{0.25f, 0.75f, 0.0f},
+         {0.5f, 1.0f, 0.0f}},
+        1,
+        2,
+        1,
+        0,
+        /* Drawing just one vertex per instance, which fills every second
+           pixel */
+        {0.0f, 0.5f, 0.0f, 1.0f}},
+    {"vertex offset, vertex ID", true,
+        {{0.25f, 0.75f, 0.0f},
+         {0.0f, 0.5f, 1.0f}},
+        1,
+        2,
+        1,
+        0,
+        /* Same as above but with the input values shifted */
+        {0.0f, 0.5f, 0.0f, 1.0f}},
+    {"instance offset", false,
+        {{0.25f, 0.75f, 0.0f},
+         {0.5f, 1.0f, 0.0f}},
+        2,
+        1,
+        0,
+        1,
+        /* Drawing just one instance, which fills the last two pixels */
+        {0.0f, 0.0f, 0.75f, 1.0f}},
+};
+#endif
+
 const struct {
     const char* name;
     bool vertexId;
@@ -555,6 +637,99 @@ const struct {
         {0, 1},
         {0.25f, 0.5f, 0.75f, 1.0f}},
     #endif
+};
+
+#if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
+/* Copy of MultiDrawInstancedIndexedData, taking just the single draw variants
+   and no draw ID, and adding variants with index / vertex / instance offset */
+const struct {
+    const char* name;
+    bool vertexId;
+    Vector3 values[2];
+    UnsignedInt indices[2];
+    UnsignedInt count;
+    UnsignedInt instanceCount;
+    UnsignedInt indexOffset;
+    UnsignedInt vertexOffset;
+    UnsignedInt instanceOffset;
+    Vector4 expected;
+} DrawIndirectIndexedData[] {
+    {"zero vertex count", false,
+        {{0.25f, 0.75f, 0.0f},
+         {0.5f, 1.0f, 0.0f}},
+        {0, 1},
+        2,
+        2,
+        0,
+        0,
+        0,
+        {0.25f, 0.5f, 0.75f, 1.0f}},
+    {"zero instance count", false,
+        {{0.25f, 0.75f, 0.0f},
+         {0.5f, 1.0f, 0.0f}},
+        {0, 1},
+        2,
+        2,
+        0,
+        0,
+        0,
+        {0.25f, 0.5f, 0.75f, 1.0f}},
+    {"", false,
+        {{0.25f, 0.75f, 0.0f},
+         {0.5f, 1.0f, 0.0f}},
+        {0, 1},
+        2,
+        2,
+        0,
+        0,
+        0,
+        {0.25f, 0.5f, 0.75f, 1.0f}},
+    {"index offset", false,
+        {{0.25f, 0.75f, 0.0f},
+         {0.5f, 1.0f, 0.0f}},
+        {0, 1},
+        1,
+        2,
+        1,
+        0,
+        0,
+        /* Drawing just one vertex per instance, which fills every second
+           pixel */
+        {0.0f, 0.5f, 0.0f, 1.0f}},
+    {"vertex offset", false,
+        {{0.25f, 0.75f, 0.0f},
+         {0.5f, 1.0f, 0.0f}},
+        {0, 1},
+        1,
+        2,
+        0,
+        1,
+        0,
+        /* Drawing just one vertex per instance, which fills every second
+           pixel */
+        {0.0f, 0.5f, 0.0f, 1.0f}},
+    {"vertex offset, vertex ID", true,
+        {{0.25f, 0.75f, 0.0f},
+         {0.0f, 0.5f, 1.0f}},
+        {0, 1},
+        1,
+        2,
+        0,
+        1,
+        0,
+        /* Same as above but with the input values shifted */
+        {0.0f, 0.5f, 0.0f, 1.0f}},
+    {"instance offset", false,
+        {{0.25f, 0.75f, 0.0f},
+         {0.5f, 1.0f, 0.0f}},
+        {0, 1},
+        2,
+        1,
+        0,
+        0,
+        1,
+        /* Drawing just one instance, which fills the last two pixels */
+        {0.0f, 0.0f, 0.75f, 1.0f}},
 };
 #endif
 
@@ -768,6 +943,32 @@ MeshGLTest::MeshGLTest() {
         &MeshGLTest::multiDrawInstancedBaseInstanceNoExtensionAvailable
         #endif
     });
+    #endif
+
+    #if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
+    addInstancedTests({&MeshGLTest::drawIndirect},
+        Containers::arraySize(DrawIndirectData));
+
+    addInstancedTests({&MeshGLTest::drawIndirectIndexed},
+        Containers::arraySize(DrawIndirectIndexedData));
+
+    addInstancedTests({&MeshGLTest::multiDrawIndirect,
+                       &MeshGLTest::multiDrawIndirectSparseBuffer},
+        Containers::arraySize(MultiDrawInstancedData));
+
+    addInstancedTests({&MeshGLTest::multiDrawIndirectIndexed,
+                       &MeshGLTest::multiDrawIndirectIndexedSparseBuffer},
+        Containers::arraySize(MultiDrawInstancedIndexedData));
+    #endif
+
+    #ifndef MAGNUM_TARGET_GLES
+    addInstancedTests({&MeshGLTest::multiDrawIndirectCount,
+                       &MeshGLTest::multiDrawIndirectCountSparseBuffer},
+        Containers::arraySize(MultiDrawInstancedData));
+
+    addInstancedTests({&MeshGLTest::multiDrawIndirectCountIndexed,
+                       &MeshGLTest::multiDrawIndirectCountIndexedSparseBuffer},
+        Containers::arraySize(MultiDrawInstancedIndexedData));
     #endif
 
     /* Reset clear color to something trivial first */
@@ -4774,7 +4975,6 @@ void MeshGLTest::multiDrawViewsDifferentMeshes() {
     CORRADE_COMPARE(out, Utility::format("GL::AbstractShaderProgram::draw(): all meshes must be views of the same original mesh, expected 0x{:x} but got 0x{:x} at index 1\n", reinterpret_cast<std::uintptr_t>(&a), reinterpret_cast<std::uintptr_t>(&b)));
 }
 
-#ifdef MAGNUM_TARGET_GLES
 struct MultiDrawInstancedShader: AbstractShaderProgram {
     typedef Attribute<0, Float> PositionX;
     typedef Attribute<1, Float> PositionY;
@@ -4796,13 +4996,10 @@ MultiDrawInstancedShader::MultiDrawInstancedShader(bool vertexId, bool drawId
     , bool instanceOffset
     #endif
 ) {
-    /* Pick GLSL 3.0 / ESSL 3.0 for gl_VertexID, if available */
+    /* Pick GLSL 3.1 for gl_InstanceID, GLSL 3.0 / ESSL 3.0 for gl_VertexID, if
+       available */
     #ifndef MAGNUM_TARGET_GLES
-    #ifndef CORRADE_TARGET_APPLE
-    const Version version = Context::current().supportedVersion({Version::GL300, Version::GL210});
-    #else
-    const Version version = Version::GL310;
-    #endif
+    const Version version = Context::current().supportedVersion({Version::GL310, Version::GL300, Version::GL210});
     #else
     const Version version = Context::current().supportedVersion({Version::GLES300, Version::GLES200});
     #endif
@@ -4810,14 +5007,26 @@ MultiDrawInstancedShader::MultiDrawInstancedShader(bool vertexId, bool drawId
     Shader frag{version, Shader::Type::Fragment};
 
     if(drawId) vert.addSource(
+        #ifndef MAGNUM_TARGET_GLES
+        "#extension GL_ARB_shader_draw_parameters: require\n"
+        "#define vertexOrDrawIdOrInstanceOffset gl_DrawIDARB\n"
+        #else
         "#extension GL_ANGLE_multi_draw: require\n"
-        "#define vertexOrDrawIdOrInstanceOffset gl_DrawID\n");
+        "#define vertexOrDrawIdOrInstanceOffset gl_DrawID\n"
+        #endif
+        );
     else if(vertexId) vert.addSource(
         "#define vertexOrDrawIdOrInstanceOffset gl_VertexID\n");
     #ifndef MAGNUM_TARGET_GLES2
     else if(instanceOffset) vert.addSource(
+        #ifndef MAGNUM_TARGET_GLES
+        "#extension GL_ARB_shader_draw_parameters: require\n"
+        "#define vertexOrDrawIdOrInstanceOffset gl_BaseInstanceARB\n"
+        #else
         "#extension GL_ANGLE_base_vertex_base_instance: require\n"
-        "#define vertexOrDrawIdOrInstanceOffset gl_BaseInstance\n");
+        "#define vertexOrDrawIdOrInstanceOffset gl_BaseInstance\n"
+        #endif
+        );
     #endif
     else vert.addSource(
         "#define vertexOrDrawIdOrInstanceOffset 0\n");
@@ -4850,12 +5059,12 @@ MultiDrawInstancedShader::MultiDrawInstancedShader(bool vertexId, bool drawId
         "    gl_Position = vec4(positionX, positionY, 0.0, 1.0);\n"
         "}\n");
     frag.addSource(
-        "#if defined(GL_ES) && __VERSION__ == 100\n"
+        "#if (!defined(GL_ES) && __VERSION__ < 130) || (defined(GL_ES) && __VERSION__ == 100)\n"
         "#define in varying\n"
         "#define result gl_FragColor\n"
         "#endif\n"
         "in mediump float valueInterpolated;\n"
-        "#if defined(GL_ES) && __VERSION__ >= 300\n"
+        "#if (!defined(GL_ES) && __VERSION__ >= 130) || (defined(GL_ES) && __VERSION__ >= 300)\n"
         "out mediump vec4 result;\n"
         "#endif\n"
         "void main() { result.r = valueInterpolated; }\n");
@@ -4874,6 +5083,7 @@ MultiDrawInstancedShader::MultiDrawInstancedShader(bool vertexId, bool drawId
     CORRADE_INTERNAL_ASSERT_OUTPUT(link());
 }
 
+#ifdef MAGNUM_TARGET_GLES
 void MeshGLTest::multiDrawInstanced() {
     auto&& data = MultiDrawInstancedData[testCaseInstanceId()];
     setTestCaseDescription(data.name);
@@ -5450,6 +5660,741 @@ void MeshGLTest::multiDrawInstancedBaseInstanceNoExtensionAvailable() {
         "GL::AbstractShaderProgram::draw(): no extension available for instanced indexed mesh multi-draw with base vertex and base instance specification\n");
 }
 #endif
+#endif
+
+#if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
+void MeshGLTest::drawIndirect() {
+    auto&& data = DrawIndirectData[testCaseInstanceId()];
+    setTestCaseDescription(data.name);
+
+    /* Derived from multiDrawIndirect() below, limiting to just one draw */
+
+    #ifndef MAGNUM_TARGET_GLES
+    if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::draw_indirect>())
+        CORRADE_SKIP(GL::Extensions::ARB::draw_indirect::string() << "is not supported.");
+    #else
+    if(!GL::Context::current().isVersionSupported(Version::GLES310))
+        CORRADE_SKIP(Version::GLES310 << "is not supported.");
+    #endif
+
+    if(data.instanceOffset) {
+        #ifndef MAGNUM_TARGET_GLES
+        if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::base_instance>())
+            CORRADE_SKIP(GL::Extensions::ARB::base_instance::string() << "is not supported.");
+        if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::shader_draw_parameters>())
+            CORRADE_SKIP(GL::Extensions::ARB::shader_draw_parameters::string() << "for the gl_BaseInstance builtin is not supported.");
+        #else
+        /** @todo GL_ANGLE_base_vertex_base_instance supports gl_BaseInstance,
+            but ANGLE on it's own likely doesn't support
+            EXT_multi_draw_indirect, and implementations that support EXT_multi_draw_indirect don't support the ANGLE extension so
+            there's likely no point in even trying */
+        if(!GL::Context::current().isExtensionSupported<GL::Extensions::EXT::base_instance>())
+            CORRADE_SKIP(GL::Extensions::EXT::base_instance::string() << "is not supported.");
+        CORRADE_SKIP(GL::Extensions::EXT::base_instance::string() << "doesn't have the gl_BaseInstance builtin, cannot test.");
+        #endif
+    }
+
+    const struct {
+        Float positionX;
+        Vector3 value;
+    } vertexData[] {
+        {}, /* initial offset */
+        {-1.0f/3.0f, data.values[0]},
+        { 1.0f/3.0f, data.values[1]},
+    };
+    const Float instanceData[]{
+        0, /* initial offset */
+        -1.0f/3.0f,
+         1.0f/3.0f
+    };
+
+    Mesh mesh{MeshPrimitive::Points};
+    mesh.addVertexBuffer(Buffer{vertexData}, sizeof(vertexData[0]), MultiDrawInstancedShader::PositionX{}, MultiDrawInstancedShader::Value{})
+        .addVertexBufferInstanced(Buffer{instanceData}, 1, sizeof(instanceData[0]), MultiDrawInstancedShader::PositionY{});
+
+    MAGNUM_VERIFY_NO_GL_ERROR();
+
+    /* First element is unused to test that the offset is passed properly */
+    DrawArraysIndirect indirect[2];
+    indirect[1].count = data.count;
+    indirect[1].instanceCount = data.instanceCount;
+    indirect[1].vertexOffset = data.vertexOffset;
+    indirect[1].instanceOffset = data.instanceOffset;
+    Buffer indirectBuffer{indirect};
+
+    MultiDrawChecker checker;
+    MultiDrawInstancedShader{data.vertexId, false, !!data.instanceOffset}
+        .drawIndirect(mesh, indirectBuffer, sizeof(DrawArraysIndirect));
+    Vector4 value = checker.get();
+
+    MAGNUM_VERIFY_NO_GL_ERROR();
+    CORRADE_COMPARE_WITH(value, data.expected,
+        TestSuite::Compare::around(Vector4{1.0f/255.0f}));
+}
+
+void MeshGLTest::drawIndirectIndexed() {
+    auto&& data = DrawIndirectIndexedData[testCaseInstanceId()];
+    setTestCaseDescription(data.name);
+
+    /* Derived from multiDrawIndirectIndexed() below, limiting to just one
+       draw */
+
+    #ifndef MAGNUM_TARGET_GLES
+    if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::multi_draw_indirect>())
+        CORRADE_SKIP(GL::Extensions::ARB::multi_draw_indirect::string() << "is not supported.");
+    #else
+    if(!GL::Context::current().isExtensionSupported<GL::Extensions::EXT::multi_draw_indirect>())
+        CORRADE_SKIP(GL::Extensions::EXT::multi_draw_indirect::string() << "is not supported.");
+    #endif
+
+    if(data.instanceOffset) {
+        #ifndef MAGNUM_TARGET_GLES
+        if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::base_instance>())
+            CORRADE_SKIP(GL::Extensions::ARB::base_instance::string() << "is not supported.");
+        if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::shader_draw_parameters>())
+            CORRADE_SKIP(GL::Extensions::ARB::shader_draw_parameters::string() << "for the gl_BaseInstance builtin is not supported.");
+        #else
+        /** @todo GL_ANGLE_base_vertex_base_instance supports gl_BaseInstance,
+            but ANGLE on it's own likely doesn't support
+            EXT_multi_draw_indirect, and implementations that support EXT_multi_draw_indirect don't support the ANGLE extension so
+            there's likely no point in even trying */
+        if(!GL::Context::current().isExtensionSupported<GL::Extensions::EXT::base_instance>())
+            CORRADE_SKIP(GL::Extensions::EXT::base_instance::string() << "is not supported.");
+        CORRADE_SKIP(GL::Extensions::EXT::base_instance::string() << "doesn't have the gl_BaseInstance builtin, cannot test.");
+        #endif
+    }
+
+    const struct {
+        Float positionX;
+        Vector3 value;
+    } vertexData[] {
+        {}, /* initial offset */
+        {-1.0f/3.0f, data.values[0]},
+        { 1.0f/3.0f, data.values[1]},
+    };
+    const Float instanceData[]{
+        0, /* initial offset */
+        -1.0f/3.0f,
+         1.0f/3.0f
+    };
+
+    Mesh mesh{MeshPrimitive::Points};
+    mesh.addVertexBuffer(Buffer{vertexData}, sizeof(vertexData[0]), MultiDrawInstancedShader::PositionX{}, MultiDrawInstancedShader::Value{})
+        .addVertexBufferInstanced(Buffer{instanceData}, 1, sizeof(instanceData[0]), MultiDrawInstancedShader::PositionY{})
+        .setIndexBuffer(Buffer{Buffer::TargetHint::ElementArray, data.indices}, 0, MeshIndexType::UnsignedInt);
+
+    MAGNUM_VERIFY_NO_GL_ERROR();
+
+    /* First element is unused to test that the offset is passed properly */
+    DrawElementsIndirect indirect[2];
+    indirect[1].count = data.count;
+    indirect[1].instanceCount = data.instanceCount;
+    indirect[1].indexOffset = data.indexOffset;
+    indirect[1].vertexOffset = data.vertexOffset;
+    indirect[1].instanceOffset = data.instanceOffset;
+    Buffer indirectBuffer{indirect};
+
+    MultiDrawChecker checker;
+    MultiDrawInstancedShader{data.vertexId, false, !!data.instanceOffset}
+        .drawIndirect(mesh, indirectBuffer, sizeof(DrawElementsIndirect));
+    Vector4 value = checker.get();
+
+    MAGNUM_VERIFY_NO_GL_ERROR();
+    CORRADE_COMPARE_WITH(value, data.expected,
+        TestSuite::Compare::around(Vector4{1.0f/255.0f}));
+}
+
+void MeshGLTest::multiDrawIndirect() {
+    auto&& data = MultiDrawInstancedData[testCaseInstanceId()];
+    setTestCaseDescription(data.name);
+
+    /* Derived from multiDrawInstanced() */
+
+    #ifndef MAGNUM_TARGET_GLES
+    if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::multi_draw_indirect>())
+        CORRADE_SKIP(GL::Extensions::ARB::multi_draw_indirect::string() << "is not supported.");
+    #else
+    if(!GL::Context::current().isExtensionSupported<GL::Extensions::EXT::multi_draw_indirect>())
+        CORRADE_SKIP(GL::Extensions::EXT::multi_draw_indirect::string() << "is not supported.");
+    #endif
+
+    bool hasBaseInstance = data.instanceOffsets[0] || data.instanceOffsets[1];
+    if(hasBaseInstance) {
+        #ifndef MAGNUM_TARGET_GLES
+        if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::base_instance>())
+            CORRADE_SKIP(GL::Extensions::ARB::base_instance::string() << "is not supported.");
+        if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::shader_draw_parameters>())
+            CORRADE_SKIP(GL::Extensions::ARB::shader_draw_parameters::string() << "for the gl_BaseInstance builtin is not supported.");
+        #else
+        /** @todo GL_ANGLE_base_vertex_base_instance supports gl_BaseInstance,
+            but ANGLE on it's own likely doesn't support
+            EXT_multi_draw_indirect, and implementations that support EXT_multi_draw_indirect don't support the ANGLE extension so
+            there's likely no point in even trying */
+        if(!GL::Context::current().isExtensionSupported<GL::Extensions::EXT::base_instance>())
+            CORRADE_SKIP(GL::Extensions::EXT::base_instance::string() << "is not supported.");
+        CORRADE_SKIP(GL::Extensions::EXT::base_instance::string() << "doesn't have the gl_BaseInstance builtin, cannot test.");
+        #endif
+    }
+
+    #ifdef MAGNUM_TARGET_GLES
+    /** @todo GL_ANGLE_multi_draw supports gl_DrawID, but ANGLE on it's own
+        likely doesn't support EXT_multi_draw_indirect, and implementations
+        that support EXT_multi_draw_indirect don't support the ANGLE extension
+        so there's likely no point in even trying */
+    if(data.drawId)
+        CORRADE_SKIP("There is no GLES platform supporting both indirect draw and gl_DrawID, cannot test.");
+    #endif
+
+    const struct {
+        Float positionX;
+        Vector3 value;
+    } vertexData[] {
+        {}, /* initial offset */
+        {-1.0f/3.0f, data.values[0]},
+        { 1.0f/3.0f, data.values[1]},
+    };
+    const Float instanceData[]{
+        0, /* initial offset */
+        -1.0f/3.0f,
+         1.0f/3.0f
+    };
+
+    Mesh mesh{MeshPrimitive::Points};
+    mesh.addVertexBuffer(Buffer{vertexData}, sizeof(vertexData[0]), MultiDrawInstancedShader::PositionX{}, MultiDrawInstancedShader::Value{})
+        .addVertexBufferInstanced(Buffer{instanceData}, 1, sizeof(instanceData[0]), MultiDrawInstancedShader::PositionY{});
+
+    MAGNUM_VERIFY_NO_GL_ERROR();
+
+    /* First element is unused to test that the offset is passed properly */
+    DrawArraysIndirect indirect[3];
+    for(Int i: {0, 1}) {
+        indirect[i + 1].count = data.counts[i];
+        indirect[i + 1].instanceCount = data.instanceCounts[i];
+        indirect[i + 1].vertexOffset = data.vertexOffsets[i];
+        indirect[i + 1].instanceOffset = data.instanceOffsets[i];
+    }
+    Buffer indirectBuffer{indirect};
+
+    MultiDrawChecker checker;
+    MultiDrawInstancedShader{data.vertexId, data.drawId, hasBaseInstance}
+        .drawIndirect(mesh, indirectBuffer, sizeof(DrawArraysIndirect), data.counts[1] ? 2 : 1, 0);
+    Vector4 value = checker.get();
+
+    MAGNUM_VERIFY_NO_GL_ERROR();
+    CORRADE_COMPARE_WITH(value, data.expected,
+        TestSuite::Compare::around(Vector4{1.0f/255.0f}));
+}
+
+void MeshGLTest::multiDrawIndirectSparseBuffer() {
+    auto&& data = MultiDrawInstancedData[testCaseInstanceId()];
+    setTestCaseDescription(data.name);
+
+    /* Copy of multiDrawIndirect(), except for the indirect array having extra
+       space at the end which is being reflected in the stride */
+
+    #ifndef MAGNUM_TARGET_GLES
+    if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::multi_draw_indirect>())
+        CORRADE_SKIP(GL::Extensions::ARB::multi_draw_indirect::string() << "is not supported.");
+    #else
+    if(!GL::Context::current().isExtensionSupported<GL::Extensions::EXT::multi_draw_indirect>())
+        CORRADE_SKIP(GL::Extensions::EXT::multi_draw_indirect::string() << "is not supported.");
+    #endif
+
+    bool hasBaseInstance = data.instanceOffsets[0] || data.instanceOffsets[1];
+    if(hasBaseInstance) {
+        #ifndef MAGNUM_TARGET_GLES
+        if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::base_instance>())
+            CORRADE_SKIP(GL::Extensions::ARB::base_instance::string() << "is not supported.");
+        if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::shader_draw_parameters>())
+            CORRADE_SKIP(GL::Extensions::ARB::shader_draw_parameters::string() << "for the gl_BaseInstance builtin is not supported.");
+        #else
+        /** @todo GL_ANGLE_base_vertex_base_instance supports gl_BaseInstance,
+            but ANGLE on it's own likely doesn't support
+            EXT_multi_draw_indirect, and implementations that support EXT_multi_draw_indirect don't support the ANGLE extension so
+            there's likely no point in even trying */
+        if(!GL::Context::current().isExtensionSupported<GL::Extensions::EXT::base_instance>())
+            CORRADE_SKIP(GL::Extensions::EXT::base_instance::string() << "is not supported.");
+        CORRADE_SKIP(GL::Extensions::EXT::base_instance::string() << "doesn't have the gl_BaseInstance builtin, cannot test.");
+        #endif
+    }
+
+    #ifdef MAGNUM_TARGET_GLES
+    /** @todo GL_ANGLE_multi_draw supports gl_DrawID, but ANGLE on it's own
+        likely doesn't support EXT_multi_draw_indirect, and implementations
+        that support EXT_multi_draw_indirect don't support the ANGLE extension
+        so there's likely no point in even trying */
+    if(data.drawId)
+        CORRADE_SKIP("There is no GLES platform supporting both indirect draw and gl_DrawID, cannot test.");
+    #endif
+
+    const struct {
+        Float positionX;
+        Vector3 value;
+    } vertexData[] {
+        {}, /* initial offset */
+        {-1.0f/3.0f, data.values[0]},
+        { 1.0f/3.0f, data.values[1]},
+    };
+    const Float instanceData[]{
+        0, /* initial offset */
+        -1.0f/3.0f,
+         1.0f/3.0f
+    };
+
+    Mesh mesh{MeshPrimitive::Points};
+    mesh.addVertexBuffer(Buffer{vertexData}, sizeof(vertexData[0]), MultiDrawInstancedShader::PositionX{}, MultiDrawInstancedShader::Value{})
+        .addVertexBufferInstanced(Buffer{instanceData}, 1, sizeof(instanceData[0]), MultiDrawInstancedShader::PositionY{});
+
+    MAGNUM_VERIFY_NO_GL_ERROR();
+
+    /* First element is unused to test that the offset is passed properly */
+    struct Indirect {
+        DrawArraysIndirect command;
+        UnsignedInt:32;
+    } indirect[3];
+    for(Int i: {0, 1}) {
+        indirect[i + 1].command.count = data.counts[i];
+        indirect[i + 1].command.instanceCount = data.instanceCounts[i];
+        indirect[i + 1].command.vertexOffset = data.vertexOffsets[i];
+        indirect[i + 1].command.instanceOffset = data.instanceOffsets[i];
+    }
+    Buffer indirectBuffer{indirect};
+
+    MultiDrawChecker checker;
+    MultiDrawInstancedShader{data.vertexId, data.drawId, hasBaseInstance}
+        .drawIndirect(mesh, indirectBuffer, sizeof(Indirect), data.counts[1] ? 2 : 1, sizeof(Indirect));
+    Vector4 value = checker.get();
+
+    MAGNUM_VERIFY_NO_GL_ERROR();
+    CORRADE_COMPARE_WITH(value, data.expected,
+        TestSuite::Compare::around(Vector4{1.0f/255.0f}));
+}
+
+void MeshGLTest::multiDrawIndirectIndexed() {
+    auto&& data = MultiDrawInstancedIndexedData[testCaseInstanceId()];
+    setTestCaseDescription(data.name);
+
+    /* Derived from multiDrawInstancedIndexed() */
+
+    #ifndef MAGNUM_TARGET_GLES
+    if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::multi_draw_indirect>())
+        CORRADE_SKIP(GL::Extensions::ARB::multi_draw_indirect::string() << "is not supported.");
+    #else
+    if(!GL::Context::current().isExtensionSupported<GL::Extensions::EXT::multi_draw_indirect>())
+        CORRADE_SKIP(GL::Extensions::EXT::multi_draw_indirect::string() << "is not supported.");
+    #endif
+
+    bool hasBaseInstance = data.instanceOffsets[0] || data.instanceOffsets[1];
+    if(hasBaseInstance) {
+        #ifndef MAGNUM_TARGET_GLES
+        if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::base_instance>())
+            CORRADE_SKIP(GL::Extensions::ARB::base_instance::string() << "is not supported.");
+        if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::shader_draw_parameters>())
+            CORRADE_SKIP(GL::Extensions::ARB::shader_draw_parameters::string() << "for the gl_BaseInstance builtin is not supported.");
+        #else
+        /** @todo GL_ANGLE_base_vertex_base_instance supports gl_BaseInstance,
+            but ANGLE on it's own likely doesn't support
+            EXT_multi_draw_indirect, and implementations that support EXT_multi_draw_indirect don't support the ANGLE extension so
+            there's likely no point in even trying */
+        if(!GL::Context::current().isExtensionSupported<GL::Extensions::EXT::base_instance>())
+            CORRADE_SKIP(GL::Extensions::EXT::base_instance::string() << "is not supported.");
+        CORRADE_SKIP(GL::Extensions::EXT::base_instance::string() << "doesn't have the gl_BaseInstance builtin, cannot test.");
+        #endif
+    }
+
+    const struct {
+        Float positionX;
+        Vector3 value;
+    } vertexData[] {
+        {}, /* initial offset */
+        {-1.0f/3.0f, data.values[0]},
+        { 1.0f/3.0f, data.values[1]},
+    };
+    const Float instanceData[]{
+        0, /* initial offset */
+        -1.0f/3.0f,
+         1.0f/3.0f
+    };
+
+    Mesh mesh{MeshPrimitive::Points};
+    mesh.addVertexBuffer(Buffer{vertexData}, sizeof(vertexData[0]), MultiDrawInstancedShader::PositionX{}, MultiDrawInstancedShader::Value{})
+        .addVertexBufferInstanced(Buffer{instanceData}, 1, sizeof(instanceData[0]), MultiDrawInstancedShader::PositionY{})
+        .setIndexBuffer(Buffer{Buffer::TargetHint::ElementArray, data.indices}, 0, MeshIndexType::UnsignedInt);
+
+    MAGNUM_VERIFY_NO_GL_ERROR();
+
+    /* First element is unused to test that the offset is passed properly */
+    DrawElementsIndirect indirect[3];
+    for(Int i: {0, 1}) {
+        indirect[i + 1].count = data.counts[i];
+        indirect[i + 1].instanceCount = data.instanceCounts[i];
+        /* The test data were made for the client-side multi-draw extensions
+           first, which accept index offsets in bytes, not elements */
+        indirect[i + 1].indexOffset = data.indexOffsetsInBytes[i]/4;
+        indirect[i + 1].vertexOffset = data.vertexOffsets[i];
+        indirect[i + 1].instanceOffset = data.instanceOffsets[i];
+    }
+    Buffer indirectBuffer{indirect};
+
+    MultiDrawChecker checker;
+    MultiDrawInstancedShader{data.vertexId, false, hasBaseInstance}
+        .drawIndirect(mesh, indirectBuffer, sizeof(DrawElementsIndirect), data.counts[1] ? 2 : 1, 0);
+    Vector4 value = checker.get();
+
+    MAGNUM_VERIFY_NO_GL_ERROR();
+    CORRADE_COMPARE_WITH(value, data.expected,
+        TestSuite::Compare::around(Vector4{1.0f/255.0f}));
+}
+
+void MeshGLTest::multiDrawIndirectIndexedSparseBuffer() {
+    auto&& data = MultiDrawInstancedIndexedData[testCaseInstanceId()];
+    setTestCaseDescription(data.name);
+
+    /* Copy of multiDrawIndirectIndexed(), except for the indirect array having
+       extra space at the end which is being reflected in the stride */
+
+    #ifndef MAGNUM_TARGET_GLES
+    if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::multi_draw_indirect>())
+        CORRADE_SKIP(GL::Extensions::ARB::multi_draw_indirect::string() << "is not supported.");
+    #else
+    if(!GL::Context::current().isExtensionSupported<GL::Extensions::EXT::multi_draw_indirect>())
+        CORRADE_SKIP(GL::Extensions::EXT::multi_draw_indirect::string() << "is not supported.");
+    #endif
+
+    bool hasBaseInstance = data.instanceOffsets[0] || data.instanceOffsets[1];
+    if(hasBaseInstance) {
+        #ifndef MAGNUM_TARGET_GLES
+        if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::base_instance>())
+            CORRADE_SKIP(GL::Extensions::ARB::base_instance::string() << "is not supported.");
+        if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::shader_draw_parameters>())
+            CORRADE_SKIP(GL::Extensions::ARB::shader_draw_parameters::string() << "for the gl_BaseInstance builtin is not supported.");
+        #else
+        /** @todo GL_ANGLE_base_vertex_base_instance supports gl_BaseInstance,
+            but ANGLE on it's own likely doesn't support
+            EXT_multi_draw_indirect, and implementations that support EXT_multi_draw_indirect don't support the ANGLE extension so
+            there's likely no point in even trying */
+        if(!GL::Context::current().isExtensionSupported<GL::Extensions::EXT::base_instance>())
+            CORRADE_SKIP(GL::Extensions::EXT::base_instance::string() << "is not supported.");
+        CORRADE_SKIP(GL::Extensions::EXT::base_instance::string() << "doesn't have the gl_BaseInstance builtin, cannot test.");
+        #endif
+    }
+
+    const struct {
+        Float positionX;
+        Vector3 value;
+    } vertexData[] {
+        {}, /* initial offset */
+        {-1.0f/3.0f, data.values[0]},
+        { 1.0f/3.0f, data.values[1]},
+    };
+    const Float instanceData[]{
+        0, /* initial offset */
+        -1.0f/3.0f,
+         1.0f/3.0f
+    };
+
+    Mesh mesh{MeshPrimitive::Points};
+    mesh.addVertexBuffer(Buffer{vertexData}, sizeof(vertexData[0]), MultiDrawInstancedShader::PositionX{}, MultiDrawInstancedShader::Value{})
+        .addVertexBufferInstanced(Buffer{instanceData}, 1, sizeof(instanceData[0]), MultiDrawInstancedShader::PositionY{})
+        .setIndexBuffer(Buffer{Buffer::TargetHint::ElementArray, data.indices}, 0, MeshIndexType::UnsignedInt);
+
+    MAGNUM_VERIFY_NO_GL_ERROR();
+
+    /* First element is unused to test that the offset is passed properly */
+    struct Indirect {
+        DrawElementsIndirect command;
+        UnsignedInt:32;
+    } indirect[3];
+    for(Int i: {0, 1}) {
+        indirect[i + 1].command.count = data.counts[i];
+        indirect[i + 1].command.instanceCount = data.instanceCounts[i];
+        /* The test data were made for the client-side multi-draw extensions
+           first, which accept index offsets in bytes, not elements */
+        indirect[i + 1].command.indexOffset = data.indexOffsetsInBytes[i]/4;
+        indirect[i + 1].command.vertexOffset = data.vertexOffsets[i];
+        indirect[i + 1].command.instanceOffset = data.instanceOffsets[i];
+    }
+    Buffer indirectBuffer{indirect};
+
+    MultiDrawChecker checker;
+    MultiDrawInstancedShader{data.vertexId, false, hasBaseInstance}
+        .drawIndirect(mesh, indirectBuffer, sizeof(Indirect), data.counts[1] ? 2 : 1, sizeof(Indirect));
+    Vector4 value = checker.get();
+
+    MAGNUM_VERIFY_NO_GL_ERROR();
+    CORRADE_COMPARE_WITH(value, data.expected,
+        TestSuite::Compare::around(Vector4{1.0f/255.0f}));
+}
+#endif
+
+#ifndef MAGNUM_TARGET_GLES
+void MeshGLTest::multiDrawIndirectCount() {
+    auto&& data = MultiDrawInstancedData[testCaseInstanceId()];
+    setTestCaseDescription(data.name);
+
+    /* Like multiDrawIndirect(), but with count supplied via a buffer as
+       well (and extension checks adjusted appropriately) */
+
+    if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::indirect_parameters>())
+        CORRADE_SKIP(GL::Extensions::ARB::multi_draw_indirect::string() << "is not supported.");
+
+    bool hasBaseInstance = data.instanceOffsets[0] || data.instanceOffsets[1];
+    if(hasBaseInstance) {
+        if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::base_instance>())
+            CORRADE_SKIP(GL::Extensions::ARB::base_instance::string() << "is not supported.");
+        if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::shader_draw_parameters>())
+            CORRADE_SKIP(GL::Extensions::ARB::shader_draw_parameters::string() << "for the gl_BaseInstance builtin is not supported.");
+    }
+
+    const struct {
+        Float positionX;
+        Vector3 value;
+    } vertexData[] {
+        {}, /* initial offset */
+        {-1.0f/3.0f, data.values[0]},
+        { 1.0f/3.0f, data.values[1]},
+    };
+    const Float instanceData[]{
+        0, /* initial offset */
+        -1.0f/3.0f,
+         1.0f/3.0f
+    };
+
+    Mesh mesh{MeshPrimitive::Points};
+    mesh.addVertexBuffer(Buffer{vertexData}, sizeof(vertexData[0]), MultiDrawInstancedShader::PositionX{}, MultiDrawInstancedShader::Value{})
+        .addVertexBufferInstanced(Buffer{instanceData}, 1, sizeof(instanceData[0]), MultiDrawInstancedShader::PositionY{});
+
+    MAGNUM_VERIFY_NO_GL_ERROR();
+
+    /* First element of each is unused to test that the offset is passed
+       properly */
+    DrawArraysIndirect indirect[3];
+    for(Int i: {0, 1}) {
+        indirect[i + 1].count = data.counts[i];
+        indirect[i + 1].instanceCount = data.instanceCounts[i];
+        indirect[i + 1].vertexOffset = data.vertexOffsets[i];
+        indirect[i + 1].instanceOffset = data.instanceOffsets[i];
+    }
+    Buffer indirectBuffer{indirect};
+    UnsignedInt count[2]{
+        0,
+        data.counts[1] ? 2u : 1u
+    };
+    Buffer countBuffer{count};
+
+    MultiDrawChecker checker;
+    MultiDrawInstancedShader{data.vertexId, data.drawId, hasBaseInstance}
+        .drawIndirect(mesh, indirectBuffer, sizeof(DrawArraysIndirect), countBuffer, sizeof(UnsignedInt), 2, 0);
+    Vector4 value = checker.get();
+
+    MAGNUM_VERIFY_NO_GL_ERROR();
+    CORRADE_COMPARE_WITH(value, data.expected,
+        TestSuite::Compare::around(Vector4{1.0f/255.0f}));
+}
+
+void MeshGLTest::multiDrawIndirectCountSparseBuffer() {
+    auto&& data = MultiDrawInstancedData[testCaseInstanceId()];
+    setTestCaseDescription(data.name);
+
+    /* Copy of multiDrawIndirectCount(), except for the indirect array having
+       extra space at the end which is being reflected in the stride */
+
+    if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::indirect_parameters>())
+        CORRADE_SKIP(GL::Extensions::ARB::multi_draw_indirect::string() << "is not supported.");
+
+    bool hasBaseInstance = data.instanceOffsets[0] || data.instanceOffsets[1];
+    if(hasBaseInstance) {
+        if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::base_instance>())
+            CORRADE_SKIP(GL::Extensions::ARB::base_instance::string() << "is not supported.");
+        if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::shader_draw_parameters>())
+            CORRADE_SKIP(GL::Extensions::ARB::shader_draw_parameters::string() << "for the gl_BaseInstance builtin is not supported.");
+    }
+
+    const struct {
+        Float positionX;
+        Vector3 value;
+    } vertexData[] {
+        {}, /* initial offset */
+        {-1.0f/3.0f, data.values[0]},
+        { 1.0f/3.0f, data.values[1]},
+    };
+    const Float instanceData[]{
+        0, /* initial offset */
+        -1.0f/3.0f,
+         1.0f/3.0f
+    };
+
+    Mesh mesh{MeshPrimitive::Points};
+    mesh.addVertexBuffer(Buffer{vertexData}, sizeof(vertexData[0]), MultiDrawInstancedShader::PositionX{}, MultiDrawInstancedShader::Value{})
+        .addVertexBufferInstanced(Buffer{instanceData}, 1, sizeof(instanceData[0]), MultiDrawInstancedShader::PositionY{});
+
+    MAGNUM_VERIFY_NO_GL_ERROR();
+
+    /* First element of each is unused to test that the offset is passed
+       properly */
+    struct Indirect {
+        DrawArraysIndirect command;
+        UnsignedInt:32;
+    } indirect[3];
+    for(Int i: {0, 1}) {
+        indirect[i + 1].command.count = data.counts[i];
+        indirect[i + 1].command.instanceCount = data.instanceCounts[i];
+        indirect[i + 1].command.vertexOffset = data.vertexOffsets[i];
+        indirect[i + 1].command.instanceOffset = data.instanceOffsets[i];
+    }
+    Buffer indirectBuffer{indirect};
+    UnsignedInt count[2]{
+        0,
+        data.counts[1] ? 2u : 1u
+    };
+    Buffer countBuffer{count};
+
+    MultiDrawChecker checker;
+    MultiDrawInstancedShader{data.vertexId, data.drawId, hasBaseInstance}
+        .drawIndirect(mesh, indirectBuffer, sizeof(Indirect), countBuffer, sizeof(UnsignedInt), 2, sizeof(Indirect));
+    Vector4 value = checker.get();
+
+    MAGNUM_VERIFY_NO_GL_ERROR();
+    CORRADE_COMPARE_WITH(value, data.expected,
+        TestSuite::Compare::around(Vector4{1.0f/255.0f}));
+}
+
+void MeshGLTest::multiDrawIndirectCountIndexed() {
+    auto&& data = MultiDrawInstancedIndexedData[testCaseInstanceId()];
+    setTestCaseDescription(data.name);
+
+    /* Like multiDrawIndirectIndexed(), but with count supplied via a buffer as
+       well (and extension checks adjusted appropriately) */
+
+    if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::indirect_parameters>())
+        CORRADE_SKIP(GL::Extensions::ARB::multi_draw_indirect::string() << "is not supported.");
+
+    bool hasBaseInstance = data.instanceOffsets[0] || data.instanceOffsets[1];
+    if(hasBaseInstance) {
+        if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::base_instance>())
+            CORRADE_SKIP(GL::Extensions::ARB::base_instance::string() << "is not supported.");
+        if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::shader_draw_parameters>())
+            CORRADE_SKIP(GL::Extensions::ARB::shader_draw_parameters::string() << "for the gl_BaseInstance builtin is not supported.");
+    }
+
+    const struct {
+        Float positionX;
+        Vector3 value;
+    } vertexData[] {
+        {}, /* initial offset */
+        {-1.0f/3.0f, data.values[0]},
+        { 1.0f/3.0f, data.values[1]},
+    };
+    const Float instanceData[]{
+        0, /* initial offset */
+        -1.0f/3.0f,
+         1.0f/3.0f
+    };
+
+    Mesh mesh{MeshPrimitive::Points};
+    mesh.addVertexBuffer(Buffer{vertexData}, sizeof(vertexData[0]), MultiDrawInstancedShader::PositionX{}, MultiDrawInstancedShader::Value{})
+        .addVertexBufferInstanced(Buffer{instanceData}, 1, sizeof(instanceData[0]), MultiDrawInstancedShader::PositionY{})
+        .setIndexBuffer(Buffer{Buffer::TargetHint::ElementArray, data.indices}, 0, MeshIndexType::UnsignedInt);
+
+    MAGNUM_VERIFY_NO_GL_ERROR();
+
+    /* First element is unused to test that the offset is passed properly */
+    DrawElementsIndirect indirect[3];
+    for(Int i: {0, 1}) {
+        indirect[i + 1].count = data.counts[i];
+        indirect[i + 1].instanceCount = data.instanceCounts[i];
+        /* The test data were made for the client-side multi-draw extensions
+           first, which accept index offsets in bytes, not elements */
+        indirect[i + 1].indexOffset = data.indexOffsetsInBytes[i]/4;
+        indirect[i + 1].vertexOffset = data.vertexOffsets[i];
+        indirect[i + 1].instanceOffset = data.instanceOffsets[i];
+    }
+    Buffer indirectBuffer{indirect};
+    UnsignedInt count[2]{
+        0,
+        data.counts[1] ? 2u : 1u
+    };
+    Buffer countBuffer{count};
+
+    MultiDrawChecker checker;
+    MultiDrawInstancedShader{data.vertexId, false, hasBaseInstance}
+        .drawIndirect(mesh, indirectBuffer, sizeof(DrawElementsIndirect), countBuffer, sizeof(UnsignedInt), 2, 0);
+    Vector4 value = checker.get();
+
+    MAGNUM_VERIFY_NO_GL_ERROR();
+    CORRADE_COMPARE_WITH(value, data.expected,
+        TestSuite::Compare::around(Vector4{1.0f/255.0f}));
+}
+
+void MeshGLTest::multiDrawIndirectCountIndexedSparseBuffer() {
+    auto&& data = MultiDrawInstancedIndexedData[testCaseInstanceId()];
+    setTestCaseDescription(data.name);
+
+    /* Copy of multiDrawIndirectCountIndexed(), except for the indirect array
+       having extra space at the end which is being reflected in the stride */
+
+    if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::indirect_parameters>())
+        CORRADE_SKIP(GL::Extensions::ARB::multi_draw_indirect::string() << "is not supported.");
+
+    bool hasBaseInstance = data.instanceOffsets[0] || data.instanceOffsets[1];
+    if(hasBaseInstance) {
+        if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::base_instance>())
+            CORRADE_SKIP(GL::Extensions::ARB::base_instance::string() << "is not supported.");
+        if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::shader_draw_parameters>())
+            CORRADE_SKIP(GL::Extensions::ARB::shader_draw_parameters::string() << "for the gl_BaseInstance builtin is not supported.");
+    }
+
+    const struct {
+        Float positionX;
+        Vector3 value;
+    } vertexData[] {
+        {}, /* initial offset */
+        {-1.0f/3.0f, data.values[0]},
+        { 1.0f/3.0f, data.values[1]},
+    };
+    const Float instanceData[]{
+        0, /* initial offset */
+        -1.0f/3.0f,
+         1.0f/3.0f
+    };
+
+    Mesh mesh{MeshPrimitive::Points};
+    mesh.addVertexBuffer(Buffer{vertexData}, sizeof(vertexData[0]), MultiDrawInstancedShader::PositionX{}, MultiDrawInstancedShader::Value{})
+        .addVertexBufferInstanced(Buffer{instanceData}, 1, sizeof(instanceData[0]), MultiDrawInstancedShader::PositionY{})
+        .setIndexBuffer(Buffer{Buffer::TargetHint::ElementArray, data.indices}, 0, MeshIndexType::UnsignedInt);
+
+    MAGNUM_VERIFY_NO_GL_ERROR();
+
+    /* First element is unused to test that the offset is passed properly */
+    struct Indirect {
+        DrawElementsIndirect command;
+        UnsignedInt:32;
+    } indirect[3];
+    for(Int i: {0, 1}) {
+        indirect[i + 1].command.count = data.counts[i];
+        indirect[i + 1].command.instanceCount = data.instanceCounts[i];
+        /* The test data were made for the client-side multi-draw extensions
+           first, which accept index offsets in bytes, not elements */
+        indirect[i + 1].command.indexOffset = data.indexOffsetsInBytes[i]/4;
+        indirect[i + 1].command.vertexOffset = data.vertexOffsets[i];
+        indirect[i + 1].command.instanceOffset = data.instanceOffsets[i];
+    }
+    Buffer indirectBuffer{indirect};
+    UnsignedInt count[2]{
+        0,
+        data.counts[1] ? 2u : 1u
+    };
+    Buffer countBuffer{count};
+
+    MultiDrawChecker checker;
+    MultiDrawInstancedShader{data.vertexId, false, hasBaseInstance}
+        .drawIndirect(mesh, indirectBuffer, sizeof(Indirect), countBuffer, sizeof(UnsignedInt), 2, sizeof(Indirect));
+    Vector4 value = checker.get();
+
+    MAGNUM_VERIFY_NO_GL_ERROR();
+    CORRADE_COMPARE_WITH(value, data.expected,
+        TestSuite::Compare::around(Vector4{1.0f/255.0f}));
+}
 #endif
 
 }}}}

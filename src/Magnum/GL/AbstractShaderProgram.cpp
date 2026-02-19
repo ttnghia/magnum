@@ -511,7 +511,38 @@ AbstractShaderProgram& AbstractShaderProgram::draw(const Containers::Iterable<Me
     return *this;
 }
 
+#if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
+AbstractShaderProgram& AbstractShaderProgram::drawIndirect(Mesh& mesh, Buffer& indirectBuffer, const GLintptr indirectBufferOffset) {
+    use();
+
+    mesh.drawInternal(indirectBuffer, indirectBufferOffset);
+    return *this;
+}
+
+AbstractShaderProgram& AbstractShaderProgram::drawIndirect(Mesh& mesh, Buffer& indirectBuffer, const GLintptr indirectBufferOffset, const GLsizei count, const GLsizei stride) {
+    /* Nothing to draw, exit without touching any state */
+    if(!count)
+        return *this;
+
+    use();
+
+    mesh.drawInternal(indirectBuffer, indirectBufferOffset, count, stride);
+    return *this;
+}
+#endif
+
 #ifndef MAGNUM_TARGET_GLES
+AbstractShaderProgram& AbstractShaderProgram::drawIndirect(Mesh& mesh, Buffer& indirectBuffer, const GLintptr indirectBufferOffset, Buffer& countBuffer, GLintptr countBufferOffset, GLsizei maxCount, GLsizei stride) {
+    /* Nothing to draw, exit without touching any state */
+    if(!maxCount)
+        return *this;
+
+    use();
+
+    mesh.drawInternal(indirectBuffer, indirectBufferOffset, countBuffer, countBufferOffset, maxCount, stride);
+    return *this;
+}
+
 AbstractShaderProgram& AbstractShaderProgram::drawTransformFeedback(Mesh& mesh, TransformFeedback& xfb, UnsignedInt stream) {
     /* Nothing to draw, exit without touching any state */
     if(!mesh._instanceCount)
@@ -541,6 +572,14 @@ AbstractShaderProgram& AbstractShaderProgram::dispatchCompute(const Vector3ui& w
 
     use();
     glDispatchCompute(workgroupCount.x(), workgroupCount.y(), workgroupCount.z());
+    return *this;
+}
+
+AbstractShaderProgram& AbstractShaderProgram::dispatchComputeIndirect(Buffer& indirectBuffer, GLintptr indirectBufferOffset) {
+    use();
+    indirectBuffer.bindInternal(Buffer::TargetHint::DispatchIndirect);
+
+    glDispatchComputeIndirect(indirectBufferOffset);
     return *this;
 }
 #endif

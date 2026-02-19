@@ -297,7 +297,8 @@ class MAGNUM_GL_EXPORT Buffer: public AbstractObject {
 
             #ifndef MAGNUM_TARGET_WEBGL
             /**
-             * Indirect compute dispatch commands.
+             * Indirect compute dispatch commands for
+             * @ref AbstractShaderProgram::dispatchComputeIndirect()
              * @requires_gl43 Extension @gl_extension{ARB,compute_shader}
              * @requires_gles31 Compute shaders are not available in OpenGL ES
              *      3.0 and older.
@@ -306,7 +307,7 @@ class MAGNUM_GL_EXPORT Buffer: public AbstractObject {
             DispatchIndirect = GL_DISPATCH_INDIRECT_BUFFER,
 
             /**
-             * Used for supplying arguments for indirect drawing.
+             * Indirect draw commands for @ref AbstractShaderProgram::drawIndirect()
              * @requires_gl40 Extension @gl_extension{ARB,draw_indirect}
              * @requires_gles31 Indirect drawing is not available in OpenGL ES
              *      3.0 and older.
@@ -318,6 +319,17 @@ class MAGNUM_GL_EXPORT Buffer: public AbstractObject {
 
             /** Used for storing vertex indices. */
             ElementArray = GL_ELEMENT_ARRAY_BUFFER,
+
+            #ifndef MAGNUM_TARGET_GLES
+            /**
+             * Indirect draw count parameter for @ref AbstractShaderProgram::drawIndirect(Mesh&, Buffer&, GLintptr, Buffer&, GLintptr, GLsizei, GLsizei)
+             * @m_since_latest
+             * @requires_gl46 Extension @gl_extension{ARB,indirect_parameters}
+             * @requires_gl Indirect multidraw with indirect draw count is not
+             *      available in OpenGL ES or WebGL.
+             */
+            Parameter = GL_PARAMETER_BUFFER,
+            #endif
 
             #ifndef MAGNUM_TARGET_GLES2
             /**

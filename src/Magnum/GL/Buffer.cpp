@@ -725,6 +725,9 @@ Debug& operator<<(Debug& debug, const Buffer::TargetHint value) {
         #endif
         #endif
         _c(ElementArray)
+        #ifndef MAGNUM_TARGET_GLES
+        _c(Parameter)
+        #endif
         #ifndef MAGNUM_TARGET_GLES2
         _c(PixelPack)
         _c(PixelUnpack)

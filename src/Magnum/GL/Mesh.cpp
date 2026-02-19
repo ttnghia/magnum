@@ -1028,6 +1028,72 @@ void Mesh::drawInternal(Int count, Int baseVertex, Int instanceCount, GLintptr i
     state.unbindImplementation(*this);
 }
 
+#if !defined(MAGNUM_TARGET_GLES2) && !defined(MAGNUM_TARGET_WEBGL)
+void Mesh::drawInternal(Buffer& indirectBuffer, const GLintptr indirectBufferOffset) {
+    const Implementation::MeshState& state = Context::current().state().mesh;
+
+    state.bindImplementation(*this);
+    indirectBuffer.bindInternal(Buffer::TargetHint::DrawIndirect);
+
+    /* Non-indexed mesh */
+    if(!_indexBuffer.id())
+        glDrawArraysIndirect(GLenum(_primitive), reinterpret_cast<GLvoid*>(indirectBufferOffset));
+
+    /* Indexed mesh */
+    else
+        glDrawElementsIndirect(GLenum(_primitive), GLenum(_indexType), reinterpret_cast<GLvoid*>(indirectBufferOffset));
+
+    state.unbindImplementation(*this);
+}
+
+void Mesh::drawInternal(Buffer& indirectBuffer, const GLintptr indirectBufferOffset, GLsizei count, GLsizei stride) {
+    const Implementation::MeshState& state = Context::current().state().mesh;
+
+    state.bindImplementation(*this);
+    indirectBuffer.bindInternal(Buffer::TargetHint::DrawIndirect);
+
+    /* Non-indexed mesh */
+    if(!_indexBuffer.id())
+        #ifndef MAGNUM_TARGET_GLES
+        glMultiDrawArraysIndirect
+        #else
+        glMultiDrawArraysIndirectEXT
+        #endif
+            (GLenum(_primitive), reinterpret_cast<GLvoid*>(indirectBufferOffset), count, stride);
+
+    /* Indexed mesh */
+    else
+        #ifndef MAGNUM_TARGET_GLES
+        glMultiDrawElementsIndirect
+        #else
+        glMultiDrawElementsIndirectEXT
+        #endif
+            (GLenum(_primitive), GLenum(_indexType), reinterpret_cast<GLvoid*>(indirectBufferOffset), count, stride);
+
+    state.unbindImplementation(*this);
+}
+#endif
+
+#ifndef MAGNUM_TARGET_GLES
+void Mesh::drawInternal(Buffer& indirectBuffer, const GLintptr indirectBufferOffset, Buffer& countBuffer, const GLintptr countBufferOffset, const GLsizei maxCount, const GLsizei stride) {
+    const Implementation::MeshState& state = Context::current().state().mesh;
+
+    state.bindImplementation(*this);
+    indirectBuffer.bindInternal(Buffer::TargetHint::DrawIndirect);
+    countBuffer.bindInternal(Buffer::TargetHint::Parameter);
+
+    /* Non-indexed mesh */
+    if(!_indexBuffer.id())
+        glMultiDrawArraysIndirectCount(GLenum(_primitive), reinterpret_cast<GLvoid*>(indirectBufferOffset), countBufferOffset, maxCount, stride);
+
+    /* Indexed mesh */
+    else
+        glMultiDrawElementsIndirectCount(GLenum(_primitive), GLenum(_indexType), reinterpret_cast<GLvoid*>(indirectBufferOffset), countBufferOffset, maxCount, stride);
+
+    state.unbindImplementation(*this);
+}
+#endif
+
 #ifndef MAGNUM_TARGET_GLES
 void Mesh::drawInternal(TransformFeedback& xfb, const UnsignedInt stream, const Int instanceCount) {
     const Implementation::MeshState& state = Context::current().state().mesh;

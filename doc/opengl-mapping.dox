@@ -140,9 +140,10 @@ OpenGL function                         | Matching API
 @fn_gl{DetachShader}                    | |
 @fn_gl{DispatchCompute}                 | @ref GL::AbstractShaderProgram::dispatchCompute()
 @fn_gl_extension{DispatchComputeGroupSize,ARB,compute_variable_group_size} | |
-@fn_gl{DispatchComputeIndirect}         | |
+@fn_gl{DispatchComputeIndirect}         | @ref GL::AbstractShaderProgram::dispatchComputeIndirect()
 @fn_gl{DrawArrays}, \n @fn_gl{DrawArraysInstanced}, \n @fn_gl{DrawArraysInstancedBaseInstance}, \n @fn_gl{DrawElements}, \n @fn_gl{DrawRangeElements}, \n @fn_gl{DrawElementsBaseVertex}, \n @fn_gl{DrawRangeElementsBaseVertex}, \n @fn_gl{DrawElementsInstanced}, \n @fn_gl{DrawElementsInstancedBaseInstance}, \n @fn_gl{DrawElementsInstancedBaseVertex}, \n @fn_gl{DrawElementsInstancedBaseVertexBaseInstance} | @ref GL::AbstractShaderProgram::drawTransformFeedback()
-@fn_gl{DrawArraysIndirect}, \n @fn_gl{DrawElementsIndirect}, \n @fn_gl{MultiDrawArraysIndirect}, \n @fn_gl{MultiDrawElementsIndirect} | |
+@fn_gl{DrawArraysIndirect}, \n @fn_gl{DrawElementsIndirect}, \n @fn_gl{MultiDrawArraysIndirect}, \n @fn_gl{MultiDrawElementsIndirect}, \n
+@fn_gl{MultiDrawArraysIndirectCount}, \n @fn_gl{MultiDrawElementsIndirectCount} | @ref GL::AbstractShaderProgram::drawIndirect()
 @fn_gl{DrawBuffer}, \n `glNamedFramebufferDrawBuffer()`, \n @fn_gl{DrawBuffers}, \n `glNamedFramebufferDrawBuffers()` | @ref GL::DefaultFramebuffer::mapForDraw(), \n @ref GL::Framebuffer::mapForDraw()
 @fn_gl{DrawTransformFeedback}, \n @fn_gl{DrawTransformFeedbackInstanced}, \n @fn_gl{DrawTransformFeedbackStream}, \n @fn_gl{DrawTransformFeedbackStreamInstanced} | @ref GL::AbstractShaderProgram::drawTransformFeedback()
 
@@ -308,7 +309,6 @@ OpenGL function                         | Matching API
 @fn_gl_extension{MemoryObjectParameteriv,EXT,external_objects} | |
 @fn_gl{MinSampleShading}                | @ref GL::Renderer::setMinSampleShading()
 @fn_gl{MultiDrawArrays}, \n @fn_gl{MultiDrawElements}, \n @fn_gl{MultiDrawElementsBaseVertex} | @ref GL::AbstractShaderProgram::draw(const Containers::Iterable<MeshView>&)
-@fn_gl{MultiDrawArraysIndirectCount}, \n @fn_gl{MultiDrawElementsIndirectCount} | |
 
 @subsection opengl-mapping-functions-o O
 

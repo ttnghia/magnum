@@ -47,8 +47,10 @@ struct BufferState {
         TargetCount = 2+1,
         #elif defined(MAGNUM_TARGET_WEBGL) /* WebGL 2 */
         TargetCount = 8+1,
-        #else /* ES3 and desktop */
-        TargetCount = 13+1
+        #elif defined(MAGNUM_TARGET_GLES) /* ES3 */
+        TargetCount = 13+1,
+        #else /* desktop */
+        TargetCount = 14+1,
         #endif
     };
 
