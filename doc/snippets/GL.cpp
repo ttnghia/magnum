@@ -44,6 +44,7 @@
 #include "Magnum/GL/Extensions.h"
 #include "Magnum/GL/Framebuffer.h"
 #include "Magnum/GL/Mesh.h"
+#include "Magnum/GL/MeshView.h"
 #include "Magnum/GL/PixelFormat.h"
 #include "Magnum/GL/Renderer.h"
 #include "Magnum/GL/Renderbuffer.h"
@@ -448,17 +449,125 @@ vert.addFile("MyShader.vert");
 
 #ifndef MAGNUM_TARGET_GLES
 {
+/* [AbstractShaderProgram-rendering-setup] */
+struct Vertex {
+    Vector3 position;
+    Vector3 normal;
+    Vector2 textureCoordiantes;
+} vertices[]{
+    DOXYGEN_ELLIPSIS({})
+};
+UnsignedInt indices[]{
+    DOXYGEN_ELLIPSIS(0)
+};
+
 GL::Mesh mesh;
+mesh.addVertexBuffer(GL::Buffer{vertices}, 0,
+        MyShader::Position{},
+        MyShader::Normal{},
+        MyShader::TextureCoordinates{})
+    .setIndexBuffer(GL::Buffer{indices}, 0, GL::MeshIndexType::UnsignedInt)
+    .setCount(Containers::arraySize(indices));
+
+MyShader shader;
+/* [AbstractShaderProgram-rendering-setup] */
+
 Matrix4 transformation, projection;
 GL::Texture2D diffuseTexture, specularTexture;
 /* [AbstractShaderProgram-rendering] */
-MyShader shader;
-shader.setTransformationMatrix(transformation)
+shader
+    .setTransformationMatrix(transformation)
     .setProjectionMatrix(projection)
     .bindDiffuseTexture(diffuseTexture)
     .bindSpecularTexture(specularTexture)
     .draw(mesh);
 /* [AbstractShaderProgram-rendering] */
+
+/* [AbstractShaderProgram-rendering-views] */
+GL::MeshView first{mesh};
+first
+    .setCount(DOXYGEN_ELLIPSIS(0))
+    .setIndexOffset(DOXYGEN_ELLIPSIS(0));
+GL::MeshView second{mesh};
+second
+    .setCount(DOXYGEN_ELLIPSIS(0))
+    .setIndexOffset(DOXYGEN_ELLIPSIS(0));
+DOXYGEN_ELLIPSIS(GL::MeshView third{mesh};)
+
+DOXYGEN_ELLIPSIS()
+shader.draw(first);
+
+DOXYGEN_ELLIPSIS()
+shader.draw(second);
+
+DOXYGEN_ELLIPSIS()
+/* [AbstractShaderProgram-rendering-views] */
+
+/* [AbstractShaderProgram-rendering-views-multi] */
+shader.draw({first, second, DOXYGEN_ELLIPSIS(third)});
+/* [AbstractShaderProgram-rendering-views-multi] */
+
+{
+/* [AbstractShaderProgram-rendering-multi] */
+UnsignedInt counts[]{
+    DOXYGEN_ELLIPSIS(0)
+};
+UnsignedInt indexOffsets[]{
+    DOXYGEN_ELLIPSIS(0)
+};
+
+shader.draw(mesh, counts, nullptr, indexOffsets);
+/* [AbstractShaderProgram-rendering-multi] */
+}
+
+{
+/* [AbstractShaderProgram-rendering-indirect] */
+/* Zero-initialize members that aren't used */
+GL::DrawElementsIndirect indirect[1]{};
+indirect->count = DOXYGEN_ELLIPSIS(0);
+indirect->indexOffset = DOXYGEN_ELLIPSIS(0);
+GL::Buffer indirectBuffer{indirect};
+
+shader.drawIndirect(mesh, indirectBuffer, 0);
+/* [AbstractShaderProgram-rendering-indirect] */
+}
+
+{
+/* [AbstractShaderProgram-rendering-indirect-multi] */
+GL::DrawElementsIndirect indirect[]{
+    DOXYGEN_ELLIPSIS({})
+};
+GL::Buffer indirectBuffer{indirect};
+
+shader.drawIndirect(mesh, indirectBuffer, 0, Containers::arraySize(indirect), 0);
+/* [AbstractShaderProgram-rendering-indirect-multi] */
+
+UnsignedInt maxCount = 0;
+/* [AbstractShaderProgram-rendering-indirect-multi-count] */
+UnsignedInt count[]{
+    DOXYGEN_ELLIPSIS(0)
+};
+GL::Buffer countBuffer{count};
+
+shader.drawIndirect(mesh, indirectBuffer, 0, countBuffer, 0, maxCount, 0);
+/* [AbstractShaderProgram-rendering-indirect-multi-count] */
+}
+
+{
+/* [AbstractShaderProgram-rendering-indirect-multi-fallback] */
+/* Assuming all members except count and indexOffset are zero */
+GL::DrawElementsIndirect indirect[]{
+    DOXYGEN_ELLIPSIS({})
+};
+
+shader.draw(mesh,
+            Containers::stridedArrayView(indirect)
+                .slice(&GL::DrawElementsIndirect::count),
+            nullptr,
+            Containers::stridedArrayView(indirect)
+                .slice(&GL::DrawElementsIndirect::indexOffset));
+/* [AbstractShaderProgram-rendering-indirect-multi-fallback] */
+}
 }
 #endif
 

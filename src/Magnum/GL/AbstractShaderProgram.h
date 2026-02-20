@@ -68,7 +68,7 @@ Layout for a @ref Buffer containing indirect draw commands for *non-indexed*
 meshes drawn with @ref AbstractShaderProgram::drawIndirect(Mesh&, Buffer&, GLintptr),
 @ref AbstractShaderProgram::drawIndirect(Mesh&, Buffer&, GLintptr, GLsizei, GLsizei)
 and @ref AbstractShaderProgram::drawIndirect(Mesh&, Buffer&, GLintptr, Buffer&, GLintptr, GLsizei, GLsizei).
-See the @ref GL-AbstractShaderProgram-rendering-workflow-indirect "AbstractShaderProgram indirect draw documentation"
+See the @ref GL-AbstractShaderProgram-rendering-indirect "AbstractShaderProgram indirect draw documentation"
 for more information and usage examples.
 @requires_gl43 Extension @gl_extension{ARB,multi_draw_indirect}
 @requires_gles31 OpenGL ES 3.1 and @gl_extension{EXT,multi_draw_indirect}
@@ -116,7 +116,7 @@ Layout for a @ref Buffer containing indirect draw commands for *indexed* meshes
 drawn with @ref AbstractShaderProgram::drawIndirect(Mesh&, Buffer&, GLintptr),
 @ref AbstractShaderProgram::drawIndirect(Mesh&, Buffer&, GLintptr, GLsizei, GLsizei)
 and @ref AbstractShaderProgram::drawIndirect(Mesh&, Buffer&, GLintptr, Buffer&, GLintptr, GLsizei, GLsizei).
-See the @ref GL-AbstractShaderProgram-rendering-workflow-indirect "AbstractShaderProgram indirect draw documentation"
+See the @ref GL-AbstractShaderProgram-rendering-indirect "AbstractShaderProgram indirect draw documentation"
 for more information and usage examples.
 @requires_gl43 Extension @gl_extension{ARB,multi_draw_indirect}
 @requires_gles31 OpenGL ES 3.1 and @gl_extension{EXT,multi_draw_indirect}
@@ -484,22 +484,139 @@ out vec3 velocity;
     in OpenGL ES or WebGL.
 @requires_webgl20 Transform feedback is not available in WebGL 1.0.
 
-@section GL-AbstractShaderProgram-rendering-workflow Rendering workflow
+@section GL-AbstractShaderProgram-rendering Rendering workflow
 
-Basic workflow with AbstractShaderProgram subclasses is: instance shader
-class, configure attribute binding in meshes (see @ref GL-Mesh-configuration "Mesh documentation"
-for more information) and map shader outputs to framebuffer attachments if
-needed (see @ref GL-Framebuffer-usage "Framebuffer documentation" for more
-information). In each draw event set all required shader parameters, bind
-specific framebuffer (if needed) and then call @ref draw(). Example:
+Set up a mesh instance populated with vertex attributes defined by the shader,
+and instantiate the shader:
+
+@snippet GL.cpp AbstractShaderProgram-rendering-setup
+
+Then, in each draw event, set required shader parameters, bind textures etc.,
+and then call @ref draw():
 
 @snippet GL.cpp AbstractShaderProgram-rendering
 
-@section GL-AbstractShaderProgram-compute-workflow Compute workflow
+See the @ref GL-Mesh-configuration "Mesh documentation" for more information
+about mesh setup. If the shader defines additional fragment data locations,
+they need to be mapped to framebuffer attachments as described in the
+@ref GL-Framebuffer-usage-multiple-outputs "Framebuffer documentation".
 
-Add just the @ref Shader::Type::Compute shader and implement uniform/texture
-setting functions as needed. After setting up required parameters call
-@ref dispatchCompute().
+@subsection GL-AbstractShaderProgram-rendering-views Mesh views
+
+A @ref MeshView allows you to define a smaller subset of a particular
+@ref Mesh, for example to draw different parts of the same mesh with different
+materials. Compared to drawing a set of distinct @ref Mesh instances this
+requires less state changes as the vertex attribute layout stays the same
+between subsequent draws:
+
+@snippet GL.cpp AbstractShaderProgram-rendering-views
+
+@subsection GL-AbstractShaderProgram-rendering-multidraw Multidraw
+
+Going further, it's possible to instruct the shader to draw multiple views at
+once using the @ref draw(const Containers::Iterable<MeshView>&) overload. On
+its own it doesn't require anything special from the shader implementation, as
+internally it's equivalent to a sequence of individual @ref MeshView draws but
+with driver overhead reduced further:
+
+@snippet GL.cpp AbstractShaderProgram-rendering-views-multi
+
+In practice it's however usually needed to use different rendering parameters
+for each draw. With OpenGL 4.6, the @gl_extension{ARB,shader_draw_parameters}
+desktop extension, the @m_class{m-doc-external} [ANGLE_multi_draw](https://chromium.googlesource.com/angle/angle/+/master/extensions/ANGLE_multi_draw.txt)
+OpenGL ES extension or the @webgl_extension{WEBGL,multi_draw} WebGL extension,
+a @glsl gl_DrawID @ce builtin is exposed to the shader, containing an index of
+the draw, which the shader can use for example to look up draw-specific
+properties in a uniform buffer. A fallback solution when these extensions are
+not available is to supply an additional vertex attribute containing the draw
+index.
+
+A lower-level approach, instead of creating several @ref MeshView instances, is
+to pass the original mesh along with arrays specifying index offset and count
+to @ref draw(Mesh& mesh, const Containers::StridedArrayView1D<const UnsignedInt>&, const Containers::StridedArrayView1D<const UnsignedInt>&, const Containers::StridedArrayView1D<const UnsignedInt>&).
+There are other overloads that allow specifying also instance counts, vertex
+offsets and such, although their platform support isn't as broad. See the
+function documentation for detailed info about optimal data layouts for
+particular platforms:
+
+@snippet GL.cpp AbstractShaderProgram-rendering-multi
+
+@subsection GL-AbstractShaderProgram-rendering-indirect Indirect draw
+
+The @ref drawIndirect() function is similar to @ref draw(MeshView&) with a
+difference that the vertex/index offset and count is supplied from a @ref Buffer
+instead of specified at draw time, which makes it possible for example to have
+a compute shader decide which part of the mesh to draw. While a real-world
+example of such usage is beyond the scope of this overview, here's how it would
+look if the buffer would be filled from the CPU. The buffer is expected to have
+a layout matching the @ref DrawElementsIndirect structure when drawing an
+indexed mesh, and @ref DrawArraysIndirect when drawing a non-indexed mesh:
+
+@snippet GL.cpp AbstractShaderProgram-rendering-indirect
+
+@requires_gl40 Extension @gl_extension{ARB,draw_indirect}
+@requires_gl42 Extension @gl_extension{ARB,base_instance} if
+    @ref DrawArraysIndirect::instanceOffset or
+    @ref DrawElementsIndirect::instanceOffset is not `0`
+@requires_gles31 Indirect rendering isn't available in OpenGL ES 3.0 and older.
+@requires_es_extension Extension @gl_extension{EXT,base_instance} if
+    @ref DrawArraysIndirect::instanceOffset or
+    @ref DrawElementsIndirect::instanceOffset is not `0`
+@requires_gles Indirect rendering isn't availabe in WebGL.
+
+@subsection GL-AbstractShaderProgram-rendering-indirect-multidraw Indirect multidraw
+
+Indirect draw and multidraw can be combined together, allowing a list of draws
+to be generated completely on the GPU. Continuing from the above snippet, it's
+just about putting more elements into the array and supplying their count to
+@ref drawIndirect(Mesh&, Buffer&, GLintptr, GLsizei, GLsizei). Again, in a
+real-world scenario the buffer would be filled from another shader, here it's
+filled from the CPU for simplicity:
+
+@snippet GL.cpp AbstractShaderProgram-rendering-indirect-multi
+
+Ultimately, on drivers supporting such functionality, the draw count can be
+supplied from a buffer as well with @ref drawIndirect(Mesh&, Buffer&, GLintptr, Buffer&, GLintptr, GLsizei, GLsizei):
+
+@snippet GL.cpp AbstractShaderProgram-rendering-indirect-multi-count
+
+A fallback solution is to put draw commands with zero count or instance count
+to the buffer, assuming the GPU will skip them. A fallback if indirect
+multidraw isn't possible at all may be passing the sliced up struct to
+@ref draw(Mesh& mesh, const Containers::StridedArrayView1D<const UnsignedInt>&, const Containers::StridedArrayView1D<const UnsignedInt>&, const Containers::StridedArrayView1D<const UnsignedInt>&)
+and overloads, although again you may need to add explicit handling for
+@glsl gl_DrawID @ce not being present:
+
+@snippet GL.cpp AbstractShaderProgram-rendering-indirect-multi-fallback
+
+@requires_gl43 Extension @gl_extension{ARB,multi_draw_indirect}
+@requires_gl46 Extension @gl_extension{ARB,indirect_parameters} for supplying
+    also the draw count via a buffer
+@requires_gl42 Extension @gl_extension{ARB,base_instance} if
+    @ref DrawArraysIndirect::instanceOffset or
+    @ref DrawElementsIndirect::instanceOffset is not `0`
+@requires_gl Supplying draw count via a buffer is not available in OpenGL ES or
+    WebGL.
+@requires_gles31 OpenGL ES 3.1 and @gl_extension{EXT,multi_draw_indirect}
+@requires_es_extension Extension @gl_extension{EXT,base_instance} if
+    @ref DrawArraysIndirect::instanceOffset or
+    @ref DrawElementsIndirect::instanceOffset is not `0`
+@requires_gles Indirect rendering isn't availabe in WebGL.
+
+@section GL-AbstractShaderProgram-compute Compute workflow
+
+Compared to rendering shaders, compute shaders are significantly simpler. Add
+just the @ref Shader::Type::Compute shader and implement uniform setting,
+buffer/texture binding functions etc. as needed. After setting up required
+parameters, call @ref dispatchCompute().
+
+Similarly to indirect draw explained above, @ref dispatchComputeIndirect() can
+take the workgroup count from a buffer instead of being specified from the CPU
+side.
+
+@requires_gl43 Extension @gl_extension{ARB,compute_shader}
+@requires_gles31 Compute shaders are not available in OpenGL ES 3.0 and older.
+@requires_gles Compute shaders are not available in WebGL.
 
 @section GL-AbstractShaderProgram-types Mapping between GLSL and Magnum types
 
@@ -956,12 +1073,12 @@ class MAGNUM_GL_EXPORT AbstractShaderProgram: public AbstractObject {
          *
          * Expects that @p mesh is compatible with this shader and is fully set
          * up. If its vertex/index count or instance count is @cpp 0 @ce, no
-         * draw commands are issued. See also
-         * @ref GL-AbstractShaderProgram-rendering-workflow "class documentation"
-         * for more information. If @gl_extension{ARB,vertex_array_object} (part
-         * of OpenGL 3.0), OpenGL ES 3.0, WebGL 2.0, @gl_extension{OES,vertex_array_object}
-         * in OpenGL ES 2.0 or @webgl_extension{OES,vertex_array_object} in
-         * WebGL 1.0 is available, the associated vertex array object is bound
+         * draw commands are issued. See the @ref GL-AbstractShaderProgram-rendering "class rendering documentation"
+         * for more information and usage example.
+         * If @gl_extension{ARB,vertex_array_object} (part of OpenGL 3.0),
+         * OpenGL ES 3.0, WebGL 2.0, @gl_extension{OES,vertex_array_object} in
+         * OpenGL ES 2.0 or @webgl_extension{OES,vertex_array_object} in WebGL
+         * 1.0 is available, the associated vertex array object is bound
          * instead of setting up the mesh from scratch.
          * @see @ref Mesh::setCount(), @ref Mesh::setInstanceCount(),
          *      @ref draw(MeshView&),
@@ -1095,6 +1212,8 @@ class MAGNUM_GL_EXPORT AbstractShaderProgram: public AbstractObject {
          *      OpenGL ES or @webgl_extension{WEBGL,multi_draw_instanced_base_vertex_base_instance}
          *      WebGL extension is supported.
          *
+         * See the @ref GL-AbstractShaderProgram-rendering-multidraw "class multidraw documentation"
+         * for more information and usage example.
          * @see @ref draw(MeshView&), @fn_gl{UseProgram},
          *      @fn_gl_keyword{EnableVertexAttribArray}, @fn_gl{BindBuffer},
          *      @fn_gl_keyword{VertexAttribPointer},
@@ -1184,6 +1303,8 @@ class MAGNUM_GL_EXPORT AbstractShaderProgram: public AbstractObject {
          *      or @m_class{m-doc-external} [glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLE()](https://chromium.googlesource.com/angle/angle/+/refs/heads/main/extensions/ANGLE_base_vertex_base_instance.txt),
          *      but no function accepting just one of them.
          *
+         * See the @ref GL-AbstractShaderProgram-rendering-multidraw "class multidraw documentation"
+         * for more information and usage example.
          * @see @ref draw(MeshView&), @fn_gl{UseProgram},
          *      @fn_gl_keyword{EnableVertexAttribArray}, @fn_gl{BindBuffer},
          *      @fn_gl_keyword{VertexAttribPointer}, @fn_gl_keyword{DisableVertexAttribArray}
@@ -1235,7 +1356,9 @@ class MAGNUM_GL_EXPORT AbstractShaderProgram: public AbstractObject {
          * the @m_class{m-doc-external} [glMultiDrawElementsInstancedANGLE()](https://chromium.googlesource.com/angle/angle/+/refs/heads/main/extensions/ANGLE_multi_draw.txt)
          * / @m_class{m-doc-external} [glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLE()](https://chromium.googlesource.com/angle/angle/+/refs/heads/main/extensions/ANGLE_base_vertex_base_instance.txt)
          * function and can instead directly reuse the @p indexOffsets view if
-         * it's contiguous. See the original overload for further information.
+         * it's contiguous. See the original overload and
+         * the @ref GL-AbstractShaderProgram-rendering-multidraw "class multidraw documentation"
+         * for more information and usage example.
          * @requires_gles_only Not available on desktop OpenGL.
          * @requires_gles30 Not defined in OpenGL ES 2.0. Use
          *      @ref draw(Mesh&, const Containers::StridedArrayView1D<const UnsignedInt>&, const Containers::StridedArrayView1D<const UnsignedInt>&, const Containers::StridedArrayView1D<const UnsignedInt>&, const Containers::StridedArrayView1D<const UnsignedInt>&) without the
@@ -1286,6 +1409,8 @@ class MAGNUM_GL_EXPORT AbstractShaderProgram: public AbstractObject {
          * WebGL 1.0 is available, the associated vertex array object is bound
          * instead of setting up the mesh from scratch.
          *
+         * See the original overload and the @ref GL-AbstractShaderProgram-rendering-multidraw "class multidraw documentation"
+         * for more information and usage example.
          * @requires_gles_only Not available on desktop OpenGL.
          * @requires_es_extension Extension @m_class{m-doc-external} [ANGLE_multi_draw](https://chromium.googlesource.com/angle/angle/+/master/extensions/ANGLE_multi_draw.txt)
          * @requires_es_extension OpenGL ES 3.0 and extension
@@ -1314,7 +1439,9 @@ class MAGNUM_GL_EXPORT AbstractShaderProgram: public AbstractObject {
          * the @m_class{m-doc-external} [glMultiDrawElementsInstancedANGLE()](https://chromium.googlesource.com/angle/angle/+/refs/heads/main/extensions/ANGLE_multi_draw.txt)
          * / @m_class{m-doc-external} [glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLE()](https://chromium.googlesource.com/angle/angle/+/refs/heads/main/extensions/ANGLE_base_vertex_base_instance.txt)
          * function and can instead directly reuse the @p indexOffsets view if
-         * it's contiguous. See the original overload for further information.
+         * it's contiguous. See the original overload and the
+         * @ref GL-AbstractShaderProgram-rendering-multidraw "class multidraw documentation"
+         * for more information and usage example.
          * @requires_gles_only Not available on desktop OpenGL.
          * @requires_es_extension Extension @m_class{m-doc-external} [ANGLE_multi_draw](https://chromium.googlesource.com/angle/angle/+/master/extensions/ANGLE_multi_draw.txt)
          * @requires_es_extension OpenGL ES 3.0 and extension
@@ -1366,6 +1493,8 @@ class MAGNUM_GL_EXPORT AbstractShaderProgram: public AbstractObject {
          *      overload taking @ref MeshView instances or a fallback path when
          *      the multidraw extensions are not available.
          *
+         * See the original overload and the @ref GL-AbstractShaderProgram-rendering-multidraw "class multidraw documentation"
+         * for more information and usage example.
          * @requires_gl32 Extension @gl_extension{ARB,draw_elements_base_vertex}
          *      if the mesh is indexed and @ref MeshView::baseVertex() is not
          *      `0`
@@ -1393,7 +1522,9 @@ class MAGNUM_GL_EXPORT AbstractShaderProgram: public AbstractObject {
          *
          * The @p indirectBuffer is assumed to have a @ref DrawArraysIndirect
          * structure for a non-indexed @p mesh or a @ref DrawElementsIndirect
-         * structure for an indexed @p mesh at @p indirectBufferOffset.
+         * structure for an indexed @p mesh at @p indirectBufferOffset. See the
+         * @ref GL-AbstractShaderProgram-rendering-indirect "class indirect rendering documentation"
+         * for more information and example code.
          * @see @fn_gl{UseProgram}, @fn_gl_keyword{EnableVertexAttribArray},
          *      @fn_gl{BindBuffer}, @fn_gl_keyword{VertexAttribPointer},
          *      @fn_gl_keyword{DisableVertexAttribArray} or
@@ -1430,7 +1561,9 @@ class MAGNUM_GL_EXPORT AbstractShaderProgram: public AbstractObject {
          * The @p indirectBuffer is assumed to have a list of
          * @ref DrawArraysIndirect structures for a non-indexed @p mesh or
          * @ref DrawElementsIndirect structures for an indexed @p mesh at
-         * @p indirectBufferOffset with @p count items and a @p stride.
+         * @p indirectBufferOffset with @p count items and a @p stride. See the
+         * @ref GL-AbstractShaderProgram-rendering-indirect-multidraw "class indirect multidraw documentation"
+         * for more information and example code.
          * @see @fn_gl{UseProgram}, @fn_gl_keyword{EnableVertexAttribArray},
          *      @fn_gl{BindBuffer}, @fn_gl_keyword{VertexAttribPointer},
          *      @fn_gl_keyword{DisableVertexAttribArray} or
@@ -1476,7 +1609,9 @@ class MAGNUM_GL_EXPORT AbstractShaderProgram: public AbstractObject {
          * @p indirectBufferOffset with a @p stride. The @p countBuffer is
          * assumed to have a 32-bit value describing draw count at
          * @p countBufferOffset. If the value in the buffer is larger than
-         * @p maxCount, only @p maxCount draws is performed.
+         * @p maxCount, only @p maxCount draws is performed. See the
+         * @ref GL-AbstractShaderProgram-rendering-indirect-multidraw "class indirect multidraw documentation"
+         * for more information and example code.
          * @see @ref Buffer::TargetHint::Parameter, @fn_gl{UseProgram},
          *      @fn_gl_keyword{EnableVertexAttribArray}, @fn_gl{BindBuffer},
          *      @fn_gl_keyword{VertexAttribPointer},
@@ -1557,7 +1692,9 @@ class MAGNUM_GL_EXPORT AbstractShaderProgram: public AbstractObject {
          *
          * Valid only on programs with compute shader attached. If
          * @p workgroupCount is @cpp 0 @ce in any dimension, no compute
-         * dispatch commands are issued.
+         * dispatch commands are issued. See the
+         * @ref GL-AbstractShaderProgram-compute "class documentation"
+         * for more information and example code.
          * @see @fn_gl{DispatchCompute}
          * @requires_gl43 Extension @gl_extension{ARB,compute_shader}
          * @requires_gles31 Compute shaders are not available in OpenGL ES 3.0
@@ -1576,7 +1713,9 @@ class MAGNUM_GL_EXPORT AbstractShaderProgram: public AbstractObject {
          *
          * Valid only on programs with compute shader attached. The
          * @p indirectBuffer is assumed to have three 32-bit values describing
-         * X, Y and Z workgroup count at @p indirectBufferOffset.
+         * X, Y and Z workgroup count at @p indirectBufferOffset. See the
+         * @ref GL-AbstractShaderProgram-compute "class documentation" for more
+         * information and example code.
          * @see @fn_gl{DispatchComputeIndirect}
          * @requires_gl43 Extension @gl_extension{ARB,compute_shader}
          * @requires_gles31 Compute shaders are not available in OpenGL ES 3.0
