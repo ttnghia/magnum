@@ -524,7 +524,7 @@ AbstractShaderProgram& AbstractShaderProgram::drawTransformFeedback(Mesh& mesh, 
 
 AbstractShaderProgram& AbstractShaderProgram::drawTransformFeedback(MeshView& mesh, TransformFeedback& xfb, UnsignedInt stream) {
     /* If nothing to draw, exit without touching any state */
-    if(mesh._instanceCount)
+    if(!mesh._instanceCount)
         return *this;
 
     use();

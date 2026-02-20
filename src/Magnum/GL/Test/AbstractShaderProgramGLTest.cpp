@@ -1319,11 +1319,6 @@ void AbstractShaderProgramGLTest::compute() {
 /* These are outside of any namespace to verify the macros fully qualify all
    names */
 namespace {
-    /* Yes, Clang, I know, the macros add unused members. That's fine. */
-    #ifdef CORRADE_TARGET_CLANG
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wunused-member-function"
-    #endif
     struct ShaderSubclassDraw: Magnum::GL::AbstractShaderProgram {
         MAGNUM_GL_ABSTRACTSHADERPROGRAM_SUBCLASS_DRAW_IMPLEMENTATION(ShaderSubclassDraw)
     };
@@ -1331,9 +1326,6 @@ namespace {
     struct ShaderSubclassDispatch: Magnum::GL::AbstractShaderProgram {
         MAGNUM_GL_ABSTRACTSHADERPROGRAM_SUBCLASS_DISPATCH_IMPLEMENTATION(ShaderSubclassDispatch)
     };
-    #endif
-    #ifdef CORRADE_TARGET_CLANG
-    #pragma GCC diagnostic pop
     #endif
 }
 
@@ -1350,7 +1342,7 @@ void AbstractShaderProgramGLTest::subclassDraw() {
     Mesh meshNoInstances;
     meshNoInstances
         .setInstanceCount(0);
-    Mesh meshViewNoInstances;
+    MeshView meshViewNoInstances{mesh};
     meshViewNoInstances
         .setInstanceCount(0);
     #ifndef MAGNUM_TARGET_GLES
