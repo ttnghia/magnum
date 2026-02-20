@@ -1238,7 +1238,7 @@ Checker::Checker(AbstractShaderProgram&& shader, RenderbufferFormat format, Mesh
     view.setCount(1)
         .setBaseVertex(mesh.baseVertex())
         .setInstanceCount(mesh.instanceCount())
-        #ifndef MAGNUM_TARGET_GLES
+        #ifndef MAGNUM_TARGET_GLES2
         .setBaseInstance(mesh.baseInstance())
         #endif
         ;
