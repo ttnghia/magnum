@@ -5950,7 +5950,9 @@ void MeshGLTest::multiDrawIndirectSparseBuffer() {
     /* First element is unused to test that the offset is passed properly */
     struct Indirect {
         DrawArraysIndirect command;
-        UnsignedInt:32;
+        /* MSVC 2015 doesn't like anonymous bitfields like `UnsignedInt:32` in
+           local structs, have to name them */
+        UnsignedInt padding;
     } indirect[3];
     for(Int i: {0, 1}) {
         indirect[i + 1].command.count = data.counts[i];
@@ -6103,7 +6105,9 @@ void MeshGLTest::multiDrawIndirectIndexedSparseBuffer() {
     /* First element is unused to test that the offset is passed properly */
     struct Indirect {
         DrawElementsIndirect command;
-        UnsignedInt:32;
+        /* MSVC 2015 doesn't like anonymous bitfields like `UnsignedInt:32` in
+           local structs, have to name them */
+        UnsignedInt padding;
     } indirect[3];
     for(Int i: {0, 1}) {
         indirect[i + 1].command.count = data.counts[i];
@@ -6234,7 +6238,9 @@ void MeshGLTest::multiDrawIndirectCountSparseBuffer() {
        properly */
     struct Indirect {
         DrawArraysIndirect command;
-        UnsignedInt:32;
+        /* MSVC 2015 doesn't like anonymous bitfields like `UnsignedInt:32` in
+           local structs, have to name them */
+        UnsignedInt padding;
     } indirect[3];
     for(Int i: {0, 1}) {
         indirect[i + 1].command.count = data.counts[i];
@@ -6368,7 +6374,9 @@ void MeshGLTest::multiDrawIndirectCountIndexedSparseBuffer() {
     /* First element is unused to test that the offset is passed properly */
     struct Indirect {
         DrawElementsIndirect command;
-        UnsignedInt:32;
+        /* MSVC 2015 doesn't like anonymous bitfields like `UnsignedInt:32` in
+           local structs, have to name them */
+        UnsignedInt padding;
     } indirect[3];
     for(Int i: {0, 1}) {
         indirect[i + 1].command.count = data.counts[i];
