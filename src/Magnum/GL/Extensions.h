@@ -537,7 +537,6 @@ namespace ANDROID {
     _extension( 81,EXT,polygon_offset_clamp,        GLES200,    None) // #252
     #ifndef MAGNUM_TARGET_GLES2
     _extension( 82,EXT,clip_cull_distance,          GLES300,    None) // #257
-    #endif
     /* The extension says "Requires ARB_texture_storage or a version of OpenGL
        or OpenGL ES that incorporates it." There's EXT_texture_storage on ES2,
        however I don't think ES2 really matters today, so it's just ES3+. */
@@ -551,7 +550,6 @@ namespace ANDROID {
     _extension( 85,EXT,memory_object_win32,         GLES300,    None) // #282
     _extension( 86,EXT,semaphore_win32,             GLES300,    None) // #282
     #endif
-    #ifndef MAGNUM_TARGET_GLES2
     _extension( 87,EXT,texture_compression_rgtc,    GLES300,    None) // #286
     _extension( 88,EXT,texture_compression_bptc,    GLES300,    None) // #287
     #endif
