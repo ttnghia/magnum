@@ -43,12 +43,12 @@ namespace Magnum { namespace GL { namespace Implementation {
 
 struct BufferState {
     enum: std::size_t {
-        #ifndef MAGNUM_TARGET_WEBGL
+        #ifdef MAGNUM_TARGET_GLES2 /* ES2 and WebGL 1 */
+        TargetCount = 2+1,
+        #elif defined(MAGNUM_TARGET_WEBGL) /* WebGL 2 */
+        TargetCount = 8+1,
+        #else /* ES3 and desktop */
         TargetCount = 13+1
-        #elif !defined(MAGNUM_TARGET_GLES2) && defined(MAGNUM_TARGET_WEBGL)
-        TargetCount = 8+1
-        #else
-        TargetCount = 2+1
         #endif
     };
 
